@@ -43,6 +43,8 @@ public:
 	void Init() override;
 	void Update() override;
 
+	void AddHole(const Vector3& pos, float radius);
+
 private:
 	/// ===================================================
 	/// private : objects

@@ -36,5 +36,12 @@ void Boundary::Init() {
 }
 
 void Boundary::Update() {
+	for (size_t i = 0; i < holes_.size(); i++) {
+		holeBuffer_.SetMappedData(i, holes_[i]);
+	}
+}
 
+void Boundary::AddHole(const Vector3& pos, float radius) {
+	Hole hole = { pos, radius };
+	holes_.emplace_back(hole);
 }
