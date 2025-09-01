@@ -133,8 +133,10 @@ void GameCamera::AdjustParam() {
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
         ImGui::PushID(groupName_.c_str());
 
-        /// 変数の調整
-        ImGui::SliderAngle("RotateOffsetX", &baseRotateOffsetX_, 0, 1000);
+        // 変数の調整
+        float xRotate = baseRotateOffsetX_;
+        ImGui::DragFloat("RotateOffsetX(Degree)", &xRotate, 0.01f);
+        baseRotateOffsetX_ = ToRadian(xRotate);
         ImGui::DragFloat3("firstOffset", &offset_.x, 0.01f);
 
         /// セーブとロード
@@ -175,6 +177,7 @@ void GameCamera::SetTarget(const WorldTransform* target) {
 }
 
 void GameCamera::Debug() {
+    
     ImGui::DragFloat("rotate", &baseRotateOffsetX_, 0.01f);
     ImGui::DragFloat3("offset", &offset_.x, 0.1f);
 

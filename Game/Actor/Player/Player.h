@@ -40,4 +40,5 @@ private:
     float objectiveAngle_;
 
 public:
+   /* void SetViewProjection(const ViewProjection);*/
 };
