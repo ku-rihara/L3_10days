@@ -2,6 +2,7 @@
 #include "Vector3.h"
 #include <cfloat>
 #include <cmath>
+#include <numbers>
 
 
 Quaternion Quaternion::operator-() const {
@@ -148,4 +149,96 @@ Quaternion Quaternion::EulerToQuaternion(const Vector3& Euler) {
     result = result.Normalize();
 
     return result;
+}
+
+float Quaternion::GetRollFromQuaternion() {
+    // クォータニオンからオイラー角のロール成分を抽出
+    float sinR_cosp = 2 * (w * x + y * z);
+    float cosR_cosp = 1 - 2 * (x * x + y * y);
+    return std::atan2(sinR_cosp, cosR_cosp);
+}
+
+Quaternion Quaternion::LookAt(const Vector3& eye, const Vector3& target, const Vector3& up) {
+    Vector3 forward = (target - eye).Normalize();
+    Vector3 right   = Vector3::Cross(up,forward).Normalize();
+    Vector3 newUp   = Vector3::Cross(forward,right);
+
+    Matrix4x4 lookMat;
+    lookMat.m[0][0] = right.x;
+    lookMat.m[0][1] = right.y;
+    lookMat.m[0][2] = right.z;
+    lookMat.m[1][0] = newUp.x;
+    lookMat.m[1][1] = newUp.y;
+    lookMat.m[1][2] = newUp.z;
+    lookMat.m[2][0] = forward.x;
+    lookMat.m[2][1] = forward.y;
+    lookMat.m[2][2] = forward.z;
+
+    return QuaternionFromMatrix(lookMat);
+}
+
+Vector3 Quaternion::GetForwardVector() const {
+    // forward = (0,0,1) を回転させたもの
+    return TransformNormal({0.0f, 0.0f, 1.0f}, ToMatrix4x4());
+}
+
+Matrix4x4 Quaternion::ToMatrix4x4() const {
+    Matrix4x4 m{};
+
+    float xx = x * x;
+    float yy = y * y;
+    float zz = z * z;
+    float xy = x * y;
+    float xz = x * z;
+    float yz = y * z;
+    float wx = w * x;
+    float wy = w * y;
+    float wz = w * z;
+
+    m.m[0][0] = 1.0f - 2.0f * (yy + zz);
+    m.m[0][1] = 2.0f * (xy - wz);
+    m.m[0][2] = 2.0f * (xz + wy);
+    m.m[0][3] = 0.0f;
+
+    m.m[1][0] = 2.0f * (xy + wz);
+    m.m[1][1] = 1.0f - 2.0f * (xx + zz);
+    m.m[1][2] = 2.0f * (yz - wx);
+    m.m[1][3] = 0.0f;
+
+    m.m[2][0] = 2.0f * (xz - wy);
+    m.m[2][1] = 2.0f * (yz + wx);
+    m.m[2][2] = 1.0f - 2.0f * (xx + yy);
+    m.m[2][3] = 0.0f;
+
+    m.m[3][0] = 0.0f;
+    m.m[3][1] = 0.0f;
+    m.m[3][2] = 0.0f;
+    m.m[3][3] = 1.0f;
+
+    return m;
+}
+
+Vector3 Quaternion::ToEuler() const {
+    Vector3 euler;
+
+    // Pitch (X軸)
+    float sinp = 2.0f * (w * x + y * z);
+    float cosp = 1.0f - 2.0f * (x * x + y * y);
+    euler.x    = std::atan2(sinp, cosp);
+
+    // Yaw (Y軸)
+    float siny = 2.0f * (w * y - z * x);
+    if (std::abs(siny) >= 1.0f) {
+        // ±90度にクランプ
+        euler.y = std::copysign(std::numbers::pi_v<float> / 2.0f, siny);
+    } else {
+        euler.y = std::asin(siny);
+    }
+
+    // Roll (Z軸)
+    float sinr = 2.0f * (w * z + x * y);
+    float cosr = 1.0f - 2.0f * (y * y + z * z);
+    euler.z    = std::atan2(sinr, cosr);
+
+    return euler;
 }

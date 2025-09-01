@@ -39,7 +39,7 @@ private: // メンバ関数
     Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob_;
 
     Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateAdd_;
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateNone_;
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateNormal_;
 
     // depth
     D3D12_DEPTH_STENCIL_DESC depthStencilDesc_;
