@@ -52,13 +52,18 @@ private:
 
 	std::vector<Hole> holes_;
 
-	/// holeの structured buffer
-	StructuredBuffer<Hole> holeBuffer_;
-	ConstantBuffer<TransformationMatrix> transformBuffer_;
-	ConstantBuffer<ShadowTransformData> shadowTransformBuffer_;
+	/// vbv, ibv
 	IndexBuffer indexBuffer_;
 	VertexBuffer<BoundaryVertex> vertexBuffer_;
 
+
+	/// vertex shader buffers
+	ConstantBuffer<TransformationMatrix> transformBuffer_;
+	ConstantBuffer<ShadowTransformData> shadowTransformBuffer_;
+
+	/// pixel shader buffers
+	StructuredBuffer<Hole> holeBuffer_;
+	ConstantBuffer<float> timeBuffer_;
 
 };
 

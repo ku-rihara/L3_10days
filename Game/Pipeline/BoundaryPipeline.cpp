@@ -174,17 +174,17 @@ void BoundaryPipeline::CreateRootSignature() {
 	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 
 	// 0: TransformationMatrix
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderを使う
-	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
+	rootParameters[0].Descriptor.ShaderRegister = 1; // レジスタ番号0とバインド
 
 	// 1: ShadowMap
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 1;
+	rootParameters[1].Descriptor.ShaderRegister = 2;
 
 	// 2: Hole
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
@@ -192,6 +192,11 @@ void BoundaryPipeline::CreateRootSignature() {
 	rootParameters[2].Descriptor.ShaderRegister = 0;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+
+	// 3: Time
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rootParameters[3].Descriptor.ShaderRegister = 0;
 
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
@@ -241,6 +246,7 @@ void BoundaryPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewPr
 
 	/// pixel shader buffers
 	boundary->holeBuffer_.BindToCommandList(ROOT_PARAM_HOLE, commandList);
-
+	boundary->timeBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TIME);
+	
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

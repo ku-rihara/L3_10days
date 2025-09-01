@@ -152,7 +152,6 @@
     <ClCompile Include="Game\Actor\NPC\NPC.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Downloads\StructuredBuffer.h" />
     <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
     <ClInclude Include="Game\Actor\Boundary\Boundary.h" />
     <ClInclude Include="Engine\2d\ImGuiManager.h" />

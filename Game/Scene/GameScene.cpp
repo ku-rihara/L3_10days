@@ -38,6 +38,7 @@ void GameScene::Update() {
 	debugCamera_->Update();
 	Debug();
 
+	boundary_->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
