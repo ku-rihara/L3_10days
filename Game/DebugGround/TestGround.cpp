@@ -7,6 +7,7 @@ void TestGround::Init() {
     baseTransform_.Init();
     obj3d_->transform_.parent_ = &baseTransform_;
     baseTransform_.scale_      = {100, 100, 100};
+    baseTransform_.translation_.y = -10.0f;
 }
 
 void TestGround::Update() {
