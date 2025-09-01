@@ -638,6 +638,8 @@
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp">
       <Filter>Game\EasingTestObj</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Actor\GameCamera\CameraRendition.cpp" />
+    <ClCompile Include="Game\Actor\GameCamera\GameCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1085,6 +1087,8 @@
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h">
       <Filter>Game\EasingTestObj</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Actor\GameCamera\CameraRendition.h" />
+    <ClInclude Include="Game\Actor\GameCamera\GameCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

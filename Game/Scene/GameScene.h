@@ -1,9 +1,10 @@
 #pragma once
 
 /// base
+#include "Actor/GameCamera/GameCamera.h"
+#include "Actor/Player/Player.h"
 #include "BaseScene.h"
 #include "SkyBox/SkyBox.h"
-#include"Actor/Player/Player.h"
 
 class GameScene : public BaseScene {
 private:
@@ -11,8 +12,9 @@ private:
     /// Private variants
     ///========================================================
 
-    std::unique_ptr<SkyBox> skuBox_ = nullptr;
-    std::unique_ptr<Player> player_ = nullptr;
+    std::unique_ptr<SkyBox> skuBox_         = nullptr;
+    std::unique_ptr<Player> player_         = nullptr;
+    std::unique_ptr<GameCamera> gameCamera_ = nullptr;
 
 public:
     ///========================================================
