@@ -22,14 +22,12 @@ private:
 	std::unique_ptr<Player> player_ = nullptr;
 	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
 	std::unique_ptr<EnemyStation> enemyStation_ = nullptr;
-
+    std::unique_ptr<TestGround> testGround_     = nullptr;
 	/// game objects
 	Boundary* boundary_ = nullptr;
 
-    std::unique_ptr<SkyBox> skuBox_         = nullptr;
-    std::unique_ptr<Player> player_         = nullptr;
-    std::unique_ptr<GameCamera> gameCamera_ = nullptr;
-    std::unique_ptr<TestGround> testGround_ = nullptr;
+   
+
 
 public:
 	///========================================================

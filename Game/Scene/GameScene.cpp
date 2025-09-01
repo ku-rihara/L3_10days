@@ -26,22 +26,16 @@ void GameScene::Init() {
 	BaseScene::Init();
 
 	// 生成
-	skuBox_ = std::make_unique<SkyBox>();
-	player_ = std::make_unique<Player>();
-    enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");
-	gameCamera_ = std::make_unique<GameCamera>();
+	
     //====================================生成===================================================
-    skuBox_ = std::make_unique<SkyBox>();
-    player_ = std::make_unique<Player>();   
-    gameCamera_ = std::make_unique<GameCamera>();
-    testGround_ = std::make_unique<TestGround>();
-
-	// 初期化
-	enemyStation_->Init();
-	player_->Init();
-	gameCamera_->Init();
-	skuBox_->Init();
+    skuBox_       = std::make_unique<SkyBox>();
+    player_       = std::make_unique<Player>();
+    enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");
+    gameCamera_   = std::make_unique<GameCamera>();
+    testGround_   = std::make_unique<TestGround>();
+	
    //====================================初期化===================================================
+    enemyStation_->Init();
     skuBox_->Init();
     player_->Init();
     gameCamera_->Init();
@@ -68,11 +62,8 @@ void GameScene::Update() {
 	Debug();
 
 	// class Update
-	gameCamera_->Update();
-	player_->Update();
 	enemyStation_->Update();
 	boundary_->Update();
-    // class Update
     gameCamera_->Update();
     player_->Update();
     skuBox_->Update();
@@ -141,11 +132,6 @@ void GameScene::DrawShadow() {
 void GameScene::Debug() {
 #ifdef _DEBUG
 
-	ImGui::Begin("Object");
-	player_->AdjustParam();
-	enemyStation_->ShowGui();
-	ShadowMap::GetInstance()->DebugImGui();
-	ImGui::End();
     ImGui::Begin("Object");
     player_->AdjustParam();
     gameCamera_->AdjustParam();
@@ -157,16 +143,7 @@ void GameScene::Debug() {
 
 // ビュープロジェクション更新
 void GameScene::ViewProjectionUpdate() {
-	viewProjection_.matView_ = gameCamera_->GetViewProjection().matView_;
-	viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
-	viewProjection_.cameraMatrix_ = gameCamera_->GetViewProjection().cameraMatrix_;
-	viewProjection_.rotation_ = gameCamera_->GetViewProjection().rotation_;
 	BaseScene::ViewProjectionUpdate();
-}
-
-void GameScene::ViewProssess() {
-	viewProjection_.UpdateMatrix();
-    BaseScene::ViewProjectionUpdate();
 }
 
 void GameScene::ViewProssess() {
