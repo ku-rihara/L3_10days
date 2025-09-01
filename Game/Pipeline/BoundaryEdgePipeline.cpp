@@ -1,28 +1,50 @@
-#include "BoundaryPipeline.h"
-#include "BoundaryPipeline.h"
-#include "Dx/DxCompiler.h"
-// Function
-#include "function/Log.h"
+#include "BoundaryEdgePipeline.h"
+
+/// std
 #include <cassert>
 #include <string>
+#include <numbers>
+
+/// engine
+#include "Dx/DxCompiler.h"
+#include "function/Log.h"
+#include "3d/ModelManager.h"
+#include "random.h"
+#include "Frame/Frame.h"
 
 /// 描画対象
 #include "../Actor/Boundary/Boundary.h"
 
-BoundaryPipeline* BoundaryPipeline::GetInstance() {
-	static BoundaryPipeline instance;
+BoundaryEdgePipeline* BoundaryEdgePipeline::GetInstance() {
+	static BoundaryEdgePipeline instance;
 	return &instance;
 }
 
-void BoundaryPipeline::Init(DirectXCommon* dxCommon) {
+void BoundaryEdgePipeline::Init(DirectXCommon* dxCommon) {
 
 	// 引数で受けとる
 	dxCommon_ = dxCommon;
 	// グラフィックスパイプラインの生成
 	CreateGraphicsPipeline();
+
+	transformationBuffer_.Create(128 * static_cast<uint32_t>(holeElementCount_), DirectXCommon::GetInstance()->GetDxDevice());
+
+	icoSphereModel_ = ModelManager::GetInstance()->LoadModel("ICOSphere.obj");
+
+	const ModelData& modelData = icoSphereModel_->GetModelData();
+	vertexBuffer_.Create(modelData.vertices.size(), DirectXCommon::GetInstance()->GetDxDevice());
+	vertexBuffer_.SetVertices(modelData.vertices);
+	vertexBuffer_.Map();
+
+	indexBuffer_.Create(modelData.indices.size(), DirectXCommon::GetInstance()->GetDxDevice());
+	for (size_t i = 0; i < modelData.indices.size(); i++) {
+		indexBuffer_.SetIndex(i, static_cast<uint32_t>(modelData.indices[i]));
+	}
+	indexBuffer_.Map();
+
 }
 
-void BoundaryPipeline::CreateGraphicsPipeline() {
+void BoundaryEdgePipeline::CreateGraphicsPipeline() {
 
 	HRESULT hr = 0;
 
@@ -85,7 +107,7 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	// RasterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	// 裏面を表示しない
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	// 三角形の色を塗りつぶす
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
@@ -98,8 +120,8 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	// Shaderをコンパイルする
-	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Boundary.vs.hlsl", L"vs_6_0");
-	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Boundary.ps.hlsl", L"ps_6_0");
+	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/BoundaryEdge.vs.hlsl", L"vs_6_0");
+	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/BoundaryEdge.ps.hlsl", L"ps_6_0");
 
 	// PSO作成用関数
 	auto CreatePSO = [&](D3D12_BLEND_DESC& blendDesc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso) {
@@ -126,7 +148,7 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	CreatePSO(blendDescNormal, graphicsPipelineStateNone_);
 }
 
-void BoundaryPipeline::CreateRootSignature() {
+void BoundaryEdgePipeline::CreateRootSignature() {
 	HRESULT hr = 0;
 	// RootSignatureを作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -137,7 +159,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	// DescriptorRangeの設定
 	D3D12_DESCRIPTOR_RANGE descriptorRange[6] = {};
 
-	// holes (t0)
+	// transformations (t0)
 	descriptorRange[0].BaseShaderRegister = 0;
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -174,29 +196,31 @@ void BoundaryPipeline::CreateRootSignature() {
 	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
 
 	// 0: TransformationMatrix
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderを使う
-	rootParameters[0].Descriptor.ShaderRegister = 1; // レジスタ番号0とバインド
+	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
+	rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
+	rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
 
 	// 1: ShadowMap
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 2;
+	rootParameters[1].Descriptor.ShaderRegister = 0;
 
-	// 2: Hole
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].Descriptor.ShaderRegister = 0;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+	//// 2: Hole
+	//rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	//rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	//rootParameters[2].Descriptor.ShaderRegister = 0;
+	//rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
+	//rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 
-	// 3: Time
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	rootParameters[3].Descriptor.ShaderRegister = 0;
+	//// 3: Time
+	//rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
+	//rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	//rootParameters[3].Descriptor.ShaderRegister = 0;
 
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
@@ -216,7 +240,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void BoundaryPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
+void BoundaryEdgePipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	// RootSignatureを設定
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	// パイプラインステートの設定
@@ -225,27 +249,64 @@ void BoundaryPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void BoundaryPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewProjection& _viewProjection) {
+void BoundaryEdgePipeline::Draw(ID3D12GraphicsCommandList* _cmdList, const ViewProjection& _viewProjection) {
 	Boundary* boundary = Boundary::GetInstance();
 	if (!boundary) { return; }
 
-	/// bufferの設定
-	boundary->vertexBuffer_.BindForCommandList(commandList);
-	boundary->indexBuffer_.BindForCommandList(commandList);
+	/// ICO球のVBVとIBVを設定
+	vertexBuffer_.BindForCommandList(_cmdList);
+	indexBuffer_.BindForCommandList(_cmdList);
 
-	/// vertex shader buffers
-	Matrix4x4 matWVP = boundary->baseTransform_.matWorld_ * _viewProjection.matView_ * _viewProjection.matProjection_;
-	Matrix4x4 matWorldInverseTranspose = Transpose(Inverse(boundary->baseTransform_.matWorld_));
-	boundary->transformBuffer_.SetMappedData({ matWVP, boundary->baseTransform_.matWorld_, matWorldInverseTranspose });
-	boundary->transformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TRANSFORM);
 
-	boundary->shadowTransformBuffer_.SetMappedData({ ShadowMap::GetInstance()->GetLightCameraMatrix() });
-	boundary->shadowTransformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_SHADOW_TRANSFORM);
+	/// vertex bufferの設定
+	modelInfos_.resize(boundary->GetHoles().size() * holeElementCount_);
+	for (size_t i = 0; i < boundary->GetHoles().size(); i++) {
+		/// 一個のHoleに対してholeElementCount_個 このICO球を描画する
+		for (size_t j = 0; j < holeElementCount_; j++) {
+			size_t index = i * holeElementCount_ + j;
+			const Hole& hole = boundary->GetHoles()[i];
+			float radian = (float)j / (holeElementCount_ / 2) * std::numbers::pi_v<float>;
 
+			/// 穴の周囲に配置するICO球のSRTを計算
+			Vector3 position = hole.position;
+			position.y += 0.1f;
+			position.x += std::cos(radian) * hole.radius;
+			position.z += std::sin(radian) * hole.radius;
+
+			ModelInfo& info = modelInfos_[index];
+			if (info.startFrame == 0.0f) {
+				info.startFrame = Random::Range(0.1f, 32.0f);
+				info.currentFrame = info.startFrame;
+				info.startScale = Random::Range(0.1f, 0.2f);
+				info.rotate = Vector3(Random::Range(0.0f, std::numbers::pi_v<float> *2.0f),
+					Random::Range(0.0f, std::numbers::pi_v<float> *2.0f),
+					Random::Range(0.0f, std::numbers::pi_v<float> *2.0f)
+				);
+			}
+
+			info.currentFrame += Frame::DeltaTime();
+
+			/// scaleは穴の大きさにある程度あわせる
+			float base = std::sin(info.currentFrame) * 0.5f + 0.5f; // 0 ~ 1
+			float sinValue = 0.25f + base * 0.75f;                  // 0.25 ~ 1
+			info.scale = Vector3(1, 1, 1) * info.startScale * hole.radius * sinValue;
+
+			/// Mapする行列の計算
+			const Matrix4x4& matWorld = MakeAffineMatrix(info.scale, info.rotate, position);
+			Matrix4x4 matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;
+			Matrix4x4 matInverseTranspose = Transpose(Inverse(matWorld));
+
+			transformationBuffer_.SetMappedData(index, { matWVP, matWorld, matInverseTranspose });
+		}
+	}
+
+	/// vertex shader buffers 
+	transformationBuffer_.BindToCommandList(ROOT_PARAM_TRANSFORM, _cmdList);
+	boundary->shadowTransformBuffer_.BindForGraphicsCommandList(_cmdList, ROOT_PARAM_SHADOW_TRANSFORM);
 
 	/// pixel shader buffers
-	boundary->holeBuffer_.BindToCommandList(ROOT_PARAM_HOLE, commandList);
-	boundary->timeBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TIME);
-	
-	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+
+	size_t instanceCount = boundary->GetHoles().size() * holeElementCount_;
+	size_t indexCount = indexBuffer_.GetIndices().size();
+	_cmdList->DrawIndexedInstanced(static_cast<UINT>(indexCount), static_cast<UINT>(instanceCount), 0, 0, 0);
 }

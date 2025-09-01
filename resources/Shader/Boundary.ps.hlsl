@@ -7,6 +7,7 @@ struct PSOutput {
 struct Hole {
 	float3 position;
 	float radius;
+	float aliveTime;
 };
 
 static const int kMaxHoles = 128;
@@ -29,7 +30,7 @@ PSOutput main(VertexShaderOutput input) {
 	float2 baseColorUV = input.texcoord * 1.0 + gTime.value * 0.05;
 	float baseColorValue = PerlinNoise(baseColorUV * 100);
 	
-	float2 highlightUV = input.texcoord * 3.0 - gTime.value * 0.2;
+	float2 highlightUV = input.texcoord.yx * 3.0 - gTime.value * 0.2;
 	float highlightValue = fbm(highlightUV * 100);
 	
 	float alpha = PerlinNoise(baseColorUV) * PerlinNoise(highlightUV);

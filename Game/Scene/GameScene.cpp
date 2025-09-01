@@ -14,6 +14,7 @@
 #include "ShadowMap/ShadowMap.h"
 
 #include "Pipeline/BoundaryPipeline.h"
+#include "Pipeline/BoundaryEdgePipeline.h"
 
 #include <imgui.h>
 
@@ -65,6 +66,11 @@ void GameScene::ModelDraw() {
 	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
 	boundaryPipeline->PreDraw(commandList);
 	boundaryPipeline->Draw(commandList, viewProjection_);
+
+	/// 境界の穴の境界を描画
+	BoundaryEdgePipeline* boundaryEdgePipeline = BoundaryEdgePipeline::GetInstance();
+	boundaryEdgePipeline->PreDraw(commandList);
+	boundaryEdgePipeline->Draw(commandList, viewProjection_);
 
 	/// オブジェクトの描画
 	Object3DPiprline::GetInstance()->PreDraw(commandList);

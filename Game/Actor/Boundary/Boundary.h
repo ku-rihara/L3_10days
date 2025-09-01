@@ -15,6 +15,7 @@
 struct Hole {
 	Vector3 position;
 	float radius;
+	float aliveTime = 0.0f; // 穴が空いてからの経過時間
 };
 
 struct BoundaryVertex {
@@ -29,6 +30,7 @@ struct BoundaryVertex {
 /// //////////////////////////////////////////////////////
 class Boundary : public BaseObject {
 	friend class BoundaryPipeline;
+	friend class BoundaryEdgePipeline;
 
 	Boundary();
 	~Boundary() = default;
@@ -44,6 +46,8 @@ public:
 	void Update() override;
 
 	void AddHole(const Vector3& pos, float radius);
+
+	const std::vector<Hole>& GetHoles() const;
 
 private:
 	/// ===================================================

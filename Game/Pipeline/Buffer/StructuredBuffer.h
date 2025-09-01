@@ -42,6 +42,8 @@ public:
 	void BindForComputeCommandList(UINT _rootParameterIndex, ID3D12GraphicsCommandList* _commandList);
 
 	void SetMappedData(size_t _index, const T& _setValue);
+	const T& GetMappedData(size_t _index) const;
+	T& GetMappedData(size_t _index);
 
 	ID3D12Resource* GetResource();
 
@@ -217,6 +219,16 @@ inline void StructuredBuffer<T>::SetMappedData(size_t _index, const T& _setValue
 }
 
 template<typename T>
+inline const T& StructuredBuffer<T>::GetMappedData(size_t _index) const {
+	return mappedDataArray_[_index];
+}
+
+template<typename T>
+inline T& StructuredBuffer<T>::GetMappedData(size_t _index) {
+	return mappedDataArray_[_index];
+}
+
+template<typename T>
 inline ID3D12Resource* StructuredBuffer<T>::GetResource() {
-	return bufferResource_;
+	return bufferResource_.Get();
 }

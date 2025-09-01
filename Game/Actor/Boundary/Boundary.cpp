@@ -35,7 +35,7 @@ void Boundary::Init() {
 	for (int i = 0; i < 128; i++) {
 		int x = i % 16;
 		int y = i / 16;
-		holeBuffer_.SetMappedData(i, { { (float)x * 100.0f - 75.0f, 0.0f, (float)y * 100.0f - 75.0f }, 32.0f });
+		AddHole({ (float)x * 100.0f - 75.0f, 0.0f, (float)y * 100.0f - 75.0f }, 32.0f);
 	}
 
 	transformBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
@@ -56,4 +56,8 @@ void Boundary::Update() {
 void Boundary::AddHole(const Vector3& pos, float radius) {
 	Hole hole = { pos, radius };
 	holes_.emplace_back(hole);
+}
+
+const std::vector<Hole>& Boundary::GetHoles() const {
+	return holes_;
 }

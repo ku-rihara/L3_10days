@@ -640,6 +640,7 @@
     </ClCompile>
     <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
     <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
+    <ClCompile Include="Game\Pipeline\BoundaryEdgePipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1092,6 +1093,7 @@
     <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\ConstantBuffer.h" />
+    <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
