@@ -14,16 +14,21 @@ public:
 
     // Move
     void Move();
+    void HandleInput(); // 入力処理
+    void UpdatePhysics(); // 物理更新
 
-    // カメラから向きを決める
     void DirectionToCamera();
 
     // editor
     void AdjustParam();
     void BindParams();
 
-private:
+    // ベクトル取得
+    Vector3 GetForwardVector() const; 
+    Vector3 GetRightVector() const;
+    Vector3 GetUpVector() const; 
 
+private:
     // viewProjection
     const ViewProjection* viewProjection_ = nullptr;
 
@@ -35,10 +40,26 @@ private:
     int32_t hp_;
     float speed_;
 
-    // direction
+    // 戦闘機用パラメータ
+    float forwardSpeed_;
+    float pitchSpeed_; 
+    float yawSpeed_; 
+    float rollSpeed_; 
+
+    // 物理パラメータ
+    Vector3 velocity_;
+    Vector3 angularVelocity_; 
+    Vector3 targetAngularVelocity_; 
+
     Vector3 direction_;
     float objectiveAngle_;
 
 public:
-   /* void SetViewProjection(const ViewProjection);*/
+    // ゲッター
+    Vector3 GetPosition() const { return baseTransform_.translation_; }
+    Vector3 GetRotation() const { return baseTransform_.rotation_; }
+    Vector3 GetVelocity() const { return velocity_; }
+    float GetSpeed() const { return velocity_.Length(); }
+
+      void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
 };
