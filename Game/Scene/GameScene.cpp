@@ -27,10 +27,12 @@ void GameScene::Init() {
     // 生成
     skuBox_ = std::make_unique<SkyBox>();
     player_ = std::make_unique<Player>();
-
+    enemyStation_ = std::make_unique<EnemyStation>();
+    
     // 初期化
     skuBox_->Init();
     player_->Init();
+    enemyStation_->Init();
 
     //ParticleViewSet
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -44,6 +46,7 @@ void GameScene::Update() {
 
     // class Update
     player_->Update();
+    enemyStation_->Update();
 
     // obj3Dies AllUpdate
     Object3DRegistry::GetInstance()->UpdateAll();
