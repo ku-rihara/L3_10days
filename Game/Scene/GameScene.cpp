@@ -34,6 +34,7 @@ void GameScene::Init() {
     skuBox_ = std::make_unique<SkyBox>();
     player_ = std::make_unique<Player>();   
     gameCamera_ = std::make_unique<GameCamera>();
+    testGround_ = std::make_unique<TestGround>();
 
 	// 初期化
 	enemyStation_->Init();
@@ -44,6 +45,7 @@ void GameScene::Init() {
     skuBox_->Init();
     player_->Init();
     gameCamera_->Init();
+    testGround_->Init();
 
 
 	boundary_ = Boundary::GetInstance();
@@ -74,6 +76,7 @@ void GameScene::Update() {
     gameCamera_->Update();
     player_->Update();
     skuBox_->Update();
+    testGround_->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();

@@ -6,6 +6,7 @@
 #include "BaseScene.h"
 #include "SkyBox/SkyBox.h"
 #include "Actor/Station/Enemy/EnemyStation.h"
+#include"DebugGround/TestGround.h"
 
 /// game
 #include "../Actor/Boundary/Boundary.h"
@@ -25,6 +26,10 @@ private:
 	/// game objects
 	Boundary* boundary_ = nullptr;
 
+    std::unique_ptr<SkyBox> skuBox_         = nullptr;
+    std::unique_ptr<Player> player_         = nullptr;
+    std::unique_ptr<GameCamera> gameCamera_ = nullptr;
+    std::unique_ptr<TestGround> testGround_ = nullptr;
 
 public:
 	///========================================================

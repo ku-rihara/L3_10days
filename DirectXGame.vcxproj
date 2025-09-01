@@ -131,6 +131,7 @@
     <ClCompile Include="Game\Actor\Station\Base\BaseStation.cpp" />
     <ClCompile Include="Game\Actor\Station\Enemy\EnemyStation.cpp" />
     <ClCompile Include="Game\BaseObject\BaseObject.cpp" />
+    <ClCompile Include="Game\DebugGround\TestGround.cpp" />
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp" />
     <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
     <ClCompile Include="Game\Scene\BaseScene.cpp" />
@@ -289,6 +290,7 @@
     <ClInclude Include="Game\Actor\Station\Base\BaseStation.h" />
     <ClInclude Include="Game\Actor\Station\Enemy\EnemyStation.h" />
     <ClInclude Include="Game\BaseObject\BaseObject.h" />
+    <ClInclude Include="Game\DebugGround\TestGround.h" />
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h" />
     <ClInclude Include="Game\Pipeline\Buffer\ConstantBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
