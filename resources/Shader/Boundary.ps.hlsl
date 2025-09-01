@@ -7,7 +7,8 @@ struct PSOutput {
 struct Hole {
 	float3 position;
 	float radius;
-	float aliveTime;
+	float startRadius;
+	float lifeTime;
 };
 
 static const int kMaxHoles = 128;

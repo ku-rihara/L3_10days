@@ -264,6 +264,13 @@ void BoundaryEdgePipeline::Draw(ID3D12GraphicsCommandList* _cmdList, const ViewP
 		/// 一個のHoleに対してholeElementCount_個 このICO球を描画する
 		for (size_t j = 0; j < holeElementCount_; j++) {
 			size_t index = i * holeElementCount_ + j;
+
+			/// maxHoleCount_を超えたら描画しない
+			if(index >= boundary->maxHoleCount_ * holeElementCount_){
+				continue;
+			}
+
+
 			const Hole& hole = boundary->GetHoles()[i];
 			float radian = (float)j / (holeElementCount_ / 2) * std::numbers::pi_v<float>;
 

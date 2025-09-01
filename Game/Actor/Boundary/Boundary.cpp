@@ -3,6 +3,7 @@
 /// engine
 #include "Dx/DirectXCommon.h"
 #include "Frame/Frame.h"
+#include "input/Input.h"
 
 Boundary* Boundary::GetInstance() {
 	static Boundary instance;
@@ -46,11 +47,23 @@ void Boundary::Init() {
 
 void Boundary::Update() {
 
+
+	/// debugように
+	if(Input::GetInstance()->TrrigerKey(DIK_P)) {
+		AddHole({}, 100.0f);
+	}
+
+
+
 	/// holeの更新
 	for (auto itr = holes_.begin(); itr != holes_.end(); ) {
-		itr->aliveTime += Frame::DeltaTime();
+		itr->lifeTime -= Frame::DeltaTime();
+		
+		float lerpT = itr->lifeTime / holeMaxLifeTime_;
+		itr->radius = itr->startRadius * std::clamp(lerpT, 0.0f, 1.0f);
+
 		/// 一定時間経過した穴は消す
-		if (itr->aliveTime > 5.0f) {
+		if (itr->lifeTime <= 0.0f) {
 			itr = holes_.erase(itr);
 		} else {
 			++itr;
@@ -60,8 +73,8 @@ void Boundary::Update() {
 
 	/// bufferに詰める
 	for (size_t i = 0; i < maxHoleCount_; i++) {
-		if(holes_.size() <= i){
-			Hole emptyHole = { {0,0,0}, 0.0f };
+		if (holes_.size() <= i) {
+			Hole emptyHole = { { 0, 0, 0 }, 0.0f };
 			holeBuffer_.SetMappedData(i, emptyHole);
 			continue;
 		}
@@ -75,7 +88,18 @@ void Boundary::Update() {
 }
 
 void Boundary::AddHole(const Vector3& pos, float radius) {
-	Hole hole = { pos, radius };
+	/// 超過してたら追加しない
+	if (holes_.size() >= maxHoleCount_) {
+		return;
+	}
+
+	Hole hole = {
+		.position = pos,
+		.radius = radius,
+		.startRadius = radius,
+		.lifeTime = holeMaxLifeTime_
+	};
+	
 	holes_.emplace_back(hole);
 }
 

@@ -15,7 +15,8 @@
 struct Hole {
 	Vector3 position;
 	float radius;
-	float aliveTime = 0.0f; // 穴が空いてからの経過時間
+	float startRadius = 0.0f; // 穴が空いたときの半径
+	float lifeTime = 0.0f; // 穴が空いてからの経過時間
 };
 
 struct BoundaryVertex {
@@ -56,6 +57,8 @@ private:
 
 	size_t maxHoleCount_ = 128;
 	std::vector<Hole> holes_;
+
+	float holeMaxLifeTime_ = 16.0f;
 
 	/// vbv, ibv
 	IndexBuffer indexBuffer_;
