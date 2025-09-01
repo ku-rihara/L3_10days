@@ -5,12 +5,16 @@
 #include "Actor/Player/Player.h"
 #include "BaseScene.h"
 #include "SkyBox/SkyBox.h"
+
+// game
+#include "Actor/Station/Base/BaseStation.h"
 #include "Actor/Station/Enemy/EnemyStation.h"
 #include"DebugGround/TestGround.h"
 
 /// game
 #include "../Actor/Boundary/Boundary.h"
 
+#include<map>
 
 class GameScene : public BaseScene {
 private:
@@ -22,13 +26,11 @@ private:
 	std::unique_ptr<Player> player_ = nullptr;
 	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
 	std::unique_ptr<EnemyStation> enemyStation_ = nullptr;
-    std::unique_ptr<TestGround> testGround_     = nullptr;
+  std::unique_ptr<TestGround> testGround_     = nullptr;
 	/// game objects
 	Boundary* boundary_ = nullptr;
 
-   
-
-
+	std::map<FactionType,std::unique_ptr<BaseStation>> stations_;
 public:
 	///========================================================
 	/// Constralt destract

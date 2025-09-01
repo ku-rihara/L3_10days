@@ -12,6 +12,9 @@
 #include "Animation/AnimationRegistry.h"
 #include "Pipeline/Object3DPiprline.h"
 #include "ShadowMap/ShadowMap.h"
+#include "Actor/Station/Enemy/EnemyStation.h"
+#include "Actor/Station/Player/PlayerStation.h"
+#include "Actor/Station/Installer/StationsInstaller.h"
 
 #include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryEdgePipeline.h"
@@ -26,21 +29,21 @@ void GameScene::Init() {
 	BaseScene::Init();
 
 	// 生成
+  //====================================生成===================================================
+  skuBox_       = std::make_unique<SkyBox>();
+  player_       = std::make_unique<Player>();
+  stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
+	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
+  gameCamera_   = std::make_unique<GameCamera>();
+  testGround_   = std::make_unique<TestGround>();
 	
-    //====================================生成===================================================
-    skuBox_       = std::make_unique<SkyBox>();
-    player_       = std::make_unique<Player>();
-    enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");
-    gameCamera_   = std::make_unique<GameCamera>();
-    testGround_   = std::make_unique<TestGround>();
-	
-   //====================================初期化===================================================
-    enemyStation_->Init();
-    skuBox_->Init();
-    player_->Init();
-    gameCamera_->Init();
-    testGround_->Init();
-
+  //====================================初期化===================================================
+  enemyStation_->Init();
+  skuBox_->Init();
+  player_->Init();
+  nstaller::InstallStations(stations_[FactionType::Ally],stations_[FactionType::Enemy]);
+  gameCamera_->Init();
+  testGround_->Init();
 
 	boundary_ = Boundary::GetInstance();
 	boundary_->Init();
@@ -66,6 +69,7 @@ void GameScene::Update() {
 	boundary_->Update();
     gameCamera_->Update();
     player_->Update();
+  for (auto& kv : stations_) { kv.second->Update(); }
     skuBox_->Update();
     testGround_->Update();
 
@@ -134,6 +138,7 @@ void GameScene::Debug() {
 
     ImGui::Begin("Object");
     player_->AdjustParam();
+  	for (auto& kv : stations_) { kv.second->ShowGui(); }
     gameCamera_->AdjustParam();
     ShadowMap::GetInstance()->DebugImGui();
     ImGui::End();

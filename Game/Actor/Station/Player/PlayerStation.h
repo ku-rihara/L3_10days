@@ -1,19 +1,19 @@
 #pragma once
 
-// game
 #include "../Base/BaseStation.h"
 
-class EnemyStation final : public BaseStation{
+class PlayerStation final : public BaseStation {
 public:
 	/// ===================================================
 	///  public func
 	/// ===================================================
-	EnemyStation();
-	EnemyStation(const std::string& name = "UnnamedStation");
-	virtual ~EnemyStation() override = default;
+	PlayerStation();
+	PlayerStation(const std::string& name = "UnnamedStation");
+	virtual ~PlayerStation() override = default;
 
 	void Init() override;
 	void Update() override;
 
 	void SpawnNPC()override;
 };
+

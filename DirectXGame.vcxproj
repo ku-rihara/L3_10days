@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryEdgePipeline.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
     <ClCompile Include="Game\Actor\Boundary\Boundary.cpp" />
@@ -130,6 +131,7 @@
     <ClCompile Include="Game\Actor\GameCamera\GameCamera.cpp" />
     <ClCompile Include="Game\Actor\Station\Base\BaseStation.cpp" />
     <ClCompile Include="Game\Actor\Station\Enemy\EnemyStation.cpp" />
+    <ClCompile Include="Game\Actor\Station\Installer\StationsInstaller.cpp" />
     <ClCompile Include="Game\BaseObject\BaseObject.cpp" />
     <ClCompile Include="Game\DebugGround\TestGround.cpp" />
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp" />
@@ -155,8 +157,11 @@
     <ClCompile Include="math\Vector4.cpp" />
     <ClCompile Include="Game\Actor\Player\Player.cpp" />
     <ClCompile Include="Game\Actor\NPC\NPC.cpp" />
+    <ClCompile Include="Game\Actor\Station\Player\PlayerStation.cpp" />
+    <ClCompile Include="Game\Actor\NPC\PlayerNPC.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
     <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
     <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
     <ClInclude Include="Game\Actor\Boundary\Boundary.h" />
@@ -288,8 +293,11 @@
     <ClInclude Include="Game\Actor\GameCamera\CameraRendition.h" />
     <ClInclude Include="Game\Actor\GameCamera\GameCamera.h" />
     <ClInclude Include="Game\Actor\Station\Base\BaseStation.h" />
+    <ClInclude Include="Game\Actor\Station\Detail\StationDetail.h" />
     <ClInclude Include="Game\Actor\Station\Enemy\EnemyStation.h" />
+    <ClInclude Include="Game\Actor\Station\Installer\StationsInstaller.h" />
     <ClInclude Include="Game\BaseObject\BaseObject.h" />
+    <ClInclude Include="Game\Details\Faction.h" />
     <ClInclude Include="Game\DebugGround\TestGround.h" />
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h" />
     <ClInclude Include="Game\Pipeline\Buffer\ConstantBuffer.h" />
@@ -318,6 +326,8 @@
     <ClInclude Include="math\Vector4.h" />
     <ClInclude Include="Game\Actor\Player\Player.h" />
     <ClInclude Include="Game\Actor\NPC\NPC.h" />
+    <ClInclude Include="Game\Actor\Station\Player\PlayerStation.h" />
+    <ClInclude Include="Game\Actor\NPC\PlayerNPC.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
