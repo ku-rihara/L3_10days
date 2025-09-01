@@ -27,14 +27,18 @@ void GameScene::Init() {
     // 生成
     skuBox_ = std::make_unique<SkyBox>();
     player_ = std::make_unique<Player>();
-    enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");
+  /*  enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");*/
     
+    skuBox_     = std::make_unique<SkyBox>();
+    player_     = std::make_unique<Player>();
+    gameCamera_ = std::make_unique<GameCamera>();
+
     // 初期化
     skuBox_->Init();
     player_->Init();
-    enemyStation_->Init();
+    gameCamera_->Init();
 
-    //ParticleViewSet
+    // ParticleViewSet
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
@@ -45,14 +49,13 @@ void GameScene::Update() {
     Debug();
 
     // class Update
+    gameCamera_->Update();
     player_->Update();
-    enemyStation_->Update();
 
     // obj3Dies AllUpdate
     Object3DRegistry::GetInstance()->UpdateAll();
     AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
 
- 
     // viewProjection 更新
     ViewProjectionUpdate();
 
@@ -61,7 +64,7 @@ void GameScene::Update() {
         SceneManager::GetInstance()->ChangeScene("TITLE");
     }
 
-    //Particle AllUpdate
+    // Particle AllUpdate
     ParticleManager::GetInstance()->Update();
 }
 
@@ -69,7 +72,7 @@ void GameScene::Update() {
 /// モデル描画
 /// ===================================================
 void GameScene::ModelDraw() {
-   
+
     ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
     Object3DPiprline::GetInstance()->PreDraw(commandList);
 
@@ -102,18 +105,19 @@ void GameScene::Debug() {
 #ifdef _DEBUG
 
     ImGui::Begin("Object");
-   
+    player_->AdjustParam();
     ShadowMap::GetInstance()->DebugImGui();
-
-    enemyStation_->ShowGui();
-
     ImGui::End();
- 
+
 #endif
 }
 
 // ビュープロジェクション更新
 void GameScene::ViewProjectionUpdate() {
+    viewProjection_.matView_       = gameCamera_->GetViewProjection().matView_;
+    viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
+    viewProjection_.cameraMatrix_  = gameCamera_->GetViewProjection().cameraMatrix_;
+    viewProjection_.rotation_      = gameCamera_->GetViewProjection().rotation_;
     BaseScene::ViewProjectionUpdate();
 }
 
