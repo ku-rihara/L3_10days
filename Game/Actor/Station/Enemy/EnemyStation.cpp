@@ -54,6 +54,7 @@ void EnemyStation::SpawnNPC() {
 	Vector3 spawnOffset = { 1.0f,1.0f,1.0f };
 	const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;
 	npc->SetWorldPosition(worldSpawn);
+	npc->SetTarget(GetRivalStation());
 
 	spawned_.push_back(std::move(npc));
 

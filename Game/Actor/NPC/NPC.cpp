@@ -1,5 +1,8 @@
 #include "NPC.h"
 
+#include "Actor/Station/Base/BaseStation.h"
+#include "Frame/Frame.h"
+
 /// ===================================================
 /// 初期化
 /// ===================================================
@@ -27,9 +30,27 @@ void NPC::Init() {
 }
 
 /// ===================================================
+/// 移動
+/// ===================================================
+void NPC::Move() {
+	//ターゲットがなければ何もしない
+	if (!target_)return;
+
+	Vector3 dir = (target_->GetWorldPosition() - GetWorldPosition()).Normalize();
+
+	float dt = Frame::DeltaTime();
+
+	//移動
+	baseTransform_.translation_ += dir * speed_ * dt;
+}
+
+/// ===================================================
 /// 更新
 /// ===================================================
-void NPC::Update() { BaseObject::Update(); }
+void NPC::Update() {
+	Move();
+	BaseObject::Update();
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //		パラメータ
@@ -51,6 +72,7 @@ void NPC::LoadData() {
 /// データ保存
 /// ===================================================
 void NPC::SaveData() { globalParam_->SaveFile(groupName_, fileDirectory_); }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //		accessor

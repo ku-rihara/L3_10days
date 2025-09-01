@@ -29,6 +29,9 @@ public:
 	virtual void LoadData();
 	virtual void SaveData();
 
+private:
+	void Move();
+
 protected:
 	/// ===================================================
 	///  protected variable
@@ -41,10 +44,13 @@ protected:
 
 	// パラメータ
 	float maxHP_ = 10;					//< 最大hp
-	bool isActive_;
+	float speed_ = 5.0f;				//< 移動速度
 
 protected:
 	 // ---- game ----
 	const BaseStation* target_;
 	FactionType faction_;
+
+	bool isActive_;
+	Vector3 Velocity_{};
 };
