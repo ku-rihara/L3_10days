@@ -6,7 +6,7 @@ void TestGround::Init() {
     // transform初期化
     baseTransform_.Init();
     obj3d_->transform_.parent_ = &baseTransform_;
-    baseTransform_.scale_      = {500, 500, 500};
+    baseTransform_.scale_      = {100, 100, 100};
 }
 
 void TestGround::Update() {
