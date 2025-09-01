@@ -652,6 +652,7 @@
     <ClCompile Include="Game\BaseObject\BaseObject.cpp">
       <Filter>Game\BaseObj</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Actor\Station\Station.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1104,6 +1105,7 @@
     <ClInclude Include="Game\BaseObject\BaseObject.h">
       <Filter>Game\BaseObj</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Actor\Station\Station.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
