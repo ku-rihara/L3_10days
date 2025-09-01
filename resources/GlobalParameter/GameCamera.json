@@ -1,0 +1,16 @@
+{
+    "GameCamera": {
+        "RotateOffsetX": 0.0,
+        "cameraDistance": 20.0,
+        "cameraHeight": 4.5,
+        "followDistance": 10.0,
+        "followHeight": 2.0,
+        "followSmoothness": 0.5299999713897705,
+        "offset": [
+            -0.30000001192092896,
+            1.5399999618530273,
+            -21.81999969482422
+        ],
+        "rotationSmoothness": 0.15000000596046448
+    }
+}

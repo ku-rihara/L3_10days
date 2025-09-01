@@ -8,22 +8,23 @@ SkyBox::SkyBox() {}
 SkyBox::~SkyBox() {}
 
 void SkyBox::Init() {
-    primitiveBox_ = std::make_unique<PrimitiveBox>();
-    primitiveBox_->Init();
-    primitiveBox_->SetTexture("Resources/Texture/output.dds");
+	primitiveBox_ = std::make_unique<PrimitiveBox>();
+	primitiveBox_->Init();
+	primitiveBox_->SetTexture("Resources/Texture/output.dds");
 	transform_.Init();
 
-	transform_.scale_ = {20, 20, 20};
+	transform_.scale_ = Vector3(1.0f, 1.0f, 1.0f) * 1500.0f;
+	transform_.UpdateMatrix();
 
 }
 
 void SkyBox::Update() {
-    
+
 	transform_.UpdateMatrix();
 }
 
 void SkyBox::Draw(ViewProjection& viewProjection) {
-    primitiveBox_->Draw(transform_, viewProjection);
+	primitiveBox_->Draw(transform_, viewProjection);
 }
 
 void SkyBox::Debug() {

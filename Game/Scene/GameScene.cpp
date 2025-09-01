@@ -16,10 +16,12 @@
 #include "Actor/Station/Player/PlayerStation.h"
 #include "Actor/Station/Installer/StationsInstaller.h"
 
+#include "Pipeline/BoundaryPipeline.h"
+#include "Pipeline/BoundaryEdgePipeline.h"
+
 #include <imgui.h>
 
 GameScene::GameScene() {}
-
 GameScene::~GameScene() {}
 
 void GameScene::Init() {
@@ -27,20 +29,33 @@ void GameScene::Init() {
 	BaseScene::Init();
 
 	// 生成
-	skuBox_ = std::make_unique<SkyBox>();
-	player_ = std::make_unique<Player>();
-	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
+  //====================================生成===================================================
+  skuBox_       = std::make_unique<SkyBox>();
+  player_       = std::make_unique<Player>();
+  stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
-	gameCamera_ = std::make_unique<GameCamera>();
+  gameCamera_   = std::make_unique<GameCamera>();
+  testGround_   = std::make_unique<TestGround>();
+	
+  //====================================初期化===================================================
+  enemyStation_->Init();
+  skuBox_->Init();
+  player_->Init();
+  nstaller::InstallStations(stations_[FactionType::Ally],stations_[FactionType::Enemy]);
+  gameCamera_->Init();
+  testGround_->Init();
 
-	// 初期化
-	skuBox_->Init();
-	player_->Init();
-	Installer::InstallStations(stations_[FactionType::Ally],stations_[FactionType::Enemy]);
-	gameCamera_->Init();
+	boundary_ = Boundary::GetInstance();
+	boundary_->Init();
 
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+   //====================================Class Set===================================================
+    player_->SetViewProjection(&viewProjection_);
+    gameCamera_->SetTarget(&player_->GetTransform());
+
+    // ParticleViewSet
+    ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
 void GameScene::Update() {
@@ -50,12 +65,15 @@ void GameScene::Update() {
 	Debug();
 
 	// class Update
-	gameCamera_->Update();
-	player_->Update();
+	enemyStation_->Update();
+	boundary_->Update();
+    gameCamera_->Update();
+    player_->Update();
+  for (auto& kv : stations_) { kv.second->Update(); }
+    skuBox_->Update();
+    testGround_->Update();
 
-	for (auto& kv : stations_) { kv.second->Update(); }
-
-	// obj3Dies AllUpdate
+	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
 	AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
 
@@ -77,11 +95,23 @@ void GameScene::Update() {
 void GameScene::ModelDraw() {
 
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
-	Object3DPiprline::GetInstance()->PreDraw(commandList);
 
-	// Model AllUpdate
+	/// オブジェクトの描画
+	Object3DPiprline::GetInstance()->PreDraw(commandList);
 	Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
 	ParticleManager::GetInstance()->Draw(viewProjection_);
+
+
+	/// 境界の描画
+	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
+	boundaryPipeline->PreDraw(commandList);
+	boundaryPipeline->Draw(commandList, viewProjection_);
+
+	/// 境界の穴の境界を描画
+	BoundaryEdgePipeline* boundaryEdgePipeline = BoundaryEdgePipeline::GetInstance();
+	boundaryEdgePipeline->PreDraw(commandList);
+	boundaryEdgePipeline->Draw(commandList, viewProjection_);
+
 }
 
 /// ===================================================
@@ -106,24 +136,25 @@ void GameScene::DrawShadow() {
 void GameScene::Debug() {
 #ifdef _DEBUG
 
-	ImGui::Begin("Object");
-	player_->AdjustParam();
-	for (auto& kv : stations_) { kv.second->ShowGui(); }
-	ShadowMap::GetInstance()->DebugImGui();
-	ImGui::End();
+    ImGui::Begin("Object");
+    player_->AdjustParam();
+  	for (auto& kv : stations_) { kv.second->ShowGui(); }
+    gameCamera_->AdjustParam();
+    ShadowMap::GetInstance()->DebugImGui();
+    ImGui::End();
 
 #endif
 }
 
 // ビュープロジェクション更新
 void GameScene::ViewProjectionUpdate() {
-	viewProjection_.matView_ = gameCamera_->GetViewProjection().matView_;
-	viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
-	viewProjection_.cameraMatrix_ = gameCamera_->GetViewProjection().cameraMatrix_;
-	viewProjection_.rotation_ = gameCamera_->GetViewProjection().rotation_;
 	BaseScene::ViewProjectionUpdate();
 }
 
 void GameScene::ViewProssess() {
-	viewProjection_.UpdateMatrix();
+    viewProjection_.matView_       = gameCamera_->GetViewProjection().matView_;
+    viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
+    viewProjection_.cameraMatrix_  = gameCamera_->GetViewProjection().cameraMatrix_;
+    viewProjection_.rotation_      = gameCamera_->GetViewProjection().rotation_;
+    viewProjection_.TransferMatrix();
 }

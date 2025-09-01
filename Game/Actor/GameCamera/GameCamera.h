@@ -6,41 +6,17 @@
 #include <memory>
 
 class GameCamera {
-private:
-    /// ===================================================
-    /// private variable
-    /// ===================================================
-
-    GlobalParameter* globalParameter_;
-    const std::string groupName_ = "GameCamera";
-
-    ViewProjection viewProjection_;
-
-    /// 演出管理クラス
-    std::unique_ptr<CameraRendition> rendition_; 
-
-    const WorldTransform* target_ = nullptr; 
-    Vector3 stickInput_;
-    Vector3 interTarget_ = {};
-    float destinationAngleY_; 
-    int viewMoveTime_;
-
-    Vector3 shakeOffsetPos_;
-    float rotate_; 
-
-    // オフセット
-    Vector3 offset_;
-    float baseRotateOffsetX_;
 
 public:
+    GameCamera()  = default;
+    ~GameCamera() = default;
     /// ===================================================
     /// public method
     /// ===================================================
-    void Init(); /// 初期化
-    void Update(); /// 更新
-    void MoveUpdate(); /// カメラ移動更新
-    void Reset(); /// リセット
-    void GetIsCameraMove(); /// カメラ動いているか判定
+    void Init();
+    void Update();
+    void Reset();
+    void GetIsCameraMove();
 
     void Debug();
 
@@ -59,6 +35,37 @@ public:
     void BindParams();
     void AdjustParam();
 
+
+private:
+    /// ===================================================
+    /// private variable
+    /// ===================================================
+
+    GlobalParameter* globalParameter_;
+    const std::string groupName_ = "GameCamera";
+
+    ViewProjection viewProjection_;
+
+    /// 演出管理クラス
+    std::unique_ptr<CameraRendition> rendition_;
+
+    const WorldTransform* target_ = nullptr;
+    Vector3 stickInput_;
+    Vector3 interTarget_ = {};
+    float destinationAngleY_;
+    int viewMoveTime_;
+
+    Vector3 shakeOffsetPos_;
+    float rotate_;
+
+    // オフセット
+    Vector3 offset_;
+    float baseRotateOffsetX_;
+
+    Vector3 cameraOffset_; 
+    Vector3 rotationOffset_;
+    float smoothness_; 
+    public:
     /// ===================================================
     /// getter
     /// ===================================================
@@ -77,4 +84,5 @@ public:
     void SetShakePosY(const float& shake) { shakeOffsetPos_.y = shake; }
     void SetDestinationAngleY_(float angle) { destinationAngleY_ = angle; }
     void SetViewProjectionPos(Vector3 pos) { viewProjection_.translation_ = pos; }
+  
 };

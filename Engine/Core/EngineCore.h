@@ -8,6 +8,7 @@ class ImGuiManager;
 class TextureManager;
 class SpritePipeline;
 class Object3DPiprline;
+class BoundaryPipeline;
 class ModelManager;
 class ParticlePipeline;
 class SrvManager;
@@ -62,6 +63,7 @@ public:
      TextureManager* textureManager_;
      SpritePipeline* SpritePipeline_;
      Object3DPiprline* Object3DPiprline_;
+	 BoundaryPipeline* BoundaryPipeline_;
      ModelManager* modelManager_;
      ParticlePipeline* ParticlePipeline_;
      SrvManager* srvManager_;

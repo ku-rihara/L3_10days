@@ -12,6 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
+    <ClCompile Include="Game\Pipeline\BoundaryEdgePipeline.cpp" />
+    <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
     <ClCompile Include="Game\Actor\Boundary\Boundary.cpp" />
     <ClCompile Include="Engine\2d\ImGuiManager.cpp" />
     <ClCompile Include="Engine\2d\Sprite.cpp" />
@@ -131,7 +133,9 @@
     <ClCompile Include="Game\Actor\Station\Enemy\EnemyStation.cpp" />
     <ClCompile Include="Game\Actor\Station\Installer\StationsInstaller.cpp" />
     <ClCompile Include="Game\BaseObject\BaseObject.cpp" />
+    <ClCompile Include="Game\DebugGround\TestGround.cpp" />
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp" />
+    <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
     <ClCompile Include="Game\Scene\BaseScene.cpp" />
     <ClCompile Include="Game\Scene\EditorScene.cpp" />
     <ClCompile Include="Game\Scene\Factory\SceneFactory.cpp" />
@@ -158,6 +162,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
+    <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
+    <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
     <ClInclude Include="Game\Actor\Boundary\Boundary.h" />
     <ClInclude Include="Engine\2d\ImGuiManager.h" />
     <ClInclude Include="Engine\2d\Sprite.h" />
@@ -292,7 +298,12 @@
     <ClInclude Include="Game\Actor\Station\Installer\StationsInstaller.h" />
     <ClInclude Include="Game\BaseObject\BaseObject.h" />
     <ClInclude Include="Game\Details\Faction.h" />
+    <ClInclude Include="Game\DebugGround\TestGround.h" />
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\ConstantBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\StructuredBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
     <ClInclude Include="Game\Scene\BaseScene.h" />
     <ClInclude Include="Game\Scene\EditorScene.h" />
     <ClInclude Include="Game\Scene\Factory\AbstractSceneFactory.h" />

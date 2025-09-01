@@ -1,4 +1,5 @@
 #pragma once
+#include "Matrix4x4.h"
 class Vector3;
 class Quaternion {
 public:
@@ -24,6 +25,7 @@ public:
     static Quaternion Lerp(const Quaternion& start, const Quaternion& end, const float& t);
     static Quaternion Slerp(const Quaternion& start, Quaternion end, const float& t);
     static Quaternion EulerToQuaternion(const Vector3& Euler);
+    static Quaternion LookAt(const Vector3& eye, const Vector3& target, const Vector3& up);
 
     // 共役Quaternionを返す
     Quaternion Conjugate() const;
@@ -39,4 +41,11 @@ public:
 
     Vector3 RotateVector(const Vector3& vector);
 
+    float GetRollFromQuaternion();
+
+    Vector3 GetForwardVector() const;
+
+    Matrix4x4 ToMatrix4x4() const;
+
+    Vector3 ToEuler() const;
 };

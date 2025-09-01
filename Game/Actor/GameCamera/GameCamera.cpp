@@ -13,77 +13,38 @@
 void GameCamera::Init() {
     viewProjection_.Init();
 
-    ///* グローバルパラメータ
     globalParameter_ = GlobalParameter::GetInstance();
     globalParameter_->CreateGroup(groupName_, false);
     BindParams();
     globalParameter_->SyncParamForGroup(groupName_);
 
-    rotate_ = baseRotateOffsetX_;
-    offset_ = offset_;
-
     rendition_ = std::make_unique<CameraRendition>();
     rendition_->Init();
     rendition_->SetGameCamera(this);
     rendition_->SetViewProjection(&viewProjection_);
+
+    cameraOffset_   = Vector3(0.0f, 2.0f, -10.0f);
+    rotationOffset_ = Vector3(0.0f, 0.0f, 0.0f);
+    smoothness_     = 0.1f;
 }
 
 void GameCamera::Update() {
-  
     rendition_->Update();
     shakeOffsetPos_ = rendition_->GetShakeOffset();
 
-    // カメラの基本移動処理
-    MoveUpdate();
+    if (target_) {
+        // 目標のローカルオフセット位置
+        Vector3 targetLocalPos = cameraOffset_ + shakeOffsetPos_;
+        Vector3 targetLocalRot = rotationOffset_;
 
-    // ビュー行列の更新
+        // 補間でスムーズに移動
+        viewProjection_.translation_ = Lerp(viewProjection_.translation_, targetLocalPos, smoothness_);
+        viewProjection_.rotation_.x  = LerpShortAngle(viewProjection_.rotation_.x, targetLocalRot.x, smoothness_);
+        viewProjection_.rotation_.y  = LerpShortAngle(viewProjection_.rotation_.y, targetLocalRot.y, smoothness_);
+        viewProjection_.rotation_.z  = LerpShortAngle(viewProjection_.rotation_.z, targetLocalRot.z, smoothness_);
+    }
+
     viewProjection_.UpdateMatrix();
-}
-
-void GameCamera::MoveUpdate() {
-    ///============================================================
-    // 入力処理
-    ///============================================================
-    Input* input            = Input::GetInstance();
-    const float rotateSpeed = 0.08f;
-    Vector2 stickInput      = {0.0f, 0.0f}; 
-
-    // ================================= keyBord ================================= //
-    if (input->PushKey(DIK_RIGHT) || input->PushKey(DIK_LEFT)) {
-
-        if (input->PushKey(DIK_RIGHT)) { // 右回転
-            stickInput.x = 1.0f;
-
-        } else if (input->PushKey(DIK_LEFT)) { // 左回転
-            stickInput.x = -1.0f;
-        }
-
-    } else {
-        // ================================= GamePad ================================= //
-        stickInput = Input::GetPadStick(0, 1); // 右スティックの入力を取得
-    }
-
-    ///============================================================
-    // 入力に対する回転処理
-    ///============================================================
-    if (stickInput.Length() > 0.1f) {
-        stickInput = stickInput.Normalize();
-        destinationAngleY_ += stickInput.x * rotateSpeed;
-    }
-
-    // reset
-    if (input->TrrigerKey(DIK_R) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_RIGHT_THUMB)) {
-        Reset();
-    }
-
-    // Y軸の回転補間処理
-    viewProjection_.rotation_.y = LerpShortAngle(viewProjection_.rotation_.y, destinationAngleY_, 0.3f);
-
-    ///============================================================
-    // 回転、変位の適応
-    ///============================================================
-    TranslateAdapt(); // 変位適応
-    RotateAdapt();    // 回転適応
 }
 
 void GameCamera::RotateAdapt() {
@@ -107,10 +68,12 @@ void GameCamera::Reset() {
     // 追従対象がいれば
     if (target_) {
         // 追従座標・角度の初期化
-        interTarget_                = target_->translation_;
+        interTarget_ = target_->translation_;
+
         viewProjection_.rotation_.y = LerpShortAngle(viewProjection_.rotation_.y, target_->rotation_.y, 0.3f);
     }
     destinationAngleY_ = viewProjection_.rotation_.y;
+
     // 追従対象からのオフセット
     Vector3 offset               = OffsetCalc(offset_);
     viewProjection_.translation_ = interTarget_ + offset;
@@ -128,23 +91,45 @@ void GameCamera::BindParams() {
     globalParameter_->Bind(groupName_, "offset", &offset_);
 }
 
+void GameCamera::SetTarget(const WorldTransform* target) {
+    target_ = target;
+
+       // ViewProjectionの親を設定
+        viewProjection_.SetParent(target);
+
+        // 初期位置をリセット
+        viewProjection_.translation_ = cameraOffset_;
+        viewProjection_.rotation_    = rotationOffset_;
+    
+
+    Reset();
+}
+
 void GameCamera::AdjustParam() {
 #ifdef _DEBUG
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
         ImGui::PushID(groupName_.c_str());
 
-        /// 変数の調整
-        ImGui::SliderAngle("RotateOffsetX", &baseRotateOffsetX_, 0, 1000);
-        ImGui::DragFloat3("firstOffset", &offset_.x, 0.01f);
+        ImGui::Separator();
+        ImGui::Text("Parent Camera Settings");
+        ImGui::DragFloat3("Camera Offset", &cameraOffset_.x, 0.1f);
+        ImGui::DragFloat3("Rotation Offset", &rotationOffset_.x, 0.01f);
+        ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
 
-        /// セーブとロード
+  
+        if (ImGui::Button("Apply Offset")) {
+            if (target_) {
+                viewProjection_.translation_ = cameraOffset_;
+                viewProjection_.rotation_    = rotationOffset_;
+            }
+        }
+
         globalParameter_->ParamSaveForImGui(groupName_);
         globalParameter_->ParamLoadForImGui(groupName_);
 
-       
         ImGui::PopID();
     }
-#endif // _DEBUG
+#endif
 }
 
 // ================================= その他のメソッド ================================= //
@@ -156,33 +141,23 @@ void GameCamera::GetIsCameraMove() {
 }
 
 Vector3 GameCamera::GetWorldPos() const {
-    Vector3 worldPos;
-    // ワールド行列の平行移動成分を取得
-    worldPos.x = viewProjection_.matView_.m[3][0];
-    worldPos.y = viewProjection_.matView_.m[3][1];
-    worldPos.z = viewProjection_.matView_.m[3][2];
-
-    return worldPos;
+    return viewProjection_.GetWorldPos();
 }
 
 Vector3 GameCamera::GetTargetPos() const {
     return Vector3();
 }
 
-void GameCamera::SetTarget(const WorldTransform* target) {
-    target_ = target;
-    Reset();
-}
-
 void GameCamera::Debug() {
+
     ImGui::DragFloat("rotate", &baseRotateOffsetX_, 0.01f);
     ImGui::DragFloat3("offset", &offset_.x, 0.1f);
-
 }
 
 void GameCamera::PlayAnimation(const std::string& filename) {
     rendition_->AnimationPlay(filename);
- }
+}
+
 void GameCamera::PlayShake(const std::string& filename) {
-     rendition_->ShakePlay(filename);   
- }
+    rendition_->ShakePlay(filename);
+}
