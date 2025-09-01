@@ -9,10 +9,7 @@ Boundary* Boundary::GetInstance() {
 	return &instance;
 }
 
-Boundary::Boundary() {}
-
-void Boundary::Init() {
-	baseTransform_.Init();
+Boundary::Boundary() {
 
 
 	indexBuffer_.Create(6, DirectXCommon::GetInstance()->GetDxDevice());
@@ -30,9 +27,9 @@ void Boundary::Init() {
 	indexBuffer_.Map();
 
 	/// buffer init
-	holeBuffer_.Create(128, DirectXCommon::GetInstance()->GetDxDevice());
+	holeBuffer_.Create(static_cast<uint32_t>(maxHoleCount_), DirectXCommon::GetInstance()->GetDxDevice());
 
-	for (int i = 0; i < 128; i++) {
+	for (int i = 0; i < maxHoleCount_; i++) {
 		int x = i % 16;
 		int y = i / 16;
 		AddHole({ (float)x * 100.0f - 75.0f, 0.0f, (float)y * 100.0f - 75.0f }, 32.0f);
@@ -43,8 +40,32 @@ void Boundary::Init() {
 	timeBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 }
 
+void Boundary::Init() {
+	baseTransform_.Init();
+}
+
 void Boundary::Update() {
-	for (size_t i = 0; i < holes_.size(); i++) {
+
+	/// holeの更新
+	for (auto itr = holes_.begin(); itr != holes_.end(); ) {
+		itr->aliveTime += Frame::DeltaTime();
+		/// 一定時間経過した穴は消す
+		if (itr->aliveTime > 5.0f) {
+			itr = holes_.erase(itr);
+		} else {
+			++itr;
+		}
+	}
+
+
+	/// bufferに詰める
+	for (size_t i = 0; i < maxHoleCount_; i++) {
+		if(holes_.size() <= i){
+			Hole emptyHole = { {0,0,0}, 0.0f };
+			holeBuffer_.SetMappedData(i, emptyHole);
+			continue;
+		}
+
 		holeBuffer_.SetMappedData(i, holes_[i]);
 	}
 

@@ -54,6 +54,7 @@ private:
 	/// private : objects
 	/// ===================================================
 
+	size_t maxHoleCount_ = 128;
 	std::vector<Hole> holes_;
 
 	/// vbv, ibv
