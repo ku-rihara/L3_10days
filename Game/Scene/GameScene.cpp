@@ -24,19 +24,18 @@ void GameScene::Init() {
 
     BaseScene::Init();
 
-    // 生成
+    //====================================生成===================================================
     skuBox_ = std::make_unique<SkyBox>();
-    player_ = std::make_unique<Player>();
-  /*  enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");*/
-    
-    skuBox_     = std::make_unique<SkyBox>();
-    player_     = std::make_unique<Player>();
+    player_ = std::make_unique<Player>();   
     gameCamera_ = std::make_unique<GameCamera>();
 
-    // 初期化
+   //====================================初期化===================================================
     skuBox_->Init();
     player_->Init();
     gameCamera_->Init();
+
+   //====================================Class Set===================================================
+   /* player_->setview*/
 
     // ParticleViewSet
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -106,6 +105,7 @@ void GameScene::Debug() {
 
     ImGui::Begin("Object");
     player_->AdjustParam();
+    gameCamera_->AdjustParam();
     ShadowMap::GetInstance()->DebugImGui();
     ImGui::End();
 
