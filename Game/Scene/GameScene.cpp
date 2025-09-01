@@ -23,8 +23,16 @@ GameScene::~GameScene() {
 void GameScene::Init() {
 
     BaseScene::Init();
+
+    // 生成
     skuBox_ = std::make_unique<SkyBox>();
+    player_ = std::make_unique<Player>();
+
+    // 初期化
     skuBox_->Init();
+    player_->Init();
+
+    //ParticleViewSet
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
@@ -34,17 +42,23 @@ void GameScene::Update() {
     debugCamera_->Update();
     Debug();
 
+    // class Update
+    player_->Update();
+
+    // obj3Dies AllUpdate
     Object3DRegistry::GetInstance()->UpdateAll();
     AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
 
-  
+ 
     // viewProjection 更新
     ViewProjectionUpdate();
 
+    // Scene Change
     if (input_->TrrigerKey(DIK_RETURN)) {
         SceneManager::GetInstance()->ChangeScene("TITLE");
     }
 
+    //Particle AllUpdate
     ParticleManager::GetInstance()->Update();
 }
 
@@ -56,7 +70,7 @@ void GameScene::ModelDraw() {
     ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
     Object3DPiprline::GetInstance()->PreDraw(commandList);
 
-
+    // Model AllUpdate
     Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
     ParticleManager::GetInstance()->Draw(viewProjection_);
 }
