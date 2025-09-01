@@ -5,6 +5,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 
+
 // 定数バッファ用データ構造体
 struct ConstBufferDataViewProjection {
     Matrix4x4 view; 
@@ -12,6 +13,7 @@ struct ConstBufferDataViewProjection {
     Vector3 cameraPos; 
 };
 
+class WorldTransform;
 class ViewProjection {
 public:
     enum class ProjectionType {
@@ -37,6 +39,13 @@ public:
     void UpdateViewMatrix();
     /// 射影行列を更新する
     void UpdateProjectionMatrix();
+    // ペアレント設定
+    void SetParent(const WorldTransform* parent) { parent_ = parent; }
+    void ClearParent() { parent_ = nullptr; }
+
+
+private:
+    const WorldTransform* parent_ = nullptr;
 
 public:
     // S,R,T

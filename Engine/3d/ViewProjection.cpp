@@ -1,6 +1,7 @@
 #include "ViewProjection.h"
 #include "Dx/DirectXCommon.h"
 #include "MathFunction.h"
+#include"WorldTransform.h"
 #include <cassert>
 void ViewProjection::Init() {
 
@@ -62,21 +63,39 @@ void ViewProjection::UpdateMatrix() {
 
 void ViewProjection::UpdateViewMatrix() {
     Matrix4x4 rotateMatrix;
+    Matrix4x4 translateMatrix;
 
-    // 最終的な回転値を取得
-    Vector3 finalRotation = GetFinalRotation();
-    rotateMatrix          = MakeRotateMatrix(finalRotation);
+    // ペアレントがある場合
+    if (parent_) {
+        // 親の変換行列を適用
+        Matrix4x4 parentMatrix = parent_->matWorld_;
 
-    // positionOffset_をカメラの回転に合わせて変換
-    Vector3 transformedPositionOffset = TransformNormal(positionOffset_, rotateMatrix);
+        // カメラのローカル変換を計算
+        Vector3 finalRotation = GetFinalRotation();
+        rotateMatrix          = MakeRotateMatrix(finalRotation);
 
-    // 最終的な位置を計算
-    Vector3 finalPosition     = translation_ + transformedPositionOffset;
-    Matrix4x4 translateMatrix = MakeTranslateMatrix(finalPosition);
+        // positionOffset_をローカルオフセットとして使用
+        Vector3 localOffset            = positionOffset_;
+        Matrix4x4 localTranslateMatrix = MakeTranslateMatrix(localOffset);
 
-    // カメラ行列を作成
-    cameraMatrix_ = rotateMatrix * translateMatrix;
-    // 最終的なビュー行列の設定
+        // ローカル変換を親の座標系で適用
+        Matrix4x4 localCameraMatrix = rotateMatrix * localTranslateMatrix;
+
+        // 親の変換を適用
+        cameraMatrix_ = localCameraMatrix * parentMatrix;
+    } else {
+        // 従来の処理（ペアレントなし）
+        Vector3 finalRotation = GetFinalRotation();
+        rotateMatrix          = MakeRotateMatrix(finalRotation);
+
+        Vector3 transformedPositionOffset = TransformNormal(positionOffset_, rotateMatrix);
+        Vector3 finalPosition             = translation_ + transformedPositionOffset;
+        translateMatrix                   = MakeTranslateMatrix(finalPosition);
+
+        cameraMatrix_ = rotateMatrix * translateMatrix;
+    }
+
+    // ビュー行列は変換行列の逆行列
     matView_ = Inverse(cameraMatrix_);
 }
 
