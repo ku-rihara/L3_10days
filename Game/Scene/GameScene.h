@@ -8,7 +8,6 @@
 
 // game
 #include "Actor/Station/Base/BaseStation.h"
-#include "Actor/Station/Enemy/EnemyStation.h"
 #include"DebugGround/TestGround.h"
 
 /// game
@@ -25,8 +24,7 @@ private:
 	std::unique_ptr<SkyBox> skuBox_ = nullptr;
 	std::unique_ptr<Player> player_ = nullptr;
 	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
-	std::unique_ptr<EnemyStation> enemyStation_ = nullptr;
-  std::unique_ptr<TestGround> testGround_     = nullptr;
+	 std::unique_ptr<TestGround> testGround_     = nullptr;
 	/// game objects
 	Boundary* boundary_ = nullptr;
 

@@ -29,21 +29,20 @@ void GameScene::Init() {
 	BaseScene::Init();
 
 	// 生成
-  //====================================生成===================================================
-  skuBox_       = std::make_unique<SkyBox>();
-  player_       = std::make_unique<Player>();
-  stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
+	//====================================生成===================================================
+	skuBox_ = std::make_unique<SkyBox>();
+	player_ = std::make_unique<Player>();
+	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
-  gameCamera_   = std::make_unique<GameCamera>();
-  testGround_   = std::make_unique<TestGround>();
-	
-  //====================================初期化===================================================
-  enemyStation_->Init();
-  skuBox_->Init();
-  player_->Init();
-  nstaller::InstallStations(stations_[FactionType::Ally],stations_[FactionType::Enemy]);
-  gameCamera_->Init();
-  testGround_->Init();
+	gameCamera_ = std::make_unique<GameCamera>();
+	testGround_ = std::make_unique<TestGround>();
+
+	//====================================初期化===================================================
+	skuBox_->Init();
+	player_->Init();
+	Installer::InstallStations(stations_[FactionType::Ally], stations_[FactionType::Enemy]);
+	gameCamera_->Init();
+	testGround_->Init();
 
 	boundary_ = Boundary::GetInstance();
 	boundary_->Init();
@@ -51,11 +50,11 @@ void GameScene::Init() {
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
    //====================================Class Set===================================================
-    player_->SetViewProjection(&viewProjection_);
-    gameCamera_->SetTarget(&player_->GetTransform());
+	player_->SetViewProjection(&viewProjection_);
+	gameCamera_->SetTarget(&player_->GetTransform());
 
-    // ParticleViewSet
-    ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+	// ParticleViewSet
+	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
 void GameScene::Update() {
@@ -65,13 +64,12 @@ void GameScene::Update() {
 	Debug();
 
 	// class Update
-	enemyStation_->Update();
 	boundary_->Update();
-    gameCamera_->Update();
-    player_->Update();
-  for (auto& kv : stations_) { kv.second->Update(); }
-    skuBox_->Update();
-    testGround_->Update();
+	gameCamera_->Update();
+	player_->Update();
+	for (auto& kv : stations_) { kv.second->Update(); }
+	skuBox_->Update();
+	testGround_->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
@@ -136,12 +134,12 @@ void GameScene::DrawShadow() {
 void GameScene::Debug() {
 #ifdef _DEBUG
 
-    ImGui::Begin("Object");
-    player_->AdjustParam();
-  	for (auto& kv : stations_) { kv.second->ShowGui(); }
-    gameCamera_->AdjustParam();
-    ShadowMap::GetInstance()->DebugImGui();
-    ImGui::End();
+	ImGui::Begin("Object");
+	player_->AdjustParam();
+	for (auto& kv : stations_) { kv.second->ShowGui(); }
+	gameCamera_->AdjustParam();
+	ShadowMap::GetInstance()->DebugImGui();
+	ImGui::End();
 
 #endif
 }
@@ -152,9 +150,9 @@ void GameScene::ViewProjectionUpdate() {
 }
 
 void GameScene::ViewProssess() {
-    viewProjection_.matView_       = gameCamera_->GetViewProjection().matView_;
-    viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
-    viewProjection_.cameraMatrix_  = gameCamera_->GetViewProjection().cameraMatrix_;
-    viewProjection_.rotation_      = gameCamera_->GetViewProjection().rotation_;
-    viewProjection_.TransferMatrix();
+	viewProjection_.matView_ = gameCamera_->GetViewProjection().matView_;
+	viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
+	viewProjection_.cameraMatrix_ = gameCamera_->GetViewProjection().cameraMatrix_;
+	viewProjection_.rotation_ = gameCamera_->GetViewProjection().rotation_;
+	viewProjection_.TransferMatrix();
 }
