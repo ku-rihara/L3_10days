@@ -101,9 +101,8 @@ void GameScene::Debug() {
 #ifdef _DEBUG
 
     ImGui::Begin("Object");
-
+    player_->AdjustParam();
     ShadowMap::GetInstance()->DebugImGui();
-
     ImGui::End();
 
 #endif
