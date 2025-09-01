@@ -105,7 +105,6 @@ void GameCamera::SetTarget(const WorldTransform* target) {
     Reset();
 }
 
-// デバッグ用パラメータ調整
 void GameCamera::AdjustParam() {
 #ifdef _DEBUG
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
@@ -117,7 +116,7 @@ void GameCamera::AdjustParam() {
         ImGui::DragFloat3("Rotation Offset", &rotationOffset_.x, 0.01f);
         ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
 
-        // リアルタイム調整
+  
         if (ImGui::Button("Apply Offset")) {
             if (target_) {
                 viewProjection_.translation_ = cameraOffset_;
