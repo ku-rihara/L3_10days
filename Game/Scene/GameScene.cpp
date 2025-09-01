@@ -70,6 +70,10 @@ void GameScene::Update() {
 	player_->Update();
 	enemyStation_->Update();
 	boundary_->Update();
+    // class Update
+    gameCamera_->Update();
+    player_->Update();
+    skuBox_->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();

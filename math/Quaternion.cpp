@@ -149,3 +149,10 @@ Quaternion Quaternion::EulerToQuaternion(const Vector3& Euler) {
 
     return result;
 }
+
+float Quaternion::GetRollFromQuaternion() {
+    // クォータニオンからオイラー角のロール成分を抽出
+    float sinR_cosp = 2 * (w * x + y * z);
+    float cosR_cosp = 1 - 2 * (x * x + y * y);
+    return std::atan2(sinR_cosp, cosR_cosp);
+}

@@ -1,6 +1,10 @@
 {
     "Player": {
+        "forwardSpeed": 1.0,
         "hp": 51,
-        "speed": 2.630000114440918
+        "pitchSpeed": 1000.0,
+        "rollSpeed": 1000.0,
+        "speed": 2.630000114440918,
+        "yawSpeed": 1000.0
     }
 }
