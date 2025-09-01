@@ -1,13 +1,13 @@
-#include "EnemyStation.h"
+#include "PlayerStation.h"
 
-#include "Actor/NPC/EnemyNPC.h"
+#include "Actor/NPC/PlayerNPC.h"
 #include "Frame/Frame.h"
 
 #include "imgui.h"
 
-EnemyStation::EnemyStation() { BaseStation::SetFaction(FactionType::Enemy); }
+PlayerStation::PlayerStation() { BaseStation::SetFaction(FactionType::Enemy); }
 
-EnemyStation::EnemyStation(const std::string& name) :
+PlayerStation::PlayerStation(const std::string& name) :
 	BaseStation(name) {
 	BaseStation::SetFaction(FactionType::Enemy);
 }
@@ -15,7 +15,7 @@ EnemyStation::EnemyStation(const std::string& name) :
 /// ===================================================
 /// 初期化
 /// ===================================================
-void EnemyStation::Init() {
+void PlayerStation::Init() {
 	BaseStation::Init();
 
 }
@@ -23,7 +23,7 @@ void EnemyStation::Init() {
 /// ===================================================
 /// 更新
 /// ===================================================
-void EnemyStation::Update() {
+void PlayerStation::Update() {
 	float dt = Frame::DeltaTime();
 	//スポーン
 	currentTime_ += dt;
@@ -31,7 +31,7 @@ void EnemyStation::Update() {
 		SpawnNPC();
 	}
 
-	for (auto& enemy:spawned_) {
+	for (auto& enemy : spawned_) {
 		enemy->Update();
 	}
 
@@ -41,7 +41,7 @@ void EnemyStation::Update() {
 /// ===================================================
 /// npcのスポーン
 /// ===================================================
-void EnemyStation::SpawnNPC() {
+void PlayerStation::SpawnNPC() {
 	//auto rival = GetRivalStation();
 	//if (!rival)return;
 
@@ -49,7 +49,7 @@ void EnemyStation::SpawnNPC() {
 	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_)return;
 
 	//1体スポーン
-	auto npc = std::make_unique<EnemyNPC>();
+	auto npc = std::make_unique<PlayerNPC>();
 	npc->Init();
 	Vector3 spawnOffset = { 1.0f,1.0f,1.0f };
 	const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;

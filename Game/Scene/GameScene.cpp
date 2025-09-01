@@ -12,6 +12,9 @@
 #include "Animation/AnimationRegistry.h"
 #include "Pipeline/Object3DPiprline.h"
 #include "ShadowMap/ShadowMap.h"
+#include "Actor/Station/Enemy/EnemyStation.h"
+#include "Actor/Station/Player/PlayerStation.h"
+#include "Actor/Station/Installer/StationsInstaller.h"
 
 #include <imgui.h>
 
@@ -26,13 +29,14 @@ void GameScene::Init() {
 	// 生成
 	skuBox_ = std::make_unique<SkyBox>();
 	player_ = std::make_unique<Player>();
-    enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");
+	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
+	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
 	gameCamera_ = std::make_unique<GameCamera>();
 
 	// 初期化
 	skuBox_->Init();
 	player_->Init();
-	enemyStation_->Init();
+	Installer::InstallStations(stations_[FactionType::Ally],stations_[FactionType::Enemy]);
 	gameCamera_->Init();
 
 	// ParticleViewSet
@@ -48,7 +52,8 @@ void GameScene::Update() {
 	// class Update
 	gameCamera_->Update();
 	player_->Update();
-	enemyStation_->Update();
+
+	for (auto& kv : stations_) { kv.second->Update(); }
 
 	// obj3Dies AllUpdate
 	Object3DRegistry::GetInstance()->UpdateAll();
@@ -103,7 +108,7 @@ void GameScene::Debug() {
 
 	ImGui::Begin("Object");
 	player_->AdjustParam();
-	enemyStation_->ShowGui();
+	for (auto& kv : stations_) { kv.second->ShowGui(); }
 	ShadowMap::GetInstance()->DebugImGui();
 	ImGui::End();
 

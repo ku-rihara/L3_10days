@@ -28,12 +28,14 @@ public:
 	virtual void SaveData();
 
 	// ---- accessor ----
+	void SetRivalStation(BaseStation* rival);
+	BaseStation* GetRivalStation()const;
 	void SetFaction(FactionType type);
 	FactionType GetFactionType()const;
 
 protected:
-	virtual void SpawnNPC() = 0;
-	void CleanupSpawnedList();
+	virtual void SpawnNPC() = 0;		//< npcをスポーン
+	void CleanupSpawnedList();			//< リストの掃除
 
 protected:
 	/// ===================================================
@@ -47,7 +49,7 @@ protected:
 	// パラメータ
 	Vector3 initialPosition_;			//< 初期座
 	float maxLife_ = 100;				//< 最大hp
-	float spawnInterbal_ = 5.0f;			//< スポーン間隔(5秒間隔
+	float spawnInterbal_ = 5.0f;		//< スポーン間隔(5秒間隔
 	int maxConcurrentUnits_ = 10;		//< 最大スポーン数(10体
 
 protected:
@@ -56,6 +58,6 @@ protected:
 	float hp_;
 	float currentTime_ = 0;
 
-	std::vector<std::unique_ptr<NPC>> spawned_;				//< スポーン済み
-	std::weak_ptr<BaseStation> wRivalStation_;	//< ライバル拠点
+	std::vector<std::unique_ptr<NPC>> spawned_;		//< スポーン済み
+	BaseStation* pRivalStation_;					//< ライバル拠点
 };

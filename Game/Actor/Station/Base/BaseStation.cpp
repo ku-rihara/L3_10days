@@ -94,6 +94,10 @@ void BaseStation::SaveData(){
 //		accessor
 /////////////////////////////////////////////////////////////////////////////////////////
 
+void BaseStation::SetRivalStation(BaseStation* rival) { pRivalStation_ = rival; }
+
+BaseStation* BaseStation::GetRivalStation() const {return pRivalStation_;}
+
 /// ===================================================
 /// 派閥を設定
 /// ===================================================
@@ -105,7 +109,7 @@ FactionType BaseStation::GetFactionType() const { return faction_; }
 /// リストを掃除
 /// ===================================================
 void BaseStation::CleanupSpawnedList() {
-		// unique_ptr なので remove_if で Dead な NPC を破棄
+	//remove_if で Dead な NPC を破棄
 	spawned_.erase(
 		std::remove_if(spawned_.begin(), spawned_.end(),
 					   [](const std::unique_ptr<NPC>& npc) {
