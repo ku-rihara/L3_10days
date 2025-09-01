@@ -106,6 +106,6 @@ public:
     ///============================================================
     /// getter method
     ///============================================================
-    ModelData GetModelData() { return modelData_; }
+    const ModelData& GetModelData() { return modelData_; }
     bool GetIsFileGltf() const { return isFileGltf_; }
 };

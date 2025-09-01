@@ -131,7 +131,7 @@ void Object3DPiprline::CreateGraphicsPipeline() {
 
     // 各ブレンドモードのPSOを作成
     CreatePSO(blendDescAdd, graphicsPipelineStateAdd_);
-    CreatePSO(blendDescNone, graphicsPipelineStateNone_);
+    CreatePSO(blendDescNone, graphicsPipelineStateNormal_);
 }
 
 void Object3DPiprline::CreateRootSignature() {
@@ -285,7 +285,7 @@ void Object3DPiprline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 void Object3DPiprline::PreBlendSet(ID3D12GraphicsCommandList* commandList, BlendMode blendMode) {
     switch (blendMode) {
     case BlendMode::None:
-        commandList->SetPipelineState(graphicsPipelineStateNone_.Get());
+        commandList->SetPipelineState(graphicsPipelineStateNormal_.Get());
         break;
     case BlendMode::Add:
         commandList->SetPipelineState(graphicsPipelineStateAdd_.Get());

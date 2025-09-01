@@ -13,10 +13,12 @@
 #include "Pipeline/Object3DPiprline.h"
 #include "ShadowMap/ShadowMap.h"
 
+#include "Pipeline/BoundaryPipeline.h"
+#include "Pipeline/BoundaryEdgePipeline.h"
+
 #include <imgui.h>
 
 GameScene::GameScene() {}
-
 GameScene::~GameScene() {}
 
 void GameScene::Init() {
@@ -30,10 +32,14 @@ void GameScene::Init() {
 	gameCamera_ = std::make_unique<GameCamera>();
 
 	// 初期化
-	skuBox_->Init();
-	player_->Init();
 	enemyStation_->Init();
+	player_->Init();
 	gameCamera_->Init();
+	skuBox_->Init();
+
+
+	boundary_ = Boundary::GetInstance();
+	boundary_->Init();
 
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -49,8 +55,9 @@ void GameScene::Update() {
 	gameCamera_->Update();
 	player_->Update();
 	enemyStation_->Update();
+	boundary_->Update();
 
-	// obj3Dies AllUpdate
+	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
 	AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
 
@@ -72,11 +79,23 @@ void GameScene::Update() {
 void GameScene::ModelDraw() {
 
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
-	Object3DPiprline::GetInstance()->PreDraw(commandList);
 
-	// Model AllUpdate
+	/// オブジェクトの描画
+	Object3DPiprline::GetInstance()->PreDraw(commandList);
 	Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
 	ParticleManager::GetInstance()->Draw(viewProjection_);
+
+
+	/// 境界の描画
+	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
+	boundaryPipeline->PreDraw(commandList);
+	boundaryPipeline->Draw(commandList, viewProjection_);
+
+	/// 境界の穴の境界を描画
+	BoundaryEdgePipeline* boundaryEdgePipeline = BoundaryEdgePipeline::GetInstance();
+	boundaryEdgePipeline->PreDraw(commandList);
+	boundaryEdgePipeline->Draw(commandList, viewProjection_);
+
 }
 
 /// ===================================================

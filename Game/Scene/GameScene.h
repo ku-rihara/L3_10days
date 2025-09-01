@@ -7,6 +7,10 @@
 #include "SkyBox/SkyBox.h"
 #include "Actor/Station/Enemy/EnemyStation.h"
 
+/// game
+#include "../Actor/Boundary/Boundary.h"
+
+
 class GameScene : public BaseScene {
 private:
 	///========================================================
@@ -17,6 +21,10 @@ private:
 	std::unique_ptr<Player> player_ = nullptr;
 	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
 	std::unique_ptr<EnemyStation> enemyStation_ = nullptr;
+
+	/// game objects
+	Boundary* boundary_ = nullptr;
+
 
 public:
 	///========================================================
