@@ -4,7 +4,7 @@
 #include "AreaLight.hlsli"
 #include "AmbientLight.hlsli"
 
-// 法線の正規化
+
 float3 SafeNormalize(float3 v)
 {
     float len = length(v);
