@@ -241,6 +241,9 @@
     <Filter Include="MyEngine\.cpp\utility\DissolveEditor">
       <UniqueIdentifier>{78acc7c9-b041-45d7-a84f-a85e75e2755f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\BaseObj">
+      <UniqueIdentifier>{c8f5f7bf-ddd8-49af-b1e0-b6d5e1e09f6a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\2d\ImGuiManager.cpp">
@@ -645,6 +648,9 @@
     </ClCompile>
     <ClCompile Include="Engine\utility\DissolveEditor\DissolveData.cpp">
       <Filter>MyEngine\.cpp\utility\DissolveEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\BaseObject\BaseObject.cpp">
+      <Filter>Game\BaseObj</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1094,6 +1100,9 @@
     </ClInclude>
     <ClInclude Include="Engine\utility\DissolveEditor\DissolveData.h">
       <Filter>MyEngine\.h\utility\DissolveEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\BaseObject\BaseObject.h">
+      <Filter>Game\BaseObj</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
