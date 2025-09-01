@@ -70,3 +70,5 @@ Matrix4x4 MakeRotateMatrixFromQuaternion(const Quaternion& q);
 Matrix4x4 MakeRootAtMatrix(const Vector3& eye, const Vector3& target, const Vector3& up);
 
 Matrix4x4 MakeRotateMatrixQuaternion(const Quaternion& q);
+
+Quaternion QuaternionFromMatrix(const Matrix4x4& m);
