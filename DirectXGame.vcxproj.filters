@@ -97,9 +97,6 @@
     <Filter Include="MyEngine\.h\utility\Debug">
       <UniqueIdentifier>{20818b80-a58e-4c65-84c7-f8fe2b0bdb85}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Ground">
-      <UniqueIdentifier>{1d7f274d-8636-4850-a0ef-f6132e04c95b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game\Scene\Manager">
       <UniqueIdentifier>{20578600-268f-441b-8c4f-b9fd3cd175ca}</UniqueIdentifier>
     </Filter>
@@ -111,12 +108,6 @@
     </Filter>
     <Filter Include="MyEngine\.cpp\Light">
       <UniqueIdentifier>{5396bc61-e016-4b3e-8707-c28cc9c03b94}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\MonsterBall">
-      <UniqueIdentifier>{0fe76578-dd93-4ebc-a7b1-ff86299b8b82}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Plane">
-      <UniqueIdentifier>{70c3c5e1-9bef-4a27-b4f2-dba2a4e9ab55}</UniqueIdentifier>
     </Filter>
     <Filter Include="MyEngine\.h\utility\RailEditor">
       <UniqueIdentifier>{fd8669ab-e586-4603-8989-fde63074b7f4}</UniqueIdentifier>
@@ -162,9 +153,6 @@
     </Filter>
     <Filter Include="MyEngine\.h\utility\EasingCreator">
       <UniqueIdentifier>{fd45ac81-3519-4403-ad3b-c42be8a0eed2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\EasingTestObj">
-      <UniqueIdentifier>{96300e85-6295-42ec-a337-bdd4de702a7c}</UniqueIdentifier>
     </Filter>
     <Filter Include="MyEngine\.cpp\Animation">
       <UniqueIdentifier>{f84405b2-ba15-4fcd-9d2f-c731c2e277d1}</UniqueIdentifier>
@@ -243,6 +231,9 @@
     </Filter>
     <Filter Include="Game\BaseObj">
       <UniqueIdentifier>{c8f5f7bf-ddd8-49af-b1e0-b6d5e1e09f6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\EasingTestObj">
+      <UniqueIdentifier>{3633a19c-64b8-4329-9930-253b521c1d4b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -346,9 +337,6 @@
     <ClCompile Include="Engine\utility\Debug\DebugCamera.cpp">
       <Filter>MyEngine\.cpp\utility\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Ground\Ground.cpp">
-      <Filter>Game\Ground</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Scene\TitleScene.cpp">
       <Filter>Game\Scene</Filter>
     </ClCompile>
@@ -390,12 +378,6 @@
     </ClCompile>
     <ClCompile Include="Engine\Lighrt\AreaLight.cpp">
       <Filter>MyEngine\.cpp\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\MonsterBall\MonsterBall.cpp">
-      <Filter>Game\MonsterBall</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Plane\Plane.cpp">
-      <Filter>Game\Plane</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Lighrt\AmbientLight.cpp">
       <Filter>MyEngine\.cpp\Light</Filter>
@@ -477,9 +459,6 @@
     </ClCompile>
     <ClCompile Include="Engine\utility\EasingCreator\EasingEditor.cpp">
       <Filter>MyEngine\.cpp\utility\EasingCreator</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp">
-      <Filter>Game\EasingTestObj</Filter>
     </ClCompile>
     <ClCompile Include="math\Vector2Proxy.cpp">
       <Filter>liberary\.cpp</Filter>
@@ -656,6 +635,9 @@
     <ClCompile Include="Game\Actor\Player\Player.cpp" />
     <ClCompile Include="Game\Actor\NPC\NPC.cpp" />
     <ClCompile Include="Game\Actor\Boundary\Boundary.cpp" />
+    <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp">
+      <Filter>Game\EasingTestObj</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -793,9 +775,6 @@
     <ClInclude Include="Engine\utility\Debug\DebugCamera.h">
       <Filter>MyEngine\.h\utility\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Ground\Ground.h">
-      <Filter>Game\Ground</Filter>
-    </ClInclude>
     <ClInclude Include="Game\Scene\TitleScene.h">
       <Filter>Game\Scene</Filter>
     </ClInclude>
@@ -840,12 +819,6 @@
     </ClInclude>
     <ClInclude Include="Engine\Lighrt\AreaLight.h">
       <Filter>MyEngine\.h\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\MonsterBall\MonsterBall.h">
-      <Filter>Game\MonsterBall</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Plane\Plane.h">
-      <Filter>Game\Plane</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Lighrt\AmbientLight.h">
       <Filter>MyEngine\.h\Light</Filter>
@@ -921,9 +894,6 @@
     </ClInclude>
     <ClInclude Include="Engine\utility\EasingCreator\EasingEditor.h">
       <Filter>MyEngine\.h\utility\EasingCreator</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\EasingTestObj\EasingTestObj.h">
-      <Filter>Game\EasingTestObj</Filter>
     </ClInclude>
     <ClInclude Include="math\Vector2Proxy.h">
       <Filter>liberary\.h</Filter>
@@ -1112,6 +1082,9 @@
     <ClInclude Include="Game\Actor\Player\Player.h" />
     <ClInclude Include="Game\Actor\NPC\NPC.h" />
     <ClInclude Include="Game\Actor\Boundary\Boundary.h" />
+    <ClInclude Include="Game\EasingTestObj\EasingTestObj.h">
+      <Filter>Game\EasingTestObj</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

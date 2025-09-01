@@ -23,29 +23,8 @@ GameScene::~GameScene() {
 void GameScene::Init() {
 
     BaseScene::Init();
-
-    ground_          = std::make_unique<Ground>();
-    monsterBall_     = std::make_unique<MonsterBall>();
-    plane_           = std::make_unique<Plane>();
-    skuBox_          = std::make_unique<SkyBox>();
-    putObjForBlender = std::make_unique<PutObjForBlender>();
-    cameraEditor_    = std::make_unique<CameraEditor>();
-    shakeEditor_     = std::make_unique<ShakeEditor>();
-    timeScaleController_ = std::make_unique<TimeScaleController>();
-
-    monsterBall_->Init();
-    ground_->Init();
-    plane_->Init();
+    skuBox_ = std::make_unique<SkyBox>();
     skuBox_->Init();
-    cameraEditor_->Init(&viewProjection_);
-    timeScaleController_->Init();
-
-    shakeEditor_->Init();
-    putObjForBlender->LoadJsonFile("game.json");
-    putObjForBlender->EasingAllReset();
-
-  
-    isDebugCameraActive_ = true;
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
@@ -55,20 +34,10 @@ void GameScene::Update() {
     debugCamera_->Update();
     Debug();
 
-    // 各クラス更新
-    ground_->Update();
-    cameraEditor_->Update(Frame::DeltaTime());
-    shakeEditor_->Update(Frame::DeltaTime());
-    timeScaleController_->Update(Frame::DeltaTime());
-    monsterBall_->Update();
-    plane_->Update();
-    skuBox_->Update();
-
     Object3DRegistry::GetInstance()->UpdateAll();
     AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
 
-    putObjForBlender->EasingUpdateSelectGroup(Frame::DeltaTime(), 0);
-
+  
     // viewProjection 更新
     ViewProjectionUpdate();
 
@@ -83,14 +52,12 @@ void GameScene::Update() {
 /// モデル描画
 /// ===================================================
 void GameScene::ModelDraw() {
-    /// commandList取得
+   
     ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
     Object3DPiprline::GetInstance()->PreDraw(commandList);
 
-    /* ground_->Draw(viewProjection_);
-     plane_->Draw(viewProjection_);*/
-    Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
 
+    Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
     ParticleManager::GetInstance()->Draw(viewProjection_);
 }
 
@@ -117,18 +84,12 @@ void GameScene::DrawShadow() {
 void GameScene::Debug() {
 #ifdef _DEBUG
 
-    Light::GetInstance()->DebugImGui();
     ImGui::Begin("Object");
-    ground_->Debug();
-    monsterBall_->Debug();
-    plane_->Debug();
-    skuBox_->Debug();
+   
     ShadowMap::GetInstance()->DebugImGui();
 
     ImGui::End();
-    cameraEditor_->EditorUpdate();
-    shakeEditor_->EditorUpdate();
-    timeScaleController_->EditorUpdate();
+ 
 #endif
 }
 
