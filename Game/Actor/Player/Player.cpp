@@ -130,7 +130,7 @@ void Player::UpdatePhysics() {
     // 前方ベクトルをQuaternionから計算
     Vector3 forward = GetForwardVector();
 
-    // 常に前進（機体の前方向に）
+    // 常に前進
     velocity_ = forward * forwardSpeed_ * deltaTime;
 
     // 位置を更新
