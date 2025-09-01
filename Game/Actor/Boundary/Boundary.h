@@ -12,6 +12,8 @@ public:
 	/// public : methods
 	/// ===================================================
 
+	static Boundary* GetInstance();
+
 	Boundary();
 	~Boundary() = default;
 

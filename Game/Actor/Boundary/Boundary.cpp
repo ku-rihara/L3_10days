@@ -1,9 +1,13 @@
 #include "Boundary.h"
 
+Boundary* Boundary::GetInstance() {
+	static Boundary instance;
+	return &instance;
+}
+
 Boundary::Boundary() {}
 
 void Boundary::Init() {
-	obj3d_.reset(Object3d::CreateModel("Boundary.obj"));
 	baseTransform_.Init();
 }
 

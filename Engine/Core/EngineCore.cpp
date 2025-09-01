@@ -29,6 +29,8 @@
 /// std
 #include <string>
 
+#include "Pipeline/BoundaryPipeline.h"
+
 ///=======================================================================
 /// 初期化
 ///========================================================================
@@ -64,6 +66,10 @@ void EngineCore::Initialize(const char* title, int width, int height) {
     // Object3DPipeline
     Object3DPiprline_ = Object3DPiprline::GetInstance();
     Object3DPiprline_->Init(directXCommon_);
+
+	// BoundaryPipeline
+	BoundaryPipeline_ = BoundaryPipeline::GetInstance();
+	BoundaryPipeline_->Init(directXCommon_);
 
     skinningObject3DPipeline_ = SkinningObject3DPipeline::GetInstance();
     skinningObject3DPipeline_->Init(directXCommon_);

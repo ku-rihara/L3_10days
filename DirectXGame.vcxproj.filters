@@ -638,6 +638,7 @@
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp">
       <Filter>Game\EasingTestObj</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1085,6 +1086,7 @@
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h">
       <Filter>Game\EasingTestObj</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
