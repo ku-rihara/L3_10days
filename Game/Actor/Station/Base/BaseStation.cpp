@@ -39,27 +39,27 @@ void BaseStation::Update(){ BaseObject::Update(); }
 /// gui表示
 /// ===================================================
 void BaseStation::ShowGui(){
-	const std::string path = fileDirectory_ + "/" + name_;
-	if (ImGui::TreeNode(name_.c_str())){
-		//設定の保存
-		if (ImGui::Button("save")){ SaveData(); }
-
+	const std::string path = fileDirectory_ ;
+	if (ImGui::CollapsingHeader(name_.c_str())) {
+		ImGui::PushID(name_.c_str());
+		
+		globalParam_->ParamLoadForImGui(name_, path);
+		
 		ImGui::SameLine();
 
-		//設定のロード
-		if (ImGui::Button("load")){ LoadData(); }
+		globalParam_->ParamSaveForImGui(name_, path);
 
 		//transform
-		if (ImGui::CollapsingHeader("Transform")){
+		if (ImGui::TreeNode("Transform")){
 			ImGui::DragFloat3("Scale",&baseTransform_.scale_.x,0.01f);
 			ImGui::DragFloat3("Rotate",&baseTransform_.rotation_.x,0.01f);
-			ImGui::DragFloat3("Translate",&baseTransform_.translation_.x,0.01f);
+			if (ImGui::DragFloat3("Translate", &baseTransform_.translation_.x, 0.01f)) {initialPosition_ = baseTransform_.GetWorldPos();};
+			ImGui::TreePop();
 		}
 
-		//Adjustment items
-		globalParam_->ParamLoadForImGui(name_,path);
 
-		ImGui::TreePop();
+
+		ImGui::PopID();
 	}
 }
 
@@ -72,7 +72,7 @@ void BaseStation::BindParms(){ globalParam_->Bind(name_,"initialPosition",&initi
 /// パラメータの読み込み
 /// ===================================================
 void BaseStation::LoadData(){
-	const std::string path = fileDirectory_ + "/" + name_;
+	const std::string path = fileDirectory_ ;
 
 	globalParam_->LoadFile(name_,path);
 	globalParam_->SyncParamForGroup(name_);
@@ -82,6 +82,6 @@ void BaseStation::LoadData(){
 /// パラメータ保存
 /// ===================================================
 void BaseStation::SaveData(){
-	const std::string path = fileDirectory_ + "/" + name_;
+	const std::string path = fileDirectory_;
 	globalParam_->SaveFile(name_,path);
 }

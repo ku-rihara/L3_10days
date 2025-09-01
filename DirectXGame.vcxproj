@@ -126,6 +126,8 @@
     <ClCompile Include="Engine\utility\TimeScaleEditor\TimeScaleController.cpp" />
     <ClCompile Include="Game\Actor\GameCamera\CameraRendition.cpp" />
     <ClCompile Include="Game\Actor\GameCamera\GameCamera.cpp" />
+    <ClCompile Include="Game\Actor\Station\Base\BaseStation.cpp" />
+    <ClCompile Include="Game\Actor\Station\Enemy\EnemyStation.cpp" />
     <ClCompile Include="Game\BaseObject\BaseObject.cpp" />
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp" />
     <ClCompile Include="Game\Scene\BaseScene.cpp" />
@@ -279,6 +281,8 @@
     <ClInclude Include="Engine\utility\TimeScaleEditor\TimeScaleController.h" />
     <ClInclude Include="Game\Actor\GameCamera\CameraRendition.h" />
     <ClInclude Include="Game\Actor\GameCamera\GameCamera.h" />
+    <ClInclude Include="Game\Actor\Station\Base\BaseStation.h" />
+    <ClInclude Include="Game\Actor\Station\Enemy\EnemyStation.h" />
     <ClInclude Include="Game\BaseObject\BaseObject.h" />
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h" />
     <ClInclude Include="Game\Scene\BaseScene.h" />
