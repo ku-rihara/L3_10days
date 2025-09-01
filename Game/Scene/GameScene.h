@@ -3,7 +3,8 @@
 /// base
 #include "BaseScene.h"
 #include "SkyBox/SkyBox.h"
-#include"Actor/Player/Player.h"
+#include "Actor/Player/Player.h"
+#include "Actor/Station/Enemy/EnemyStation.h"
 
 class GameScene : public BaseScene {
 private:
@@ -13,6 +14,7 @@ private:
 
     std::unique_ptr<SkyBox> skuBox_ = nullptr;
     std::unique_ptr<Player> player_ = nullptr;
+    std::unique_ptr<EnemyStation> enemyStation_ = nullptr;
 
 public:
     ///========================================================

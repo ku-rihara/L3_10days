@@ -124,6 +124,8 @@
     <ClCompile Include="Engine\utility\ShakeEditor\ShakePlayer.cpp" />
     <ClCompile Include="Engine\utility\TimeScaleEditor\TimeScaleData.cpp" />
     <ClCompile Include="Engine\utility\TimeScaleEditor\TimeScaleController.cpp" />
+    <ClCompile Include="Game\Actor\Station\Base\BaseStation.cpp" />
+    <ClCompile Include="Game\Actor\Station\Enemy\EnemyStation.cpp" />
     <ClCompile Include="Game\BaseObject\BaseObject.cpp" />
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp" />
     <ClCompile Include="Game\Scene\BaseScene.cpp" />
@@ -145,7 +147,6 @@
     <ClCompile Include="math\Vector2Proxy.cpp" />
     <ClCompile Include="math\Vector3.cpp" />
     <ClCompile Include="math\Vector4.cpp" />
-    <ClCompile Include="Game\Actor\Station\Station.cpp" />
     <ClCompile Include="Game\Actor\Player\Player.cpp" />
     <ClCompile Include="Game\Actor\NPC\NPC.cpp" />
   </ItemGroup>
@@ -276,6 +277,8 @@
     <ClInclude Include="Engine\utility\ShakeEditor\ShakePlayer.h" />
     <ClInclude Include="Engine\utility\TimeScaleEditor\TimeScaleData.h" />
     <ClInclude Include="Engine\utility\TimeScaleEditor\TimeScaleController.h" />
+    <ClInclude Include="Game\Actor\Station\Base\BaseStation.h" />
+    <ClInclude Include="Game\Actor\Station\Enemy\EnemyStation.h" />
     <ClInclude Include="Game\BaseObject\BaseObject.h" />
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h" />
     <ClInclude Include="Game\Scene\BaseScene.h" />
@@ -298,7 +301,6 @@
     <ClInclude Include="math\Vector2Proxy.h" />
     <ClInclude Include="math\Vector3.h" />
     <ClInclude Include="math\Vector4.h" />
-    <ClInclude Include="Game\Actor\Station\Station.h" />
     <ClInclude Include="Game\Actor\Player\Player.h" />
     <ClInclude Include="Game\Actor\NPC\NPC.h" />
   </ItemGroup>
