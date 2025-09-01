@@ -653,6 +653,9 @@
       <Filter>Game\BaseObj</Filter>
     </ClCompile>
     <ClCompile Include="Game\Actor\Station\Station.cpp" />
+    <ClCompile Include="Game\Actor\Player\Player.cpp" />
+    <ClCompile Include="Game\Actor\NPC\NPC.cpp" />
+    <ClCompile Include="Game\Actor\Boundary\Boundary.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1106,6 +1109,9 @@
       <Filter>Game\BaseObj</Filter>
     </ClInclude>
     <ClInclude Include="Game\Actor\Station\Station.h" />
+    <ClInclude Include="Game\Actor\Player\Player.h" />
+    <ClInclude Include="Game\Actor\NPC\NPC.h" />
+    <ClInclude Include="Game\Actor\Boundary\Boundary.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
