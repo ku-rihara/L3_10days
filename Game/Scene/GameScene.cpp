@@ -27,7 +27,7 @@ void GameScene::Init() {
     // 生成
     skuBox_ = std::make_unique<SkyBox>();
     player_ = std::make_unique<Player>();
-    enemyStation_ = std::make_unique<EnemyStation>();
+    enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");
     
     // 初期化
     skuBox_->Init();
@@ -104,6 +104,8 @@ void GameScene::Debug() {
     ImGui::Begin("Object");
    
     ShadowMap::GetInstance()->DebugImGui();
+
+    enemyStation_->ShowGui();
 
     ImGui::End();
  
