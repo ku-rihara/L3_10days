@@ -16,88 +16,98 @@
 #include <imgui.h>
 
 GameScene::GameScene() {}
-
-GameScene::~GameScene() {
-}
+GameScene::~GameScene() {}
 
 void GameScene::Init() {
 
-    BaseScene::Init();
-    skuBox_ = std::make_unique<SkyBox>();
-    skuBox_->Init();
-    ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+	BaseScene::Init();
+	skuBox_ = std::make_unique<SkyBox>();
+	skuBox_->Init();
+
+	/// game objects make
+	boundary_ = std::make_unique<Boundary>();
+
+
+	/// game objects init
+	boundary_->Init();
+
+	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
 void GameScene::Update() {
 
-    /// debugCamera
-    debugCamera_->Update();
-    Debug();
+	/// debugCamera
+	debugCamera_->Update();
+	Debug();
 
-    Object3DRegistry::GetInstance()->UpdateAll();
-    AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
 
-  
-    // viewProjection 更新
-    ViewProjectionUpdate();
+	boundary_->Update();
 
-    if (input_->TrrigerKey(DIK_RETURN)) {
-        SceneManager::GetInstance()->ChangeScene("TITLE");
-    }
 
-    ParticleManager::GetInstance()->Update();
+	/// objectの行列の更新をする
+	Object3DRegistry::GetInstance()->UpdateAll();
+	AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
+
+
+	// viewProjection 更新
+	ViewProjectionUpdate();
+
+	if (input_->TrrigerKey(DIK_RETURN)) {
+		SceneManager::GetInstance()->ChangeScene("TITLE");
+	}
+
+	ParticleManager::GetInstance()->Update();
 }
 
 /// ===================================================
 /// モデル描画
 /// ===================================================
 void GameScene::ModelDraw() {
-   
-    ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
-    Object3DPiprline::GetInstance()->PreDraw(commandList);
+
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	Object3DPiprline::GetInstance()->PreDraw(commandList);
 
 
-    Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
-    ParticleManager::GetInstance()->Draw(viewProjection_);
+	Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
+	ParticleManager::GetInstance()->Draw(viewProjection_);
 }
 
 /// ===================================================
 /// SkyBox描画
 /// ===================================================
 void GameScene::SkyBoxDraw() {
-    skuBox_->Draw(viewProjection_);
+	skuBox_->Draw(viewProjection_);
 }
 
 /// ======================================================
 /// スプライト描画
 /// ======================================================
-void GameScene::SpriteDraw() {
-}
+void GameScene::SpriteDraw() {}
 
 /// ======================================================
 /// 影描画
 /// ======================================================
 void GameScene::DrawShadow() {
-    Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
+	Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
 }
 
 void GameScene::Debug() {
 #ifdef _DEBUG
 
-    ImGui::Begin("Object");
-   
-    ShadowMap::GetInstance()->DebugImGui();
+	ImGui::Begin("Object");
 
-    ImGui::End();
- 
+	ShadowMap::GetInstance()->DebugImGui();
+
+	ImGui::End();
+
 #endif
 }
 
 // ビュープロジェクション更新
 void GameScene::ViewProjectionUpdate() {
-    BaseScene::ViewProjectionUpdate();
+	BaseScene::ViewProjectionUpdate();
 }
 
 void GameScene::ViewProssess() {
-    viewProjection_.UpdateMatrix();
+	viewProjection_.UpdateMatrix();
 }
