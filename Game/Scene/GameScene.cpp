@@ -47,6 +47,7 @@ void GameScene::Update() {
     // class Update
     gameCamera_->Update();
     player_->Update();
+    enemyStation_->Update();
 
     // obj3Dies AllUpdate
     Object3DRegistry::GetInstance()->UpdateAll();
