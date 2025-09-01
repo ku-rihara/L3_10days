@@ -67,12 +67,6 @@ void Player::HandleInput() {
             stickL.x = 1.0f;
         }
 
-        /*  if (input->PushKey(DIK_LEFT)) {
-              stickR.x = -1.0f;
-          }
-          if (input->PushKey(DIK_RIGHT)) {
-              stickR.x = 1.0f;
-          }*/
     }
 
     // コントローラ処理
@@ -107,7 +101,7 @@ void Player::UpdatePhysics() {
     // 角速度の補間
     angularVelocity_ = Lerp(angularVelocity_, angleInput_, 0.3f);
 
-    // 現在の姿勢からローカル軸を取得（Quaternion基準）
+    // 現在の姿勢からローカル軸を取得
     Vector3 localRight   = GetRightVector();
     Vector3 localUp      = GetUpVector();
     Vector3 localForward = GetForwardVector();

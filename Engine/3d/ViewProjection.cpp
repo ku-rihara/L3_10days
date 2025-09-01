@@ -1,7 +1,7 @@
 #include "ViewProjection.h"
 #include "Dx/DirectXCommon.h"
 #include "MathFunction.h"
-#include"WorldTransform.h"
+#include "WorldTransform.h"
 #include <cassert>
 void ViewProjection::Init() {
 
@@ -9,10 +9,8 @@ void ViewProjection::Init() {
     CreateConstantBuffer();
     // マッピング
     Map();
-
     // 初期クォータニオンを設定
     quaternion_ = Quaternion::Identity();
-
     // ビュー行列の更新
     UpdateViewMatrix();
     // 射影行列の更新
@@ -62,40 +60,25 @@ void ViewProjection::UpdateMatrix() {
 }
 
 void ViewProjection::UpdateViewMatrix() {
-    Matrix4x4 rotateMatrix;
-    Matrix4x4 translateMatrix;
+    //  ローカル回転
+    Vector3 finalRotation  = GetFinalRotation();
+    Matrix4x4 rotateMatrix = MakeRotateMatrix(finalRotation);
 
-    // ペアレントがある場合
+    // ローカル平行移動
+    Vector3 transformedPosOffset = TransformNormal(positionOffset_, rotateMatrix);
+    Vector3 finalLocalPos        = translation_ + transformedPosOffset;
+    Matrix4x4 translateMatrix    = MakeTranslateMatrix(finalLocalPos);
+
+    // ローカル変換
+    Matrix4x4 localCameraMatrix = rotateMatrix * translateMatrix;
+
     if (parent_) {
-        // 親の変換行列を適用
-        Matrix4x4 parentMatrix = parent_->matWorld_;
-
-        // カメラのローカル変換を計算
-        Vector3 finalRotation = GetFinalRotation();
-        rotateMatrix          = MakeRotateMatrix(finalRotation);
-
-        // positionOffset_をローカルオフセットとして使用
-        Vector3 localOffset            = positionOffset_;
-        Matrix4x4 localTranslateMatrix = MakeTranslateMatrix(localOffset);
-
-        // ローカル変換を親の座標系で適用
-        Matrix4x4 localCameraMatrix = rotateMatrix * localTranslateMatrix;
-
-        // 親の変換を適用
-        cameraMatrix_ = localCameraMatrix * parentMatrix;
+        cameraMatrix_ = localCameraMatrix * parent_->matWorld_;
     } else {
-        // 従来の処理（ペアレントなし）
-        Vector3 finalRotation = GetFinalRotation();
-        rotateMatrix          = MakeRotateMatrix(finalRotation);
-
-        Vector3 transformedPositionOffset = TransformNormal(positionOffset_, rotateMatrix);
-        Vector3 finalPosition             = translation_ + transformedPositionOffset;
-        translateMatrix                   = MakeTranslateMatrix(finalPosition);
-
-        cameraMatrix_ = rotateMatrix * translateMatrix;
+        cameraMatrix_ = localCameraMatrix;
     }
 
-    // ビュー行列は変換行列の逆行列
+    // ビュー行列は逆行列
     matView_ = Inverse(cameraMatrix_);
 }
 
