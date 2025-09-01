@@ -40,7 +40,7 @@ private:
     int32_t hp_;
     float speed_;
 
-    // 戦闘機用パラメータ
+    // スピードパラメータ
     float forwardSpeed_;
     float pitchSpeed_; 
     float yawSpeed_; 
@@ -48,8 +48,11 @@ private:
 
     // 物理パラメータ
     Vector3 velocity_;
-    Vector3 angularVelocity_; 
-    Vector3 targetAngularVelocity_; 
+    Vector3 angularVelocity_;
+    Vector3 angleInput_;
+    Quaternion targetRotation_; 
+
+    float rotationSmoothness_;
 
     Vector3 direction_;
     float objectiveAngle_;

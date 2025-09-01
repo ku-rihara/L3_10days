@@ -39,4 +39,6 @@ public:
 
     Vector3 RotateVector(const Vector3& vector);
 
+    float GetRollFromQuaternion();
+
 };
