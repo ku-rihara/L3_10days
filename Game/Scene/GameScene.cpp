@@ -52,7 +52,8 @@ void GameScene::Init() {
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
    //====================================Class Set===================================================
-   /* player_->setview*/
+    player_->SetViewProjection(&viewProjection_);
+    gameCamera_->SetTarget(&player_->GetTransform());
 
     // ParticleViewSet
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -158,4 +159,13 @@ void GameScene::ViewProjectionUpdate() {
 
 void GameScene::ViewProssess() {
 	viewProjection_.UpdateMatrix();
+    BaseScene::ViewProjectionUpdate();
+}
+
+void GameScene::ViewProssess() {
+    viewProjection_.matView_       = gameCamera_->GetViewProjection().matView_;
+    viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
+    viewProjection_.cameraMatrix_  = gameCamera_->GetViewProjection().cameraMatrix_;
+    viewProjection_.rotation_      = gameCamera_->GetViewProjection().rotation_;
+    viewProjection_.TransferMatrix();
 }
