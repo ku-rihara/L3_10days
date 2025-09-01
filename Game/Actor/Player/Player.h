@@ -1,6 +1,6 @@
 #pragma once
-#include "utility/ParameterEditor/GlobalParameter.h"
 #include "BaseObject/BaseObject.h"
+#include "utility/ParameterEditor/GlobalParameter.h"
 #include <cstdint>
 
 class Player : public BaseObject {
@@ -12,6 +12,7 @@ public:
     void Init();
     void Update();
 
+    // Move
     void Move();
 
     // カメラから向きを決める
@@ -22,18 +23,21 @@ public:
     void BindParams();
 
 private:
+
+    // viewProjection
     const ViewProjection* viewProjection_ = nullptr;
 
+    // globalParameter
     GlobalParameter* globalParameter_;
-    const std::string groupName_ = "Player"; 
+    const std::string groupName_ = "Player";
+
+    // Parameter
+    int32_t hp_;
+    float speed_;
 
     // direction
     Vector3 direction_;
     float objectiveAngle_;
 
-    // Parameter
-    int32_t hp_;
-    float speed_;
-    
-
+public:
 };
