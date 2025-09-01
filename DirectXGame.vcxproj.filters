@@ -639,6 +639,7 @@
       <Filter>Game\EasingTestObj</Filter>
     </ClCompile>
     <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
+    <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1087,6 +1088,11 @@
       <Filter>Game\EasingTestObj</Filter>
     </ClInclude>
     <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
+    <ClInclude Include="..\..\..\Downloads\StructuredBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\StructuredBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\ConstantBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

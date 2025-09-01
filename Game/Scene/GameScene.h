@@ -17,7 +17,7 @@ private:
 	std::unique_ptr<SkyBox> skuBox_ = nullptr;
 
 	/// game objects
-	std::unique_ptr<Boundary> boundary_ = nullptr;
+	Boundary* boundary_ = nullptr;
 
 
 public:

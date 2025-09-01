@@ -8,12 +8,20 @@
 /// engine
 #include "Material/ModelMaterial.h"
 #include "Dx/DirectXCommon.h"
-
+#include "3d/ViewProjection.h"
 
 /// //////////////////////////////////////////////////////
 /// ボーダーの描画パイプライン
 /// //////////////////////////////////////////////////////
 class BoundaryPipeline {
+public:
+
+	enum ROOT_PARAM {
+		ROOT_PARAM_TRANSFORM,
+		ROOT_PARAM_SHADOW_TRANSFORM,
+		//ROOT_PARAM_
+	};
+
 public:
 	/// ========================================================
 	/// public : methods
@@ -27,7 +35,7 @@ public:
 
 	void Init(DirectXCommon* dxCommon);
 	void PreDraw(ID3D12GraphicsCommandList* commandList);
-	void PreBlendSet(ID3D12GraphicsCommandList* commandList, BlendMode blendMode = BlendMode::None);
+	void Draw(ID3D12GraphicsCommandList* commandList, const ViewProjection& _viewProjection);
 
 private:
 	/// ========================================================
@@ -50,7 +58,6 @@ private:
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob_;
 
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateAdd_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateNone_;
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc_;
 
@@ -60,7 +67,6 @@ public:
 	DirectXCommon* GetDxCommon() const { return dxCommon_; }
 
 	// rootSignature
-	ID3D12PipelineState* GetGrahipcsPipeLileStateAdd() const { return graphicsPipelineStateAdd_.Get(); }
 	ID3D12RootSignature* GetRootSignature() const { return rootSignature_.Get(); }
 };
 

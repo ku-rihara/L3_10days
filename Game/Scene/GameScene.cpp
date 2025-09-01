@@ -13,6 +13,8 @@
 #include "Pipeline/Object3DPiprline.h"
 #include "ShadowMap/ShadowMap.h"
 
+#include "Pipeline/BoundaryPipeline.h"
+
 #include <imgui.h>
 
 GameScene::GameScene() {}
@@ -24,11 +26,7 @@ void GameScene::Init() {
 	skuBox_ = std::make_unique<SkyBox>();
 	skuBox_->Init();
 
-	/// game objects make
-	boundary_ = std::make_unique<Boundary>();
-
-
-	/// game objects init
+	boundary_ = Boundary::GetInstance();
 	boundary_->Init();
 
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -39,9 +37,6 @@ void GameScene::Update() {
 	/// debugCamera
 	debugCamera_->Update();
 	Debug();
-
-
-	boundary_->Update();
 
 
 	/// objectの行列の更新をする
@@ -65,11 +60,17 @@ void GameScene::Update() {
 void GameScene::ModelDraw() {
 
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	/// 境界の描画
+	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
+	boundaryPipeline->PreDraw(commandList);
+	boundaryPipeline->Draw(commandList, viewProjection_);
+
+	/// オブジェクトの描画
 	Object3DPiprline::GetInstance()->PreDraw(commandList);
-
-
 	Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
 	ParticleManager::GetInstance()->Draw(viewProjection_);
+
+
 }
 
 /// ===================================================

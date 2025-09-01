@@ -97,4 +97,5 @@ public:
     uint32_t GetShadowMapHeight() const { return shadowMapHeight_; }
     D3D12_RESOURCE_STATES GetCurrentState() const { return currentShadowMapState_; }
     void SetLightCameraMatrix(Matrix4x4 m) { transformData_->lightCamera = m; }
+	const Matrix4x4& GetLightCameraMatrix() const { return transformData_->lightCamera; }
 };
