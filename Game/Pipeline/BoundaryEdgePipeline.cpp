@@ -280,6 +280,30 @@ void BoundaryEdgePipeline::Draw(ID3D12GraphicsCommandList* _cmdList, const ViewP
 			position.x += std::cos(radian) * hole.radius;
 			position.z += std::sin(radian) * hole.radius;
 
+
+			/// 他のHoleと被ってへんな描画にならないようにする
+			bool canDraw = true;
+			for (size_t k = 0; k < boundary->GetHoles().size(); k++) {
+				if (i == k) { continue; }
+				const Hole& otherHole = boundary->GetHoles()[k];
+				float distance = (otherHole.position - position).Length();
+				if(distance < otherHole.radius) {
+					/// ここに入った時点でこの位置には描画しない
+					canDraw = false;
+					break;
+				}
+			}
+
+			if (!canDraw) {
+				/// 描画コール自体は通ってしまうのでscale0にして見えなくする
+				const Matrix4x4& matWorld = MakeScaleMatrix({});
+				Matrix4x4 matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;
+				Matrix4x4 matInverseTranspose = Transpose(Inverse(matWorld));
+				transformationBuffer_.SetMappedData(index, { matWVP, matWorld, matInverseTranspose });
+				continue;
+			}
+
+
 			ModelInfo& info = modelInfos_[index];
 			if (info.startFrame == 0.0f) {
 				info.startFrame = Random::Range(0.1f, 32.0f);

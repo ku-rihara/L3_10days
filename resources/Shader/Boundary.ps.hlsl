@@ -4,15 +4,9 @@ struct PSOutput {
 	float4 color : SV_Target0;
 };
 
-struct Hole {
-	float3 position;
-	float radius;
-	float startRadius;
-	float lifeTime;
-};
-
 static const int kMaxHoles = 128;
 StructuredBuffer<Hole> gHoles : register(t0);
+ConstantBuffer<Time> gTime : register(b0);
 
 /// 仮のベースとハイライトの色
 static const float3 gBaseColor = float3(0.173, 0.886, 0.482); // #2de17b

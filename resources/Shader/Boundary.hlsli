@@ -18,7 +18,12 @@ struct Time {
 	float value;
 };
 
-ConstantBuffer<Time> gTime : register(b0);
+struct Hole {
+	float3 position;
+	float radius;
+	float startRadius;
+	float lifeTime;
+};
 
 float fbm(float2 uv) {
 	float sum = 0.0;

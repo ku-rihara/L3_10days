@@ -49,16 +49,19 @@ void Boundary::Update() {
 
 
 	/// debugように
-	if(Input::GetInstance()->TrrigerKey(DIK_P)) {
+	if (Input::GetInstance()->TrrigerKey(DIK_P)) {
 		AddHole({}, 100.0f);
 	}
 
+	if (Input::GetInstance()->TrrigerKey(DIK_O)) {
+		AddHole({ 50.0f, 0.0f, 0.0f }, 100.0f);
+	}
 
 
 	/// holeの更新
 	for (auto itr = holes_.begin(); itr != holes_.end(); ) {
 		itr->lifeTime -= Frame::DeltaTime();
-		
+
 		float lerpT = itr->lifeTime / holeMaxLifeTime_;
 		itr->radius = itr->startRadius * std::clamp(lerpT, 0.0f, 1.0f);
 
@@ -99,7 +102,7 @@ void Boundary::AddHole(const Vector3& pos, float radius) {
 		.startRadius = radius,
 		.lifeTime = holeMaxLifeTime_
 	};
-	
+
 	holes_.emplace_back(hole);
 }
 
