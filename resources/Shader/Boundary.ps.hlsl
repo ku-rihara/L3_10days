@@ -4,12 +4,26 @@ struct PSOutput {
 	float4 color : SV_Target0;
 };
 
+struct Hole {
+	float3 position;
+	float radius;
+};
+
+
+static const int kMaxHoles = 128;
+StructuredBuffer<Hole> gHoles : register(t0);
 
 PSOutput main(VertexShaderOutput input) {
 	PSOutput output;
-	// 法線を0~1に変換
-	//float3 normal = normalize(input.normal) * 0.5 + 0.5;
-	// 出力する色を決定
+
+	/// holeとの距離を計算
+	for (uint i = 0; i < 128; i++) {
+		float distance = length(input.worldPosition - gHoles[i].position);
+		if (distance < gHoles[i].radius) {
+			discard;
+		}
+	}
+
 	output.color = float4(1,0,0, 1.0f);
 	return output;
 }

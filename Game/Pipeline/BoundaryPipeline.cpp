@@ -137,7 +137,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	// DescriptorRangeの設定
 	D3D12_DESCRIPTOR_RANGE descriptorRange[6] = {};
 
-	// テクスチャ (t0)
+	// holes (t0)
 	descriptorRange[0].BaseShaderRegister = 0;
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -174,7 +174,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 
 	// 0: TransformationMatrix
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
@@ -185,6 +185,13 @@ void BoundaryPipeline::CreateRootSignature() {
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[1].Descriptor.ShaderRegister = 1;
+
+	// 2: Hole
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].Descriptor.ShaderRegister = 0;
+	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
@@ -222,7 +229,7 @@ void BoundaryPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewPr
 	boundary->vertexBuffer_.BindForCommandList(commandList);
 	boundary->indexBuffer_.BindForCommandList(commandList);
 
-	/// 
+	/// vertex shader buffers
 	Matrix4x4 matWVP = boundary->baseTransform_.matWorld_ * _viewProjection.matView_ * _viewProjection.matProjection_;
 	Matrix4x4 matWorldInverseTranspose = Transpose(Inverse(boundary->baseTransform_.matWorld_));
 	boundary->transformBuffer_.SetMappedData({ matWVP, boundary->baseTransform_.matWorld_, matWorldInverseTranspose });
@@ -230,6 +237,10 @@ void BoundaryPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewPr
 
 	boundary->shadowTransformBuffer_.SetMappedData({ ShadowMap::GetInstance()->GetLightCameraMatrix() });
 	boundary->shadowTransformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_SHADOW_TRANSFORM);
+
+
+	/// pixel shader buffers
+	boundary->holeBuffer_.BindToCommandList(ROOT_PARAM_HOLE, commandList);
 
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

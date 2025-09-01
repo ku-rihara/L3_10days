@@ -14,20 +14,20 @@ void Boundary::Init() {
 
 	/// buffer init
 	holeBuffer_.Create(128, DirectXCommon::GetInstance()->GetDxDevice());
-	
+	holeBuffer_.SetMappedData(0, { { 0, 0, 0 }, 5.0f });
+	holeBuffer_.SetMappedData(1, { { 0, 0, 20 }, 10.0f });
+
 	transformBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	shadowTransformBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 
 	indexBuffer_.Create(6, DirectXCommon::GetInstance()->GetDxDevice());
 	vertexBuffer_.Create(4, DirectXCommon::GetInstance()->GetDxDevice());
-	vertexBuffer_.SetVertices(
-		{
-			{ { -100, 0, +100, 1 }, { 0, 0 }, { 0, 1, 0 } },
-			{ { +100, 0, +100, 1 }, { 1, 0 }, { 0, 1, 0 } },
-			{ { -100, 0, -100, 1 }, { 0, 1 }, { 0, 1, 0 } },
-			{ { +100, 0, -100, 1 }, { 1, 1 }, { 0, 1, 0 } }
-		}
-	);
+	vertexBuffer_.SetVertices({
+		{ { -100, 0, +100, 1 }, { 0, 0 }, { 0, 1, 0 } },
+		{ { +100, 0, +100, 1 }, { 1, 0 }, { 0, 1, 0 } },
+		{ { -100, 0, -100, 1 }, { 0, 1 }, { 0, 1, 0 } },
+		{ { +100, 0, -100, 1 }, { 1, 1 }, { 0, 1, 0 } }
+		});
 
 	vertexBuffer_.Map();
 
