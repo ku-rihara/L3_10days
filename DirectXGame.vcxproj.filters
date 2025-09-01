@@ -641,6 +641,7 @@
     <ClCompile Include="Game\Actor\GameCamera\GameCamera.cpp" />
     <ClCompile Include="Game\Actor\Station\Base\BaseStation.cpp" />
     <ClCompile Include="Game\Actor\Station\Enemy\EnemyStation.cpp" />
+    <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1091,6 +1092,8 @@
     <ClInclude Include="Game\Actor\GameCamera\GameCamera.h" />
     <ClInclude Include="Game\Actor\Station\Base\BaseStation.h" />
     <ClInclude Include="Game\Actor\Station\Enemy\EnemyStation.h" />
+    <ClInclude Include="Game\Details\Faction.h" />
+    <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

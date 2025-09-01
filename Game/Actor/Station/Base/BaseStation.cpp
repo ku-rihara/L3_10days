@@ -85,3 +85,16 @@ void BaseStation::SaveData(){
 	const std::string path = fileDirectory_;
 	globalParam_->SaveFile(name_,path);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//		accessor
+/////////////////////////////////////////////////////////////////////////////////////////
+
+/// ===================================================
+/// 派閥を設定
+/// ===================================================
+void BaseStation::SetFaction(FactionType type) {faction_ = type;}
+
+FactionType BaseStation::GetFactionType() const { return faction_; }
+
+
