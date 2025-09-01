@@ -21,8 +21,7 @@ TitleScene::~TitleScene() {
 void TitleScene::Init() {
 
     BaseScene::Init();
-    plane_ = std::make_unique<Plane>();
-    plane_->Init();
+   
 
     /// パーティクルデータの読み込みと、モデルの読み込み
     EnemydamageEffect_[0].reset(ParticleEmitter::CreateParticlePrimitive("comboFireNozzleLeft", PrimitiveType::Plane, 500));
@@ -35,7 +34,7 @@ void TitleScene::Init() {
 }
 
 void TitleScene::Update() {
-    plane_->Update();
+  
     ///
     for (int i = 0; i < EnemydamageEffect_.size(); i++) {
         EnemydamageEffect_[i]->Update();
