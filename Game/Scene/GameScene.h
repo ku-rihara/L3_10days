@@ -6,7 +6,6 @@
 #include "BaseScene.h"
 #include "SkyBox/SkyBox.h"
 #include "Actor/Station/Enemy/EnemyStation.h"
-#include "Actor/NPC/EnemyNPC.h"
 
 class GameScene : public BaseScene {
 private:
@@ -18,7 +17,6 @@ private:
 	std::unique_ptr<Player> player_ = nullptr;
 	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
 	std::unique_ptr<EnemyStation> enemyStation_ = nullptr;
-	std::unique_ptr<EnemyNPC> enemyNPC_ = nullptr;
 public:
 	///========================================================
 	/// Constralt destract

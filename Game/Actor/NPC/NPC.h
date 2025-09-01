@@ -22,7 +22,7 @@ public:
 	//--------- accessor ----------------------------------
 	void SetTarget(const BaseStation* target);
 	void SetFaction(FactionType faction);
-
+	bool GetIsAlive()const { return isActive_; }
 
 	// ---- 調整項目 ----
 	virtual void BindParms();
@@ -41,6 +41,7 @@ protected:
 
 	// パラメータ
 	float maxHP_ = 10;					//< 最大hp
+	bool isActive_;
 
 protected:
 	 // ---- game ----

@@ -16,7 +16,7 @@ public:
 	///  public func
 	/// ===================================================
 	BaseStation(const std::string& name = "UnnamedStation");
-	virtual ~BaseStation()override = default;
+	virtual ~BaseStation()override;
 
 	virtual void Init()override;
 	virtual void Update()override;
@@ -31,8 +31,9 @@ public:
 	void SetFaction(FactionType type);
 	FactionType GetFactionType()const;
 
-private:
-	void TrySpawnWave();
+protected:
+	virtual void SpawnNPC() = 0;
+	void CleanupSpawnedList();
 
 protected:
 	/// ===================================================
@@ -46,11 +47,15 @@ protected:
 	// パラメータ
 	Vector3 initialPosition_;			//< 初期座
 	float maxLife_ = 100;				//< 最大hp
+	float spawnInterbal_ = 5.0f;			//< スポーン間隔(5秒間隔
+	int maxConcurrentUnits_ = 10;		//< 最大スポーン数(10体
 
 protected:
 	 // ---- game ----
 	FactionType faction_;
 	float hp_;
+	float currentTime_ = 0;
 
-	std::weak_ptr<BaseStation> wRivalStation_;	//<ライバル拠点
+	std::vector<std::unique_ptr<NPC>> spawned_;				//< スポーン済み
+	std::weak_ptr<BaseStation> wRivalStation_;	//< ライバル拠点
 };

@@ -1,9 +1,13 @@
 #include "BaseStation.h"
 
+#include "Actor/NPC/NPC.h"
+
 #include "imgui.h"
 
 BaseStation::BaseStation(const std::string& name):
 	name_(name){}
+
+BaseStation::~BaseStation() = default;
 
 /// ===================================================
 /// 初期化
@@ -97,4 +101,17 @@ void BaseStation::SetFaction(FactionType type) {faction_ = type;}
 
 FactionType BaseStation::GetFactionType() const { return faction_; }
 
+/// ===================================================
+/// リストを掃除
+/// ===================================================
+void BaseStation::CleanupSpawnedList() {
+		// unique_ptr なので remove_if で Dead な NPC を破棄
+	spawned_.erase(
+		std::remove_if(spawned_.begin(), spawned_.end(),
+					   [](const std::unique_ptr<NPC>& npc) {
+		return !npc || !npc->GetIsAlive();
+	}),
+		spawned_.end()
+	);
+}
 

@@ -27,13 +27,12 @@ void GameScene::Init() {
 	skuBox_ = std::make_unique<SkyBox>();
 	player_ = std::make_unique<Player>();
     enemyStation_ = std::make_unique<EnemyStation>("EnemyStation");
-	enemyNPC_ = std::make_unique<EnemyNPC>();
 	gameCamera_ = std::make_unique<GameCamera>();
+
 	// 初期化
 	skuBox_->Init();
 	player_->Init();
 	enemyStation_->Init();
-	enemyNPC_->Init();
 	gameCamera_->Init();
 
 	// ParticleViewSet
@@ -50,7 +49,6 @@ void GameScene::Update() {
 	gameCamera_->Update();
 	player_->Update();
 	enemyStation_->Update();
-	enemyNPC_->Update();
 
 	// obj3Dies AllUpdate
 	Object3DRegistry::GetInstance()->UpdateAll();

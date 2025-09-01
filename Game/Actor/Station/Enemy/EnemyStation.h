@@ -17,6 +17,7 @@ public:
 	void Init() override;
 	void Update() override;
 
+	void SpawnNPC()override;
 public:
 	/// ===================================================
 	///  private variable
