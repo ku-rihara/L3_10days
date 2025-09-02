@@ -12,7 +12,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
-    <ClCompile Include="Game\Actor\Player\PlayerBullet.cpp" />
+    <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerBehavior.cpp" />
+    <ClCompile Include="Game\Actor\Player\Behavior\PlayerBoost.cpp" />
+    <ClCompile Include="Game\Actor\Player\Behavior\PlayerInputAccepted.cpp" />
+    <ClCompile Include="Game\Actor\Player\Bullet\BasePlayerBullet.cpp" />
+    <ClCompile Include="Game\Actor\Player\Bullet\PlayerBullet.cpp" />
+    <ClCompile Include="Game\Actor\Player\Bullet\PlayerBulletShooter.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryEdgePipeline.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
     <ClCompile Include="Game\Actor\Boundary\Boundary.cpp" />
@@ -163,7 +168,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
-    <ClInclude Include="Game\Actor\Player\PlayerBullet.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\BasePlayerBehavior.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\PlayerBoost.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\PlayerInputAccepted.h" />
+    <ClInclude Include="Game\Actor\Player\Bullet\BasePlayerBullet.h" />
+    <ClInclude Include="Game\Actor\Player\Bullet\PlayerBullet.h" />
+    <ClInclude Include="Game\Actor\Player\Bullet\PlayerBulletShooter.h" />
     <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
     <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
     <ClInclude Include="Game\Actor\Boundary\Boundary.h" />

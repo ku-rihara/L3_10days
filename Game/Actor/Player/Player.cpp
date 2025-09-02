@@ -104,7 +104,7 @@ void Player::HandleInput() {
 
     // ロール制限処理
     if ((currentRoll > maxRoll && rollInput > 0.0f) || (currentRoll < -maxRoll && rollInput < 0.0f)) {
-  
+
         rollInput = 0.0f;
     }
 
@@ -198,7 +198,7 @@ void Player::UpdatePhysics() {
         rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-     // 現在のオイラー角を取得
+    // 現在のオイラー角を取得
     Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
     float currentRoll    = currentEuler.z;
 
@@ -206,8 +206,6 @@ void Player::UpdatePhysics() {
     Vector3 forward = GetForwardVector();
     Vector3 right   = GetRightVector();
     Vector3 up      = GetUpVector();
-
-
 
     // ロール角
     float rollSin = sin(currentRoll);
@@ -221,7 +219,7 @@ void Player::UpdatePhysics() {
     // 速度計算
     Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
     Vector3 sideVelocity    = right * sideInfluence * deltaTime;
-    Vector3 downVelocity    = up * downInfluence * deltaTime; 
+    Vector3 downVelocity    = up * downInfluence * deltaTime;
 
     // 合成速度
     velocity_ = forwardVelocity + sideVelocity + downVelocity;
@@ -265,7 +263,7 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "downFactor", &downFactor_);
 }
 
-    ///=========================================================
+///=========================================================
 /// パラメータ調整
 ///==========================================================
 void Player::AdjustParam() {
@@ -309,9 +307,9 @@ void Player::AdjustParam() {
         ImGui::Text("Aircraft Attitude");
         Vector3 euler = baseTransform_.quaternion_.ToEuler();
         ImGui::Text("Euler (deg): P=%.1f, Y=%.1f, R=%.1f",
-            euler.x * 180.0f / std::numbers::pi_v<float>,
-            euler.y * 180.0f / std::numbers::pi_v<float>,
-            euler.z * 180.0f / std::numbers::pi_v<float>);
+            ToDegree(euler.x),
+            ToDegree(euler.y),
+            ToDegree(euler.z));
 
         // 機体の上方向ベクトル
         Matrix4x4 rotMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
