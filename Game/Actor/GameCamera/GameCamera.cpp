@@ -22,8 +22,8 @@ void GameCamera::Init() {
     rendition_->Init();
     rendition_->SetGameCamera(this);
     rendition_->SetViewProjection(&viewProjection_);
- 
-    smoothness_     = 0.1f;
+
+    smoothness_ = 0.1f;
 }
 
 void GameCamera::Update() {
@@ -32,15 +32,10 @@ void GameCamera::Update() {
 
     if (target_) {
 
-     
-
         // 目標のローカルオフセット位置
         Vector3 targetLocalPos = cameraOffset_ + shakeOffsetPos_;
-      
-
-        // 補間でスムーズに移動
+        // position補間
         viewProjection_.translation_ = Lerp(viewProjection_.translation_, targetLocalPos, smoothness_);
-      
     }
 
     viewProjection_.UpdateMatrix();
@@ -83,8 +78,8 @@ void GameCamera::SetTarget(const WorldTransform* target) {
 
     // 初期位置をリセット
     viewProjection_.ignoreParentRoll_ = false;
-    viewProjection_.translation_ = cameraOffset_;
-    viewProjection_.rotation_    = rotationOffset_;
+    viewProjection_.translation_      = cameraOffset_;
+    viewProjection_.rotation_         = rotationOffset_;
 
     Reset();
 }

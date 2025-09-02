@@ -107,28 +107,6 @@ void Player::UpdatePhysics() {
     // 角速度変化
     angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.3f);
 
-    //// 現在の回転をオイラー角に変換
-    // Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
-    // float currentRoll    = currentEuler.z;
-
-    //// ロール制限
-    // const float maxRoll = ToRadian(rollRotateLimit_);
-
-    //// ロールの回転の制限
-    // if (currentRoll > maxRoll) {
-    //
-    //     if (angularVelocity_.z > 0.0f) {
-    //         angularVelocity_.z = 0.0f;
-    //
-    //     }
-    // } else if (currentRoll < -maxRoll) {
-    //
-    //     if (angularVelocity_.z < 0.0f) {
-    //         angularVelocity_.z = 0.0f;
-    //
-    //     }
-    // }
-
     // 現在の姿勢からローカル軸を取得
     Vector3 localRight   = GetRightVector();
     Vector3 localUp      = GetUpVector();
@@ -200,12 +178,27 @@ void Player::UpdatePhysics() {
         rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-    // 前方ベクトルを取得して移動
+    // 現在のオイラー角を取得
+    Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
+    float currentRoll    = currentEuler.z;
+
+    // 前方・右方向ベクトルを取得
     Vector3 forward = GetForwardVector();
-    velocity_       = forward * forwardSpeed_ * deltaTime;
+    Vector3 right   = GetRightVector();
+
+    // ロール角に応じた横方向の力を計算
+    float rollInfluence = sin(currentRoll) * 100.0f;
+
+    // 前進速度と横方向速度を計算
+    Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
+    Vector3 sideVelocity    = right * rollInfluence * deltaTime;
+
+    // 合成速度
+    velocity_ = forwardVelocity + sideVelocity;
+
+    // 位置を更新
     baseTransform_.translation_ += velocity_;
 }
-
 void Player::Move() {
 }
 
@@ -277,7 +270,7 @@ void Player::AdjustParam() {
             baseTransform_.rotation_.z * 180.0f / std::numbers::pi_v<float>);
         ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
 
-        // 機体姿勢の詳細デバッグ
+        // 機体姿勢のデバッグ
         ImGui::Separator();
         ImGui::Text("Aircraft Attitude");
         Vector3 euler = baseTransform_.quaternion_.ToEuler();
