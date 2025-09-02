@@ -26,6 +26,9 @@ void Player::Init() {
     angularVelocity_ = Vector3::ZeroVector();
 
     targetRotation_ = Quaternion::Identity();
+
+    bulletShooter_ = std::make_unique<PlayerBulletShooter>();
+    bulletShooter_->Init();
 }
 
 void Player::Update() {
@@ -34,6 +37,11 @@ void Player::Update() {
 
     // 物理計算
     UpdatePhysics();
+
+     // 弾丸システム更新
+    if (bulletShooter_) {
+        bulletShooter_->Update(this);
+    }
 
     // トランスフォーム更新
     BaseObject::Update();
@@ -334,6 +342,9 @@ void Player::AdjustParam() {
         globalParameter_->ParamLoadForImGui(groupName_);
 
         ImGui::PopID();
+    }
+    if (bulletShooter_) {
+        bulletShooter_->AdjustParam();
     }
 #endif // _DEBUG
 }

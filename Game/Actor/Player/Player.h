@@ -1,7 +1,9 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
+#include "Bullet/PlayerBulletShooter.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <cstdint>
+#include <memory>
 
 class Player : public BaseObject {
 public:
@@ -31,6 +33,7 @@ public:
 private:
     // viewProjection
     const ViewProjection* viewProjection_ = nullptr;
+    std::unique_ptr<PlayerBulletShooter> bulletShooter_;
 
     // globalParameter
     GlobalParameter* globalParameter_;
@@ -62,7 +65,7 @@ private:
     float rollBackTime_;
     float pitchReturnThreshold_;
 
-     float sideFactor_;
+    float sideFactor_;
     float downFactor_;
 
 public:
@@ -71,6 +74,10 @@ public:
     Vector3 GetRotation() const { return baseTransform_.rotation_; }
     Vector3 GetVelocity() const { return velocity_; }
     float GetSpeed() const { return velocity_.Length(); }
-
+    Quaternion GetQuaternion() const { return baseTransform_.quaternion_; }
+    std::vector<BasePlayerBullet*> GetActiveBullets() const {
+        return bulletShooter_ ? bulletShooter_->GetActiveBullets() : std::vector<BasePlayerBullet*>();
+    }
     void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
+    PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
 };

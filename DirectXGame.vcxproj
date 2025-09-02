@@ -16,8 +16,10 @@
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBoost.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerInputAccepted.cpp" />
     <ClCompile Include="Game\Actor\Player\Bullet\BasePlayerBullet.cpp" />
-    <ClCompile Include="Game\Actor\Player\Bullet\PlayerBullet.cpp" />
+    <ClCompile Include="Game\Actor\Player\Bullet\BulletFactory.cpp" />
     <ClCompile Include="Game\Actor\Player\Bullet\PlayerBulletShooter.cpp" />
+    <ClCompile Include="Game\Actor\Player\Bullet\PlayerMissile.cpp" />
+    <ClCompile Include="Game\Actor\Player\Bullet\PlayerNormalBullet.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryEdgePipeline.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
     <ClCompile Include="Game\Actor\Boundary\Boundary.cpp" />
@@ -172,8 +174,10 @@
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerBoost.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerInputAccepted.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\BasePlayerBullet.h" />
-    <ClInclude Include="Game\Actor\Player\Bullet\PlayerBullet.h" />
+    <ClInclude Include="Game\Actor\Player\Bullet\BulletFactory.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerBulletShooter.h" />
+    <ClInclude Include="Game\Actor\Player\Bullet\PlayerMissile.h" />
+    <ClInclude Include="Game\Actor\Player\Bullet\PlayerNormalBullet.h" />
     <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
     <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
     <ClInclude Include="Game\Actor\Boundary\Boundary.h" />
