@@ -9,10 +9,10 @@
         "rollBackTime": 5.0,
         "rollRotateLimit": 83.06999969482422,
         "rollSmoothness": 1.2000000476837158,
-        "rollSpeed": 500.0,
-        "rotationSmoothness": 0.125,
+        "rollSpeed": 100.0,
+        "rotationSmoothness": 0.925000011920929,
         "speed": 50.0,
         "turnFactor": 5.769999980926514,
-        "yawSpeed": 200.0
+        "yawSpeed": 100.0
     }
 }

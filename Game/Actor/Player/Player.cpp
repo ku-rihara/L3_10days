@@ -99,13 +99,13 @@ void Player::UpdatePhysics() {
     Vector3 targetAngularVelocity = angleInput_;
 
     // 入力がない場合は減衰させる
-    const float damping = 0.95f; // 減衰率
+    const float damping = 0.95f; // 減衰率(マジックナンバーだーー)
     if (angleInput_.Length() < 0.001f) {
         targetAngularVelocity = angularVelocity_ * damping;
     }
 
     // 角速度変化
-    angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.3f);
+    angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);//(マジックナンバーだーー)
 
     // 現在の姿勢からローカル軸を取得
     Vector3 localRight   = GetRightVector();
@@ -132,7 +132,7 @@ void Player::UpdatePhysics() {
     float upDot = Vector3::Dot(targetUpVector, GetUpVector());
 
     // 機体が逆さまかどうかを判定
-    const float upsideDownThreshold = -0.3f;
+    const float upsideDownThreshold = -0.3f;//(マジックナンバーだーー)
     bool isUpsideDown               = upDot < upsideDownThreshold;
 
     // 逆さまの場合の自動補正
@@ -187,7 +187,7 @@ void Player::UpdatePhysics() {
     Vector3 right   = GetRightVector();
 
     // ロール角に応じた横方向の力を計算
-    float rollInfluence = sin(currentRoll) * 100.0f;
+    float rollInfluence = sin(currentRoll) * 100.0f;//(マジックナンバーだーー)
 
     // 前進速度と横方向速度を計算
     Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
