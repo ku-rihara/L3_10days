@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.cpp" />
+    <ClCompile Include="Game\Actor\Player\Behavior\PlayerBoost.cpp" />
+    <ClCompile Include="Game\Actor\Player\Behavior\PlayerSpeedDown.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryShardPipeline.cpp" />
     <ClCompile Include="Game\Actor\Boundary\BoundaryShard.cpp" />
     <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
@@ -176,6 +179,9 @@
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\MoveConstraint.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\NpcNavigator.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\PlayerBoost.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\PlayerSpeedDown.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\BasePlayerBullet.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\BulletFactory.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerBulletShooter.h" />

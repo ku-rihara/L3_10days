@@ -2,6 +2,9 @@
 #include "Frame/Frame.h"
 #include "input/Input.h"
 #include "MathFunction.h"
+// behavior
+#include "Behavior/PlayerBoost.h"
+#include "Behavior/PlayerSpeedDown.h"
 #include <imgui.h>
 #include <numbers>
 
@@ -24,11 +27,12 @@ void Player::Init() {
 
     velocity_        = Vector3::ZeroVector();
     angularVelocity_ = Vector3::ZeroVector();
-
-    targetRotation_ = Quaternion::Identity();
+    targetRotation_  = Quaternion::Identity();
 
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
+
+    ChangeSpeedBehavior(std::make_unique<PlayerSpeedDown>(this));
 }
 
 void Player::Update() {
@@ -36,9 +40,9 @@ void Player::Update() {
     HandleInput();
 
     // 物理計算
-    UpdatePhysics();
+    RotateUpdate();
 
-     // 弾丸システム更新
+    // 弾丸システム更新
     if (bulletShooter_) {
         bulletShooter_->Update(this);
     }
@@ -105,7 +109,7 @@ void Player::HandleInput() {
     float currentRoll    = currentEuler.z;
 
     // 最大ロール角
-    const float maxRoll = ToRadian(60.0f);
+    const float maxRoll = ToRadian(rollRotateLimit_);
 
     // 入力値に基づくロール回転
     float rollInput = -stickL.x * (rollSpeed_ * deltaTime);
@@ -120,7 +124,7 @@ void Player::HandleInput() {
     angleInput_.z = rollInput;
 }
 
-void Player::UpdatePhysics() {
+void Player::RotateUpdate() {
     float deltaTime = Frame::DeltaTime();
 
     // 角速度の補間
@@ -235,9 +239,8 @@ void Player::UpdatePhysics() {
     // 位置を更新
     baseTransform_.translation_ += velocity_;
 }
-void Player::Move() {
+void Player::SpeedChange() {
 }
-
 Vector3 Player::GetForwardVector() const {
     Matrix4x4 rotationMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
     return TransformNormal(Vector3::ToForward(), rotationMatrix).Normalize();
@@ -353,4 +356,28 @@ void Player::AdjustParam() {
 /// 移動
 ///==========================================================
 void Player::DirectionToCamera() {
+}
+
+void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior) {
+    speedBehavior_ = std::move(behavior);
+}
+
+void Player::UpdateSpeedBehavior() {
+
+    // LBボタンの状態を取得
+    isLBPressed_ = Input::IsPressPad(0, XINPUT_GAMEPAD_LEFT_SHOULDER);
+
+    // ボタンが押された瞬間の処理
+    if (isLBPressed_ && !wasLBPressed_) {
+        // BoostBehaviorに切り替え
+        ChangeSpeedBehavior(std::make_unique<PlayerBoost>(this));
+    }
+    // ボタンが離された瞬間の処理
+    else if (!isLBPressed_ && wasLBPressed_) {
+        // SpeedDownBehaviorに切り替え
+        ChangeSpeedBehavior(std::make_unique<PlayerSpeedDown>(this));
+    }
+
+    // 前フレームのボタン状態を保存
+    wasLBPressed_ = isLBPressed_;
 }
