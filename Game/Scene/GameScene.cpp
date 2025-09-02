@@ -65,8 +65,8 @@ void GameScene::Update() {
 
 	// class Update
 	boundary_->Update();
-	gameCamera_->Update();
 	player_->Update();
+    gameCamera_->Update();
 	for (auto& kv : stations_) { kv.second->Update(); }
 	skuBox_->Update();
 	testGround_->Update();
