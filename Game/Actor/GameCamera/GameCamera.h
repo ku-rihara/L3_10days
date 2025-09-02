@@ -35,7 +35,6 @@ public:
     void BindParams();
     void AdjustParam();
 
-
 private:
     /// ===================================================
     /// private variable
@@ -62,10 +61,13 @@ private:
     Vector3 offset_;
     float baseRotateOffsetX_;
 
-    Vector3 cameraOffset_; 
+    Vector3 cameraOffset_;
     Vector3 rotationOffset_;
-    float smoothness_; 
-    public:
+    float smoothness_;
+    float rollFollowFactor_;
+    float rollSmoothness_;
+
+public:
     /// ===================================================
     /// getter
     /// ===================================================
@@ -73,7 +75,7 @@ private:
     ViewProjection& GetViewProjectionRef() { return viewProjection_; }
     Vector3 GetTargetPos() const;
     Vector3 GetOffset() const { return offset_; };
-   
+
     /// ===================================================
     /// setter
     /// ===================================================
@@ -84,5 +86,4 @@ private:
     void SetShakePosY(const float& shake) { shakeOffsetPos_.y = shake; }
     void SetDestinationAngleY_(float angle) { destinationAngleY_ = angle; }
     void SetViewProjectionPos(Vector3 pos) { viewProjection_.translation_ = pos; }
-  
 };

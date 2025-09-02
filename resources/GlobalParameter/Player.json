@@ -2,6 +2,7 @@
     "Player": {
         "forwardSpeed": 54.36000061035156,
         "hp": 100,
+        "lateralSpeed": 30.420000076293945,
         "pitchSpeed": 300.0,
         "rollSpeed": 300.0,
         "speed": 50.0,
