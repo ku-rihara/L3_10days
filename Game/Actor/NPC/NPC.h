@@ -64,7 +64,7 @@ protected:
 	bool isInitialized_ = false;
 
 	// ---- 航法（純ロジック）----
-	NpcNavConfig navConfig_{   // 初期値は必要に応じて調整
+	NpcNavConfig navConfig_{
 		/*speed*/            18.0f,
 		/*arriveSlowRadius*/ 3.0f,
 		/*minHoleRadius*/    8.0f,
