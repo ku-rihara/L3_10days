@@ -1,22 +1,24 @@
 #pragma once
 
+/// engine
+#include "struct/TransformationMatrix.h"
+#include "ShadowMap/ShadowMapData.h"
+
 /// game
 #include "../../BaseObject/BaseObject.h"
 #include "Pipeline/Buffer/StructuredBuffer.h"
 #include "Pipeline/Buffer/ConstantBuffer.h"
 #include "Pipeline/Buffer/IndexBuffer.h"
 #include "Pipeline/Buffer/VertexBuffer.h"
+#include "BoundaryShard.h"
 
-/// buffer data
-#include "struct/TransformationMatrix.h"
-#include "ShadowMap/ShadowMapData.h"
 
 /// @brief 境界に空ける穴
 struct Hole {
 	Vector3 position;
 	float radius;
-	float startRadius = 0.0f; // 穴が空いたときの半径
-	float lifeTime = 0.0f; // 穴が空いてからの経過時間
+	float startRadius; // 穴が空いたときの半径
+	float lifeTime;    // 穴が空いてからの経過時間
 };
 
 /// @brief 境界が割れる前の亀裂
@@ -60,6 +62,8 @@ public:
 	const std::vector<Crack>& GetCracks() const;
 	std::vector<Crack>& GetCracksRef();
 
+	BoundaryShard* GetBoundaryShard();
+
 private:
 	/// ===================================================
 	/// private : objects
@@ -71,10 +75,14 @@ private:
 
 	float holeMaxLifeTime_ = 16.0f;
 
+	std::unique_ptr<BoundaryShard> boundaryShard_;
+
+
+	/// ----- buffer ----- ///
+
 	/// vbv, ibv
 	IndexBuffer indexBuffer_;
 	VertexBuffer<BoundaryVertex> vertexBuffer_;
-
 
 	/// vertex shader buffers
 	ConstantBuffer<TransformationMatrix> transformBuffer_;

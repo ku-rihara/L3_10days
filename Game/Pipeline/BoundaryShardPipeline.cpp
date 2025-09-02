@@ -104,8 +104,8 @@ void BoundaryShardPipeline::CreateGraphicsPipeline() {
 	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	// Shaderをコンパイルする
-	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Boundary.vs.hlsl", L"vs_6_0");
-	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Boundary.ps.hlsl", L"ps_6_0");
+	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/BoundaryShard.vs.hlsl", L"vs_6_0");
+	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/BoundaryShard.ps.hlsl", L"ps_6_0");
 
 	// PSO作成用関数
 	auto CreatePSO = [&](D3D12_BLEND_DESC& blendDesc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso) {
@@ -185,12 +185,12 @@ void BoundaryShardPipeline::CreateRootSignature() {
 	// 0: TransformationMatrix
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderを使う
-	rootParameters[0].Descriptor.ShaderRegister = 1; // レジスタ番号0とバインド
+	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
 
 	// 1: ShadowMap
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 2;
+	rootParameters[1].Descriptor.ShaderRegister = 1;
 
 	//// 2: Hole
 	//rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
@@ -234,6 +234,14 @@ void BoundaryShardPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewProjection& _viewProjection) {
 	Boundary* boundary = Boundary::GetInstance();
 	if (!boundary) { return; }
+	
+	BoundaryShard* shard = boundary->GetBoundaryShard();
+	if (!shard) { return; }
+
+	commandList;
+	_viewProjection;
+
+	const auto& cracks = boundary->GetCracks();
 
 	///// bufferの設定
 	//boundary->vertexBuffer_.BindForCommandList(commandList);
@@ -252,5 +260,12 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 	//boundary->holeBuffer_.BindToCommandList(ROOT_PARAM_HOLE, commandList);
 	//boundary->timeBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TIME);
 
-	//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+
+	UINT instanceCount = static_cast<UINT>(cracks.size());
+
+	for (size_t i = 0; i < shard->GetBreakables().size(); i++) {
+
+	}
+
+	commandList->DrawIndexedInstanced(6, instanceCount, 0, 0, 0);
 }

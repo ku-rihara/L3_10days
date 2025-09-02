@@ -40,13 +40,16 @@ Boundary::Boundary() {
 	transformBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	shadowTransformBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	timeBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
+
 }
 
 void Boundary::Init() {
 	baseTransform_.Init();
 
-	/// test
-	ModelManager::GetInstance()->LoadModel("BoundaryShard.obj");
+	/// 
+	boundaryShard_ = std::make_unique<BoundaryShard>();
+	boundaryShard_->Init();
+
 }
 
 void Boundary::Update() {
@@ -145,4 +148,8 @@ const std::vector<Crack>& Boundary::GetCracks() const {
 
 std::vector<Crack>& Boundary::GetCracksRef() {
 	return cracks_;
+}
+
+BoundaryShard* Boundary::GetBoundaryShard() {
+	return boundaryShard_.get();
 }

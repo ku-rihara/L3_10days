@@ -7,6 +7,9 @@
 /// std
 #include <vector>
 
+#include "Dx/DxDevice.h"
+
+
 using Microsoft::WRL::ComPtr;
 
 
