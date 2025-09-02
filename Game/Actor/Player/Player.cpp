@@ -99,13 +99,13 @@ void Player::UpdatePhysics() {
     Vector3 targetAngularVelocity = angleInput_;
 
     // 入力がない場合は減衰させる
-    const float damping = 0.95f; // 減衰率(マジックナンバーだーー)
+    const float damping = 0.95f; // 減衰率
     if (angleInput_.Length() < 0.001f) {
         targetAngularVelocity = angularVelocity_ * damping;
     }
 
     // 角速度変化
-    angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);//(マジックナンバーだーー)
+    angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);
 
     // 現在の姿勢からローカル軸を取得
     Vector3 localRight   = GetRightVector();
@@ -132,7 +132,7 @@ void Player::UpdatePhysics() {
     float upDot = Vector3::Dot(targetUpVector, GetUpVector());
 
     // 機体が逆さまかどうかを判定
-    const float upsideDownThreshold = -0.3f;//(マジックナンバーだーー)
+    const float upsideDownThreshold = -0.3f;
     bool isUpsideDown               = upDot < upsideDownThreshold;
 
     // 逆さまの場合の自動補正
@@ -148,7 +148,7 @@ void Player::UpdatePhysics() {
         float correctionStrength = std::abs(upDot + 0.3f) * 2.0f;
         correctionStrength       = std::min(correctionStrength, 1.0f);
 
-        // スムーズに補正
+        // 補正
         targetRotation_ = Quaternion::Slerp(
             targetRotation_,
             correctedRotation,
@@ -187,18 +187,16 @@ void Player::UpdatePhysics() {
     Vector3 right   = GetRightVector();
     Vector3 up      = GetUpVector();
 
- 
-    float sideFactor = 1.0f;
-    float downFactor = 0.3f;
+
 
     // ロール角
     float rollSin = sin(currentRoll);
 
     // 横方向の力
-    float sideInfluence = -rollSin * forwardSpeed_ * sideFactor;
+    float sideInfluence = -rollSin * forwardSpeed_ * sideFactor_;
 
     // 下方向の力
-    float downInfluence = fabs(rollSin) * forwardSpeed_ * downFactor;
+    float downInfluence = fabs(rollSin) * forwardSpeed_ * downFactor_;
 
     // 速度計算
     Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
@@ -243,9 +241,11 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "pitchBackTime", &pitchBackTime_);
     globalParameter_->Bind(groupName_, "rollBackTime", &rollBackTime_);
     globalParameter_->Bind(groupName_, "pitchReturnThreshold", &pitchReturnThreshold_);
+    globalParameter_->Bind(groupName_, "sideFactor", &sideFactor_);
+    globalParameter_->Bind(groupName_, "downFactor", &downFactor_);
 }
 
-///=========================================================
+    ///=========================================================
 /// パラメータ調整
 ///==========================================================
 void Player::AdjustParam() {
@@ -268,6 +268,8 @@ void Player::AdjustParam() {
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
+        ImGui::DragFloat("sideFactor", &sideFactor_, 0.01f);
+        ImGui::DragFloat("downFactor", &downFactor_, 0.01f);
 
         // デバッグ
         ImGui::Separator();

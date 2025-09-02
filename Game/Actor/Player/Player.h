@@ -62,8 +62,8 @@ private:
     float rollBackTime_;
     float pitchReturnThreshold_;
 
-     float rollSideFactor_ = 1.5f;
-    float rollDownFactor_ = 0.5f; 
+     float sideFactor_;
+    float downFactor_;
 
 public:
     // ゲッター
