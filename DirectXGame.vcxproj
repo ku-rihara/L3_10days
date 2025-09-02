@@ -12,6 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Navigation\MoveConstraint.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Navigation\NpcNavigator.cpp" />
     <ClCompile Include="Game\Actor\Player\PlayerBullet.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryEdgePipeline.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
@@ -161,9 +163,13 @@
     <ClCompile Include="Game\Actor\Station\Player\PlayerStation.cpp" />
     <ClCompile Include="Game\Actor\NPC\PlayerNPC.cpp" />
     <ClCompile Include="Game\Actor\NPC\Pool\NpcPool.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Navigation\RectXZWithGatesConstraint.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Actor\Boundary\RectXZ.h" />
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\MoveConstraint.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\NpcNavigator.h" />
     <ClInclude Include="Game\Actor\Player\PlayerBullet.h" />
     <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
     <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
@@ -332,6 +338,7 @@
     <ClInclude Include="Game\Actor\Station\Player\PlayerStation.h" />
     <ClInclude Include="Game\Actor\NPC\PlayerNPC.h" />
     <ClInclude Include="Game\Actor\NPC\Pool\NpcPool.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\RectXZWithGatesConstraint.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

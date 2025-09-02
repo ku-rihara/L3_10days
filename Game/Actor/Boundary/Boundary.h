@@ -10,6 +10,7 @@
 /// buffer data
 #include "struct/TransformationMatrix.h"
 #include "ShadowMap/ShadowMapData.h"
+#include "RectXZ.h"
 
 /// @brief 境界に空ける穴
 struct Hole {
@@ -50,6 +51,10 @@ public:
 
 	const std::vector<Hole>& GetHoles() const;
 
+	RectXZ GetRectXZLocal() const { return localRectXZ_; }
+	RectXZ GetRectXZWorld() const;
+	void   GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const;
+
 private:
 	/// ===================================================
 	/// private : objects
@@ -73,5 +78,6 @@ private:
 	StructuredBuffer<Hole> holeBuffer_;
 	ConstantBuffer<float> timeBuffer_;
 
+	RectXZ localRectXZ_{ -1500.0f, 1500.0f, -1500.0f, 1500.0f };
 };
 

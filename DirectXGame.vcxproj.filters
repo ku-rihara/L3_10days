@@ -651,6 +651,9 @@
     <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
     <ClCompile Include="Game\Actor\NPC\Pool\NpcPool.cpp" />
     <ClCompile Include="Game\Actor\Player\PlayerBullet.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Navigation\MoveConstraint.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Navigation\NpcNavigator.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Navigation\RectXZWithGatesConstraint.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1116,6 +1119,10 @@
     <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
     <ClInclude Include="Game\Actor\NPC\Pool\NpcPool.h" />
     <ClInclude Include="Game\Actor\Player\PlayerBullet.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\MoveConstraint.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\NpcNavigator.h" />
+    <ClInclude Include="Game\Actor\Boundary\RectXZ.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\RectXZWithGatesConstraint.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

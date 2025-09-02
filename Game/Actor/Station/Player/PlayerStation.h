@@ -11,7 +11,7 @@ public:
 	/// ===================================================
 	PlayerStation();
 	PlayerStation(const std::string& name = "UnnamedStation");
-	virtual ~PlayerStation() override = default;
+	~PlayerStation() override;
 
 	void Init() override;
 	void Update() override;
