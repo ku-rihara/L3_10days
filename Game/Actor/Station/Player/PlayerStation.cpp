@@ -13,6 +13,8 @@ PlayerStation::PlayerStation(const std::string& name) :
 	BaseStation::SetFaction(FactionType::Ally);
 }
 
+PlayerStation::~PlayerStation() { spawned_.clear(); }
+
 /// ===================================================
 /// 初期化
 /// ===================================================

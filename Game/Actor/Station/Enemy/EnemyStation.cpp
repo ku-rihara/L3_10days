@@ -13,6 +13,8 @@ EnemyStation::EnemyStation(const std::string& name) :
 	BaseStation::SetFaction(FactionType::Enemy);
 }
 
+EnemyStation::~EnemyStation() { spawned_.clear(); }
+
 /// ===================================================
 /// 初期化
 /// ===================================================
@@ -23,7 +25,6 @@ void EnemyStation::Init() {
 
 	globalParam_ = GlobalParameter::GetInstance();
 
-	BaseStation::Init();
 	BaseStation::Init();
 }
 

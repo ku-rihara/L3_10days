@@ -12,7 +12,7 @@ public:
 	/// ===================================================
 	EnemyStation();
 	EnemyStation(const std::string& name = "UnnamedStation");
-	virtual ~EnemyStation() override = default;
+	~EnemyStation() override;
 
 	void Init() override;
 	void Update() override;
