@@ -1,4 +1,5 @@
 #include "BoundaryShard.hlsli"
+#include "Noise.hlsli"
 
 /// 仮想ライトと計算
 static const float3 gLightDirection = normalize(float3(1, -1, 1));
@@ -14,8 +15,9 @@ float3 CalculateLighting(float3 normal) {
 PSOutput main(VSOutput input) {
 	PSOutput output;
 
-	output.color.rgb = CalculateLighting(input.normal) * float3(1, 0, 0);
-	output.color.a = 1.0;
+	float noise = PerlinNoise(input.texcoord * 10);
+	output.color.rgb = float3(0.855, 0.867, 0.173) * CalculateLighting(input.normal) * noise;
+	output.color.a = noise;
 
 	return output;
 }

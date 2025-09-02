@@ -81,10 +81,10 @@ void BoundaryShardPipeline::CreateGraphicsPipeline() {
 	D3D12_BLEND_DESC blendDescNormal = {};
 	blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
 	blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
 	blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
@@ -259,8 +259,8 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 
 			matWorld = MakeIdentity4x4();
 			matWorld *= MakeScaleMatrix({ breakable.radius, breakable.radius, breakable.radius });
-			matWorld *= MakeRotateMatrix(shard.transform.rotate);
-			matWorld *= MakeTranslateMatrix(shard.transform.translate * breakable.radius);
+			matWorld *= MakeRotateMatrix(shard.transform.rotate + shard.offsetRotate);
+			matWorld *= MakeTranslateMatrix((shard.transform.translate * breakable.radius) + shard.offsetPos);
 			matWorld *= MakeTranslateMatrix(breakable.position);
 
 			matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;

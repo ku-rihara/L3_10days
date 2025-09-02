@@ -32,7 +32,10 @@ struct Shard {
 	VertexBuffer<ShardVertex> vertexBuffer;
 	IndexBuffer indexBuffer;
 	EulerTransform transform;
+	float phase = 0.0f;
+	Vector3 offsetPos;
 	Vector3 initPos;
+	Vector3 offsetRotate;
 	Vector3 initRotate;
 	Vector3 normal;
 	float randomSmallRotation;
@@ -44,6 +47,7 @@ struct Breakable {
 	float currentLife; /// 0になったら破片に分かれる and Holeが生まれる
 	int stage; /// 罅の段階
 	float radius; /// 罅の大きさ
+	float frameTime = 0.0f; /// 罅ができてからの経過時間
 	std::vector<Shard> shards;
 };
 

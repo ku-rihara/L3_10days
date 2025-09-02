@@ -3,6 +3,7 @@
 /// std
 #include <filesystem>
 #include <cassert>
+#include <numbers>
 
 /// assimp
 #include <assimp/Importer.hpp>
@@ -12,6 +13,7 @@
 /// engine
 #include "3d/ModelManager.h"
 #include "random.h"
+#include "Frame/Frame.h"
 
 /// game
 #include "Boundary.h"
@@ -34,6 +36,8 @@ void BoundaryShard::Init() {
 void BoundaryShard::Update() {
 
 	for (auto& breakable : breakables_) {
+		breakable.frameTime += Frame::DeltaTime();
+
 		/// 罅のmaxLifeとcurrentLifeを見てstageを決定
 		float lifeRatio = breakable.currentLife / breakable.maxLife;
 
@@ -55,10 +59,33 @@ void BoundaryShard::Update() {
 		for (size_t i = 0; i < breakable.shards.size(); i++) {
 			Shard& shard = breakable.shards[i];
 
-			shard.transform.translate = shard.initPos + shard.normal * (baseOffset + stageOffset * breakable.stage);
-			//shard.transform.translate = shard.initPos;
-			shard.transform.rotate = shard.initRotate;
-			//shard.transform.rotate = shard.initRotate * (shard.randomSmallRotation * breakable.stage);
+			if (shard.phase == 0.0f) {
+				shard.phase = Random::Range(0.0f, std::numbers::pi_v<float> *2.0f);
+			}
+
+			shard.transform.translate = shard.initPos + shard.normal * (baseOffset + stageOffset * (breakable.radius));
+			{
+				float amplitude = 0.05f * (breakable.radius * 0.1f); // 揺れる大きさ
+				float frequency = 2.0f; // 揺れる速さ
+
+				float wave1 = sin(breakable.frameTime * frequency + shard.phase);
+				float wave2 = cos(breakable.frameTime * (frequency * 0.7f) + shard.phase);
+
+				shard.offsetPos = shard.normal * (wave1 * amplitude) * (wave2 * amplitude * 0.5f);
+			}
+
+			/// 回転
+			shard.transform.rotate = shard.initRotate * (shard.randomSmallRotation * (breakable.radius * 0.1f));
+			{
+				float amplitudeRot = 5.0f * (std::numbers::pi_v<float> / 180.0f); // 揺れる角度（ラジアン）
+				float frequencyRot = 1.5f; // 揺れる速さ
+
+				// shardごとにランダム位相を持っていると自然
+				float waveRot = std::sin(breakable.frameTime * frequencyRot + shard.phase);
+
+				// 回転オフセット（ラジアン）
+				shard.offsetRotate = Vector3(0.0f, 0.0f, waveRot * amplitudeRot);
+			}
 		}
 
 	}
@@ -102,14 +129,14 @@ void BoundaryShard::LoadShardModel(const std::string& _filepath) {
 			vertices.push_back(vertex);
 		}
 
-		averageNormal = averageNormal.Normalize();
 		averagePos = averagePos / static_cast<float>(mesh->mNumVertices);
-		for(auto& v : vertices) {
+		for (auto& v : vertices) {
 			v.position.x -= averagePos.x;
 			v.position.y -= averagePos.y;
 			v.position.z -= averagePos.z;
 		}
 
+		averageNormal = (averagePos.Normalize() + Vector3(0.0f, Random::Range(-1.0f, 1.0f), 0.0f)).Normalize();
 
 		/// index 解析
 		for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {
@@ -132,7 +159,11 @@ void BoundaryShard::LoadShardModel(const std::string& _filepath) {
 		shard.indexBuffer.Map();
 
 		shard.initPos = averagePos;
-		shard.initRotate = { Random::Range(-5.0f, 5.0f), Random::Range(-5.0f, 5.0f), Random::Range(-5.0f, 5.0f) };
+		shard.initRotate = {
+			Random::Range(-1.0f, 1.0f),
+			Random::Range(-1.0f, 1.0f),
+			Random::Range(-1.0f, 1.0f)
+		};
 		shard.normal = averageNormal;
 		shard.randomSmallRotation = Random::Range(0.0f, 1.0f);
 
@@ -161,7 +192,7 @@ void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
 		float distance = (other.position - _position).Length();
 		if (distance < other.radius) {
 			other.currentLife -= _damage;
-			other.radius = std::min(other.radius + _damage, 200.0f);
+			other.radius = std::min(other.radius + _damage, 50.0f);
 			isNearBreakable = true;
 		}
 	}
@@ -174,7 +205,7 @@ void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
 	/// 罅の追加
 	Breakable breakable;
 	breakable.position = _position;
-	breakable.maxLife = 320.0f;
+	breakable.maxLife = 100.0f;
 	breakable.currentLife = breakable.maxLife;
 	breakable.stage = 0;
 	breakable.radius = _damage;
