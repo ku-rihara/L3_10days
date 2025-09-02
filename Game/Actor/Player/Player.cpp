@@ -178,23 +178,35 @@ void Player::UpdatePhysics() {
         rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-    // 現在のオイラー角を取得
+     // 現在のオイラー角を取得
     Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
     float currentRoll    = currentEuler.z;
 
-    // 前方・右方向ベクトルを取得
+    // 前方・右・上方向ベクトルを取得
     Vector3 forward = GetForwardVector();
     Vector3 right   = GetRightVector();
+    Vector3 up      = GetUpVector();
 
-    // ロール角に応じた横方向の力を計算
-    float rollInfluence = sin(currentRoll) * 100.0f;//(マジックナンバーだーー)
+ 
+    float sideFactor = 1.0f;
+    float downFactor = 0.3f;
 
-    // 前進速度と横方向速度を計算
+    // ロール角
+    float rollSin = sin(currentRoll);
+
+    // 横方向の力
+    float sideInfluence = -rollSin * forwardSpeed_ * sideFactor;
+
+    // 下方向の力
+    float downInfluence = fabs(rollSin) * forwardSpeed_ * downFactor;
+
+    // 速度計算
     Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
-    Vector3 sideVelocity    = right * rollInfluence * deltaTime;
+    Vector3 sideVelocity    = right * sideInfluence * deltaTime;
+    Vector3 downVelocity    = up * downInfluence * deltaTime; 
 
     // 合成速度
-    velocity_ = forwardVelocity + sideVelocity;
+    velocity_ = forwardVelocity + sideVelocity + downVelocity;
 
     // 位置を更新
     baseTransform_.translation_ += velocity_;

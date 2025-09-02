@@ -62,6 +62,9 @@ private:
     float rollBackTime_;
     float pitchReturnThreshold_;
 
+     float rollSideFactor_ = 1.5f;
+    float rollDownFactor_ = 0.5f; 
+
 public:
     // ゲッター
     Vector3 GetPosition() const { return baseTransform_.translation_; }
