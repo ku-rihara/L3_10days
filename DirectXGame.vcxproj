@@ -159,6 +159,7 @@
     <ClCompile Include="Game\Actor\NPC\NPC.cpp" />
     <ClCompile Include="Game\Actor\Station\Player\PlayerStation.cpp" />
     <ClCompile Include="Game\Actor\NPC\PlayerNPC.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Pool\NpcPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
@@ -328,6 +329,7 @@
     <ClInclude Include="Game\Actor\NPC\NPC.h" />
     <ClInclude Include="Game\Actor\Station\Player\PlayerStation.h" />
     <ClInclude Include="Game\Actor\NPC\PlayerNPC.h" />
+    <ClInclude Include="Game\Actor\NPC\Pool\NpcPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

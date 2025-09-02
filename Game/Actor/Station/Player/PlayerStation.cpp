@@ -1,15 +1,16 @@
 #include "PlayerStation.h"
 
 #include "Actor/NPC/PlayerNPC.h"
+#include "Actor/NPC/Pool/NpcPool.h"
 #include "Frame/Frame.h"
 
 #include "imgui.h"
 
-PlayerStation::PlayerStation() { BaseStation::SetFaction(FactionType::Enemy); }
+PlayerStation::PlayerStation() { BaseStation::SetFaction(FactionType::Ally); }
 
 PlayerStation::PlayerStation(const std::string& name) :
 	BaseStation(name) {
-	BaseStation::SetFaction(FactionType::Enemy);
+	BaseStation::SetFaction(FactionType::Ally);
 }
 
 /// ===================================================
@@ -17,7 +18,6 @@ PlayerStation::PlayerStation(const std::string& name) :
 /// ===================================================
 void PlayerStation::Init() {
 	BaseStation::Init();
-
 }
 
 /// ===================================================
@@ -42,21 +42,18 @@ void PlayerStation::Update() {
 /// npcのスポーン
 /// ===================================================
 void PlayerStation::SpawnNPC() {
-	//auto rival = GetRivalStation();
-	//if (!rival)return;
 
-	//上限チェック
-	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_)return;
+	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_) return;
 
-	//1体スポーン
-	auto npc = std::make_unique<PlayerNPC>();
+	auto npc = pool_.Acquire();
 	npc->Init();
+	npc->SetFaction(FactionType::Ally);
+
 	Vector3 spawnOffset = { 1.0f,1.0f,1.0f };
 	const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;
 	npc->SetWorldPosition(worldSpawn);
 	npc->SetTarget(GetRivalStation());
 
 	spawned_.push_back(std::move(npc));
-
-	currentTime_ = 0.0f;//リセット
+	currentTime_ = 0.0f;
 }

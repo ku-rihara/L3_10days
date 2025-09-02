@@ -6,8 +6,7 @@
 // game
 #include "BaseObject/BaseObject.h"
 #include "Details/Faction.h"
-
-class NPC;
+#include "Actor/NPC/Pool/NpcPool.h"
 
 class BaseStation
 	:public BaseObject{
@@ -57,7 +56,8 @@ protected:
 	FactionType faction_;
 	float hp_;
 	float currentTime_ = 0;
+	bool isInitialized_ = false;
 
-	std::vector<std::unique_ptr<NPC>> spawned_;		//< スポーン済み
-	BaseStation* pRivalStation_;					//< ライバル拠点
+	std::vector<NpcHandle> spawned_;
+	BaseStation* pRivalStation_ = nullptr; //< ライバル拠点
 };
