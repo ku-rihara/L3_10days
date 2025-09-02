@@ -24,9 +24,9 @@ public:
     void BindParams();
 
     // ベクトル取得
-    Vector3 GetForwardVector() const; 
+    Vector3 GetForwardVector() const;
     Vector3 GetRightVector() const;
-    Vector3 GetUpVector() const; 
+    Vector3 GetUpVector() const;
 
 private:
     // viewProjection
@@ -42,15 +42,15 @@ private:
 
     // スピードパラメータ
     float forwardSpeed_;
-    float pitchSpeed_; 
-    float yawSpeed_; 
-    float rollSpeed_; 
+    float pitchSpeed_;
+    float yawSpeed_;
+    float rollSpeed_;
 
     // 物理パラメータ
     Vector3 velocity_;
     Vector3 angularVelocity_;
     Vector3 angleInput_;
-    Quaternion targetRotation_; 
+    Quaternion targetRotation_;
 
     float rotationSmoothness_;
     float rollRotateLimit_;
@@ -58,8 +58,9 @@ private:
     Vector3 direction_;
     float objectiveAngle_;
 
-     float pitchBackTime_; // ピッチ復帰速度
-    float pitchReturnThreshold_; 
+    float pitchBackTime_;
+    float rollBackTime_;
+    float pitchReturnThreshold_;
 
 public:
     // ゲッター
@@ -68,5 +69,5 @@ public:
     Vector3 GetVelocity() const { return velocity_; }
     float GetSpeed() const { return velocity_.Length(); }
 
-      void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
+    void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
 };

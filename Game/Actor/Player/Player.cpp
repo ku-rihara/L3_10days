@@ -104,34 +104,30 @@ void Player::UpdatePhysics() {
         targetAngularVelocity = angularVelocity_ * damping;
     }
 
-    // スムーズな角速度変化
+    // 角速度変化
     angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.3f);
 
-    // 現在の回転をオイラー角に変換してロール制限をチェック
-    Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
-    float currentRoll    = currentEuler.z;
+    //// 現在の回転をオイラー角に変換
+    // Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
+    // float currentRoll    = currentEuler.z;
 
-    // ロール制限の改善版
-    const float maxRoll = ToRadian(rollRotateLimit_);
-    bool rollLimited    = false;
+    //// ロール制限
+    // const float maxRoll = ToRadian(rollRotateLimit_);
 
-    // 次フレームでの予測ロール角
-    float predictedRoll = currentRoll + angularVelocity_.z * deltaTime;
-
-    // ロールの回転の制限
-    if (predictedRoll > maxRoll) {
-       
-        if (angularVelocity_.z > 0.0f) {
-            angularVelocity_.z = 0.0f;
-            rollLimited        = true;
-        }
-    } else if (predictedRoll < -maxRoll) {
-      
-        if (angularVelocity_.z < 0.0f) {
-            angularVelocity_.z = 0.0f;
-            rollLimited        = true;
-        }
-    }
+    //// ロールの回転の制限
+    // if (currentRoll > maxRoll) {
+    //
+    //     if (angularVelocity_.z > 0.0f) {
+    //         angularVelocity_.z = 0.0f;
+    //
+    //     }
+    // } else if (currentRoll < -maxRoll) {
+    //
+    //     if (angularVelocity_.z < 0.0f) {
+    //         angularVelocity_.z = 0.0f;
+    //
+    //     }
+    // }
 
     // 現在の姿勢からローカル軸を取得
     Vector3 localRight   = GetRightVector();
@@ -152,11 +148,10 @@ void Player::UpdatePhysics() {
 
     // 機体の上方向ベクトルを取得
     Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
-    Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
+    Vector3 targetUpVector = TransformNormal(GetUpVector(), targetMatrix);
 
- 
     // 機体の上方向とワールドの上方向の内積を計算
-    float upDot = Vector3::Dot(targetUpVector, Vector3::ToUp());
+    float upDot = Vector3::Dot(targetUpVector, GetUpVector());
 
     // 機体が逆さまかどうかを判定
     const float upsideDownThreshold = -0.3f;
@@ -183,19 +178,18 @@ void Player::UpdatePhysics() {
     }
     // 通常時の自動復帰処理
     else if (!isUpsideDown) {
-        Vector3 euler              = targetRotation_.ToEuler();
-        float currentYaw           = euler.y;
-        float currentPitch         = euler.x;
-        float currentRollForReturn = euler.z;
+        Vector3 euler      = targetRotation_.ToEuler();
+        float currentYaw   = euler.y;
+        float currentPitch = euler.x;
+        float currentRoll  = euler.z;
 
         // ターゲット姿勢を作成
-        Vector3 targetEuler    = Vector3(currentPitch, currentYaw, currentRollForReturn);
-        bool shouldApplyReturn = false;
+        Vector3 targetEuler = Vector3(currentPitch, currentYaw, currentRoll);
 
         // ピッチ自動復帰
-        if (fabs(angleInput_.x) < 0.001f) {
-            targetEuler.x     = Lerp(currentPitch, 0.0f, pitchBackTime_ * deltaTime);
-            shouldApplyReturn = true;
+        if (fabs(angleInput_.x) < 0.001f || fabs(angleInput_.z) < 0.001f) {
+            targetEuler.x = Lerp(currentPitch, 0.0f, pitchBackTime_ * deltaTime);
+            targetEuler.z = Lerp(currentRoll, 0.0f, pitchBackTime_ * deltaTime);
         }
     }
 
@@ -211,6 +205,7 @@ void Player::UpdatePhysics() {
     velocity_       = forward * forwardSpeed_ * deltaTime;
     baseTransform_.translation_ += velocity_;
 }
+
 void Player::Move() {
 }
 
@@ -241,6 +236,7 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "rotationSmoothness", &rotationSmoothness_);
     globalParameter_->Bind(groupName_, "rollRotateLimit", &rollRotateLimit_);
     globalParameter_->Bind(groupName_, "pitchBackTime", &pitchBackTime_);
+    globalParameter_->Bind(groupName_, "rollBackTime", &rollBackTime_);
     globalParameter_->Bind(groupName_, "pitchReturnThreshold", &pitchReturnThreshold_);
 }
 
@@ -265,6 +261,7 @@ void Player::AdjustParam() {
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
 
         // デバッグ

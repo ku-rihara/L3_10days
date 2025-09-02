@@ -32,22 +32,15 @@ void GameCamera::Update() {
 
     if (target_) {
 
-        Vector3 playerEuler = target_->quaternion_.ToEuler();
-        float playerRoll    = playerEuler.z;
-
-        // カメラのロール追従
-        float targetCameraRoll = playerRoll * rollFollowFactor_;
+     
 
         // 目標のローカルオフセット位置
         Vector3 targetLocalPos = cameraOffset_ + shakeOffsetPos_;
-        Vector3 targetLocalRot = rotationOffset_;
-        targetLocalRot.z       = targetCameraRoll;
+      
 
         // 補間でスムーズに移動
         viewProjection_.translation_ = Lerp(viewProjection_.translation_, targetLocalPos, smoothness_);
-        viewProjection_.rotation_.x  = LerpShortAngle(viewProjection_.rotation_.x, targetLocalRot.x, smoothness_);
-        viewProjection_.rotation_.y  = LerpShortAngle(viewProjection_.rotation_.y, targetLocalRot.y, smoothness_);
-        viewProjection_.rotation_.z  = LerpShortAngle(viewProjection_.rotation_.z, targetLocalRot.z, rollSmoothness_);
+      
     }
 
     viewProjection_.UpdateMatrix();
