@@ -46,7 +46,7 @@ void Boundary::Init() {
 	baseTransform_.Init();
 
 	/// test
-	ModelManager::GetInstance()->LoadModel("BoundaryShard");
+	ModelManager::GetInstance()->LoadModel("BoundaryShard.obj");
 }
 
 void Boundary::Update() {
@@ -110,6 +110,39 @@ void Boundary::AddHole(const Vector3& pos, float radius) {
 	holes_.emplace_back(hole);
 }
 
+void Boundary::AddCrack(const Vector3& _pos, float _radius, float _damage) {
+	
+	/// 他の亀裂と比較、近かったらその亀裂のlifeを減らす
+	bool isNearCrack = false;
+	for (size_t i = 0; i < cracks_.size(); i++) {
+		Crack& otherCrack = cracks_[i];
+		float distance = (otherCrack.position - _pos).Length();
+		if (distance < otherCrack.radius) {
+			otherCrack.life -= _damage;
+			isNearCrack = true;
+		}
+	}
+
+
+	/// 近くに亀裂がなかったら新しい亀裂を追加
+	if(!isNearCrack) {
+		Crack crack = {
+			.position = _pos,
+			.radius = _radius,
+			.life = 1.0f
+		};
+		cracks_.emplace_back(crack);
+	}
+}
+
 const std::vector<Hole>& Boundary::GetHoles() const {
 	return holes_;
+}
+
+const std::vector<Crack>& Boundary::GetCracks() const {
+	return cracks_;
+}
+
+std::vector<Crack>& Boundary::GetCracksRef() {
+	return cracks_;
 }

@@ -1,20 +1,26 @@
-#include "BoundaryPipeline.h"
+#include "BoundaryShardPipeline.h"
 
-#include "Dx/DxCompiler.h"
-// Function
-#include "function/Log.h"
+/// std
 #include <cassert>
 #include <string>
+#include <numbers>
+
+/// engine
+#include "Dx/DxCompiler.h"
+#include "function/Log.h"
+#include "3d/ModelManager.h"
+#include "random.h"
+#include "Frame/Frame.h"
 
 /// 描画対象
 #include "../Actor/Boundary/Boundary.h"
 
-BoundaryPipeline* BoundaryPipeline::GetInstance() {
-	static BoundaryPipeline instance;
+BoundaryShardPipeline* BoundaryShardPipeline::GetInstance() {
+	static BoundaryShardPipeline instance;
 	return &instance;
 }
 
-void BoundaryPipeline::Init(DirectXCommon* dxCommon) {
+void BoundaryShardPipeline::Init(DirectXCommon* dxCommon) {
 
 	// 引数で受けとる
 	dxCommon_ = dxCommon;
@@ -22,7 +28,7 @@ void BoundaryPipeline::Init(DirectXCommon* dxCommon) {
 	CreateGraphicsPipeline();
 }
 
-void BoundaryPipeline::CreateGraphicsPipeline() {
+void BoundaryShardPipeline::CreateGraphicsPipeline() {
 
 	HRESULT hr = 0;
 
@@ -126,7 +132,7 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	CreatePSO(blendDescNormal, graphicsPipelineStateNone_);
 }
 
-void BoundaryPipeline::CreateRootSignature() {
+void BoundaryShardPipeline::CreateRootSignature() {
 	HRESULT hr = 0;
 	// RootSignatureを作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -174,7 +180,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
 
 	// 0: TransformationMatrix
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
@@ -186,17 +192,17 @@ void BoundaryPipeline::CreateRootSignature() {
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[1].Descriptor.ShaderRegister = 2;
 
-	// 2: Hole
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].Descriptor.ShaderRegister = 0;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+	//// 2: Hole
+	//rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	//rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	//rootParameters[2].Descriptor.ShaderRegister = 0;
+	//rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
+	//rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 
-	// 3: Time
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	rootParameters[3].Descriptor.ShaderRegister = 0;
+	//// 3: Time
+	//rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
+	//rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	//rootParameters[3].Descriptor.ShaderRegister = 0;
 
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
@@ -216,7 +222,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void BoundaryPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
+void BoundaryShardPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	// RootSignatureを設定
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	// パイプラインステートの設定
@@ -225,27 +231,26 @@ void BoundaryPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void BoundaryPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewProjection& _viewProjection) {
+void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewProjection& _viewProjection) {
 	Boundary* boundary = Boundary::GetInstance();
 	if (!boundary) { return; }
 
-	/// bufferの設定
-	boundary->vertexBuffer_.BindForCommandList(commandList);
-	boundary->indexBuffer_.BindForCommandList(commandList);
+	///// bufferの設定
+	//boundary->vertexBuffer_.BindForCommandList(commandList);
+	//boundary->indexBuffer_.BindForCommandList(commandList);
 
-	/// vertex shader buffers
-	Matrix4x4 matWVP = boundary->baseTransform_.matWorld_ * _viewProjection.matView_ * _viewProjection.matProjection_;
-	Matrix4x4 matWorldInverseTranspose = Transpose(Inverse(boundary->baseTransform_.matWorld_));
-	boundary->transformBuffer_.SetMappedData({ matWVP, boundary->baseTransform_.matWorld_, matWorldInverseTranspose });
-	boundary->transformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TRANSFORM);
+	///// vertex shader buffers
+	//Matrix4x4 matWVP = boundary->baseTransform_.matWorld_ * _viewProjection.matView_ * _viewProjection.matProjection_;
+	//Matrix4x4 matWorldInverseTranspose = Transpose(Inverse(boundary->baseTransform_.matWorld_));
+	//boundary->transformBuffer_.SetMappedData({ matWVP, boundary->baseTransform_.matWorld_, matWorldInverseTranspose });
+	//boundary->transformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TRANSFORM);
 
-	boundary->shadowTransformBuffer_.SetMappedData({ ShadowMap::GetInstance()->GetLightCameraMatrix() });
-	boundary->shadowTransformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_SHADOW_TRANSFORM);
+	//boundary->shadowTransformBuffer_.SetMappedData({ ShadowMap::GetInstance()->GetLightCameraMatrix() });
+	//boundary->shadowTransformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_SHADOW_TRANSFORM);
 
+	///// pixel shader buffers
+	//boundary->holeBuffer_.BindToCommandList(ROOT_PARAM_HOLE, commandList);
+	//boundary->timeBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TIME);
 
-	/// pixel shader buffers
-	boundary->holeBuffer_.BindToCommandList(ROOT_PARAM_HOLE, commandList);
-	boundary->timeBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TIME);
-	
-	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+	//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

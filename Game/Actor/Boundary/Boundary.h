@@ -19,6 +19,13 @@ struct Hole {
 	float lifeTime = 0.0f; // 穴が空いてからの経過時間
 };
 
+/// @brief 境界が割れる前の亀裂
+struct Crack {
+	Vector3 position;
+	float radius;
+	float life; /// 0になったらHoleが生まれる
+};
+
 struct BoundaryVertex {
 	Vector4 pos;    // xyz座標
 	Vector2 uv;     // uv座標
@@ -47,8 +54,11 @@ public:
 	void Update() override;
 
 	void AddHole(const Vector3& pos, float radius);
+	void AddCrack(const Vector3& _pos, float _radius, float _damage);
 
 	const std::vector<Hole>& GetHoles() const;
+	const std::vector<Crack>& GetCracks() const;
+	std::vector<Crack>& GetCracksRef();
 
 private:
 	/// ===================================================
@@ -57,6 +67,7 @@ private:
 
 	size_t maxHoleCount_ = 128;
 	std::vector<Hole> holes_;
+	std::vector<Crack> cracks_;
 
 	float holeMaxLifeTime_ = 16.0f;
 

@@ -651,6 +651,8 @@
     <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
     <ClCompile Include="Game\Actor\NPC\Pool\NpcPool.cpp" />
     <ClCompile Include="Game\Actor\Player\PlayerBullet.cpp" />
+    <ClCompile Include="Game\Actor\Boundary\BoundaryShard.cpp" />
+    <ClCompile Include="Game\Pipeline\BoundaryShardPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1116,6 +1118,8 @@
     <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
     <ClInclude Include="Game\Actor\NPC\Pool\NpcPool.h" />
     <ClInclude Include="Game\Actor\Player\PlayerBullet.h" />
+    <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
+    <ClInclude Include="Game\Pipeline\BoundaryShardPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

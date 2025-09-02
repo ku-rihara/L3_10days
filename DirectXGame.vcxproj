@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Pipeline\BoundaryShardPipeline.cpp" />
+    <ClCompile Include="Game\Actor\Boundary\BoundaryShard.cpp" />
     <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
     <ClCompile Include="Game\Actor\Player\PlayerBullet.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryEdgePipeline.cpp" />
@@ -163,6 +165,8 @@
     <ClCompile Include="Game\Actor\NPC\Pool\NpcPool.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Pipeline\BoundaryShardPipeline.h" />
+    <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
     <ClInclude Include="Game\Actor\Player\PlayerBullet.h" />
     <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
