@@ -649,6 +649,7 @@
     <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
     <ClCompile Include="Game\DebugGround\TestGround.cpp" />
     <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Pool\NpcPool.cpp" />
     <ClCompile Include="Game\Actor\Player\PlayerBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -1113,6 +1114,7 @@
     <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\StructuredBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
+    <ClInclude Include="Game\Actor\NPC\Pool\NpcPool.h" />
     <ClInclude Include="Game\Actor\Player\PlayerBullet.h" />
   </ItemGroup>
   <ItemGroup>

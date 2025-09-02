@@ -2,6 +2,7 @@
 
 #include "Actor/NPC/NPC.h"
 
+#include <algorithm>
 #include "imgui.h"
 
 BaseStation::BaseStation(const std::string& name):
@@ -13,6 +14,9 @@ BaseStation::~BaseStation() = default;
 /// 初期化
 /// ===================================================
 void BaseStation::Init(){
+	if (isInitialized_) { return; }
+	isInitialized_ = true;
+
 	obj3d_.reset(Object3d::CreateModel("cube.obj"));
 	BaseObject::Init();
 	obj3d_->transform_.parent_ = &baseTransform_;
@@ -109,13 +113,11 @@ FactionType BaseStation::GetFactionType() const { return faction_; }
 /// リストを掃除
 /// ===================================================
 void BaseStation::CleanupSpawnedList() {
-	//remove_if で Dead な NPC を破棄
 	spawned_.erase(
 		std::remove_if(spawned_.begin(), spawned_.end(),
-					   [](const std::unique_ptr<NPC>& npc) {
+					   [](const NpcHandle& npc) {
 		return !npc || !npc->GetIsAlive();
 	}),
 		spawned_.end()
 	);
 }
-

@@ -22,9 +22,7 @@ void GameCamera::Init() {
     rendition_->Init();
     rendition_->SetGameCamera(this);
     rendition_->SetViewProjection(&viewProjection_);
-
-    cameraOffset_   = Vector3(0.0f, 2.0f, -10.0f);
-    rotationOffset_ = Vector3(0.0f, 0.0f, 0.0f);
+ 
     smoothness_     = 0.1f;
 }
 
@@ -33,35 +31,26 @@ void GameCamera::Update() {
     shakeOffsetPos_ = rendition_->GetShakeOffset();
 
     if (target_) {
+
+        Vector3 playerEuler = target_->quaternion_.ToEuler();
+        float playerRoll    = playerEuler.z;
+
+        // カメラのロール追従（
+        float targetCameraRoll = playerRoll * rollFollowFactor_;
+
         // 目標のローカルオフセット位置
         Vector3 targetLocalPos = cameraOffset_ + shakeOffsetPos_;
         Vector3 targetLocalRot = rotationOffset_;
+        targetLocalRot.z       = targetCameraRoll;
 
         // 補間でスムーズに移動
         viewProjection_.translation_ = Lerp(viewProjection_.translation_, targetLocalPos, smoothness_);
         viewProjection_.rotation_.x  = LerpShortAngle(viewProjection_.rotation_.x, targetLocalRot.x, smoothness_);
         viewProjection_.rotation_.y  = LerpShortAngle(viewProjection_.rotation_.y, targetLocalRot.y, smoothness_);
-        viewProjection_.rotation_.z  = LerpShortAngle(viewProjection_.rotation_.z, targetLocalRot.z, smoothness_);
+        viewProjection_.rotation_.z  = LerpShortAngle(viewProjection_.rotation_.z, targetLocalRot.z, rollSmoothness_);
     }
 
     viewProjection_.UpdateMatrix();
-}
-
-void GameCamera::RotateAdapt() {
-    // Y軸の回転補間処理
-    viewProjection_.rotation_.y = LerpShortAngle(viewProjection_.rotation_.y, destinationAngleY_, 0.3f);
-
-    // 見下ろし角度の固定
-    const float fixedPitchAngle = rotate_ * std::numbers::pi_v<float> / 180.0f;
-    viewProjection_.rotation_.x = fixedPitchAngle;
-}
-
-void GameCamera::TranslateAdapt() {
-    if (!target_)
-        return;
-    interTarget_                 = Lerp(interTarget_, target_->translation_, 1.0f);
-    Vector3 offset               = OffsetCalc(offset_);
-    viewProjection_.translation_ = interTarget_ + offset;
 }
 
 void GameCamera::Reset() {
@@ -87,20 +76,21 @@ Vector3 GameCamera::OffsetCalc(const Vector3& offset) const {
 }
 
 void GameCamera::BindParams() {
-    globalParameter_->Bind(groupName_, "RotateOffsetX", &baseRotateOffsetX_);
-    globalParameter_->Bind(groupName_, "offset", &offset_);
+    globalParameter_->Bind(groupName_, "rotationOffset", &rotationOffset_);
+    globalParameter_->Bind(groupName_, "cameraOffset", &cameraOffset_);
+    globalParameter_->Bind(groupName_, "rollFollowFactor", &rollFollowFactor_);
+    globalParameter_->Bind(groupName_, "rollSmoothness", &rollSmoothness_);
 }
 
 void GameCamera::SetTarget(const WorldTransform* target) {
     target_ = target;
 
-       // ViewProjectionの親を設定
-        viewProjection_.SetParent(target);
+    // ViewProjectionの親を設定
+    viewProjection_.SetParent(target);
 
-        // 初期位置をリセット
-        viewProjection_.translation_ = cameraOffset_;
-        viewProjection_.rotation_    = rotationOffset_;
-    
+    // 初期位置をリセット
+    viewProjection_.translation_ = cameraOffset_;
+    viewProjection_.rotation_    = rotationOffset_;
 
     Reset();
 }
@@ -116,7 +106,11 @@ void GameCamera::AdjustParam() {
         ImGui::DragFloat3("Rotation Offset", &rotationOffset_.x, 0.01f);
         ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
 
-  
+        ImGui::Separator();
+        ImGui::Text("Roll Follow Settings");
+        ImGui::DragFloat("Roll Follow Factor", &rollFollowFactor_, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Roll Smoothness", &rollSmoothness_, 0.01f, 0.01f, 1.0f);
+
         if (ImGui::Button("Apply Offset")) {
             if (target_) {
                 viewProjection_.translation_ = cameraOffset_;
@@ -131,7 +125,6 @@ void GameCamera::AdjustParam() {
     }
 #endif
 }
-
 // ================================= その他のメソッド ================================= //
 
 void GameCamera::GetIsCameraMove() {
