@@ -56,7 +56,9 @@ void BoundaryShard::Update() {
 			Shard& shard = breakable.shards[i];
 
 			shard.transform.translate = shard.initPos + shard.normal * (baseOffset + stageOffset * breakable.stage);
-			shard.transform.rotate = shard.initRotate * (shard.randomSmallRotation * breakable.stage);
+			//shard.transform.translate = shard.initPos;
+			shard.transform.rotate = shard.initRotate;
+			//shard.transform.rotate = shard.initRotate * (shard.randomSmallRotation * breakable.stage);
 		}
 
 	}
@@ -102,6 +104,12 @@ void BoundaryShard::LoadShardModel(const std::string& _filepath) {
 
 		averageNormal = averageNormal.Normalize();
 		averagePos = averagePos / static_cast<float>(mesh->mNumVertices);
+		for(auto& v : vertices) {
+			v.position.x -= averagePos.x;
+			v.position.y -= averagePos.y;
+			v.position.z -= averagePos.z;
+		}
+
 
 		/// index 解析
 		for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {

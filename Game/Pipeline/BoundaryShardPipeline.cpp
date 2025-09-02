@@ -257,10 +257,11 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 		for (size_t j = 0; j < breakable.shards.size(); j++) {
 			const Shard& shard = breakable.shards[j];
 
-			matWorld = MakeScaleMatrix({ breakable.radius, breakable.radius, breakable.radius });
-			matWorld *= MakeTranslateMatrix(breakable.position);
+			matWorld = MakeIdentity4x4();
+			matWorld *= MakeScaleMatrix({ breakable.radius, breakable.radius, breakable.radius });
 			matWorld *= MakeRotateMatrix(shard.transform.rotate);
-			matWorld *= MakeTranslateMatrix(-shard.transform.translate);
+			matWorld *= MakeTranslateMatrix(shard.transform.translate * breakable.radius);
+			matWorld *= MakeTranslateMatrix(breakable.position);
 
 			matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;
 			matWorldInverseTranspose = Transpose(Inverse(matWorld));

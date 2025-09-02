@@ -49,11 +49,11 @@ void Boundary::Update() {
 
 	/// debugように
 	if (Input::GetInstance()->TrrigerKey(DIK_P)) {
-		AddCrack({}, 100.0f);
+		AddCrack({}, 10.0f);
 	}
 
 	if (Input::GetInstance()->TrrigerKey(DIK_O)) {
-		AddCrack({ 200.0f, 0.0f, 0.0f }, 100.0f);
+		AddCrack({ 200.0f, 0.0f, 0.0f }, 10.0f);
 	}
 
 
