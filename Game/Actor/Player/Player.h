@@ -54,6 +54,7 @@ private:
 
     float rotationSmoothness_;
     float rollBackTime_;
+    float rollRotateLimit_;
 
     Vector3 direction_;
     float objectiveAngle_;

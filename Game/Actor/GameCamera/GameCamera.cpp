@@ -89,7 +89,7 @@ void GameCamera::SetTarget(const WorldTransform* target) {
     viewProjection_.SetParent(target);
 
     // 初期位置をリセット
-    viewProjection_.ignoreParentRoll_ = true;
+    viewProjection_.ignoreParentRoll_ = false;
     viewProjection_.translation_ = cameraOffset_;
     viewProjection_.rotation_    = rotationOffset_;
 

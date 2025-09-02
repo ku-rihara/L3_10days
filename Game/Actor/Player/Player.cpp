@@ -26,7 +26,6 @@ void Player::Init() {
     angularVelocity_ = Vector3::ZeroVector();
 
     targetRotation_     = Quaternion::Identity();
-    rotationSmoothness_ = 0.1f;
 }
 
 void Player::Update() {
@@ -109,7 +108,7 @@ void Player::UpdatePhysics() {
     float predictedRoll = currentRoll + angularVelocity_.z * deltaTime;
 
     // 制限角度
-    const float maxRoll = std::numbers::pi_v<float> / 2.0f;
+    const float maxRoll = ToRadian(rollRotateLimit_);
 
     // 上限チェック
     if (predictedRoll > maxRoll) {
@@ -133,7 +132,7 @@ void Player::UpdatePhysics() {
     Quaternion rollRotation  = Quaternion::MakeRotateAxisAngle(localForward, angularVelocity_.z * deltaTime);
 
     // 合成回転を適用
-    Quaternion deltaRotation = pitchRotation * yawRotation * rollRotation;
+    Quaternion deltaRotation = yawRotation*pitchRotation * rollRotation;
 
     targetRotation_ = deltaRotation * baseTransform_.quaternion_;
     targetRotation_ = targetRotation_.Normalize();
@@ -199,9 +198,11 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "yawSpeed", &yawSpeed_);
     globalParameter_->Bind(groupName_, "rollSpeed", &rollSpeed_);
     globalParameter_->Bind(groupName_, "rollBackTime", &rollBackTime_);
+    globalParameter_->Bind(groupName_, "rotationSmoothness", &rotationSmoothness_);
+    globalParameter_->Bind(groupName_, "rollRotateLimit", &rollRotateLimit_);
 }
 
-///=========================================================
+    ///=========================================================
 /// パラメータ調整
 ///==========================================================
 void Player::AdjustParam() {
@@ -221,7 +222,8 @@ void Player::AdjustParam() {
         ImGui::DragFloat("Yaw Speed", &yawSpeed_, 0.01f);
         ImGui::DragFloat("Roll Speed", &rollSpeed_, 0.01f);
         ImGui::DragFloat("RollBackTime", &rollBackTime_, 0.01f);
-
+        ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f,0.0f,1.0f);
+        ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
         // デバッグ
         ImGui::Separator();
         ImGui::Text("Debug Info");
