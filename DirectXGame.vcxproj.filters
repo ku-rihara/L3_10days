@@ -645,6 +645,11 @@
     <ClCompile Include="Game\Actor\Station\Player\PlayerStation.cpp" />
     <ClCompile Include="Game\Actor\NPC\PlayerNPC.cpp" />
     <ClCompile Include="Game\Actor\Station\Installer\StationsInstaller.cpp" />
+    <ClCompile Include="Game\Pipeline\BoundaryEdgePipeline.cpp" />
+    <ClCompile Include="Game\Pipeline\BoundaryPipeline.cpp" />
+    <ClCompile Include="Game\DebugGround\TestGround.cpp" />
+    <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
+    <ClCompile Include="Game\Actor\Player\PlayerBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1101,6 +1106,14 @@
     <ClInclude Include="Game\Actor\NPC\PlayerNPC.h" />
     <ClInclude Include="Game\Actor\Station\Detail\StationDetail.h" />
     <ClInclude Include="Game\Actor\Station\Installer\StationsInstaller.h" />
+    <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
+    <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
+    <ClInclude Include="Game\DebugGround\TestGround.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\ConstantBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\StructuredBuffer.h" />
+    <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
+    <ClInclude Include="Game\Actor\Player\PlayerBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
