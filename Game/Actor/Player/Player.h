@@ -53,6 +53,7 @@ private:
     Quaternion targetRotation_; 
 
     float rotationSmoothness_;
+    float rollBackTime_;
 
     Vector3 direction_;
     float objectiveAngle_;

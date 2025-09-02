@@ -66,7 +66,6 @@ void Player::HandleInput() {
         if (input->PushKey(DIK_D)) {
             stickL.x = 1.0f;
         }
-
     }
 
     // コントローラ処理
@@ -94,12 +93,34 @@ void Player::HandleInput() {
     // ロール
     angleInput_.z = -stickL.x * (rollSpeed_ * deltaTime);
 }
-
 void Player::UpdatePhysics() {
     float deltaTime = Frame::DeltaTime();
 
     // 角速度の補間
     angularVelocity_ = Lerp(angularVelocity_, angleInput_, 0.3f);
+
+    // 現在の回転をオイラー角に変換
+    Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
+
+    // 現在のロール角（Z軸）
+    float currentRoll = currentEuler.z;
+
+    // 次フレームでの予測ロール角
+    float predictedRoll = currentRoll + angularVelocity_.z * deltaTime;
+
+    // 制限角度
+    const float maxRoll = std::numbers::pi_v<float> / 2.0f;
+
+    // 上限チェック
+    if (predictedRoll > maxRoll) {
+        predictedRoll      = maxRoll;
+        angularVelocity_.z = 0.0f;
+    }
+    // 下限チェック
+    else if (predictedRoll < -maxRoll) {
+        predictedRoll      = -maxRoll;
+        angularVelocity_.z = 0.0f;
+    }
 
     // 現在の姿勢からローカル軸を取得
     Vector3 localRight   = GetRightVector();
@@ -117,8 +138,27 @@ void Player::UpdatePhysics() {
     targetRotation_ = deltaRotation * baseTransform_.quaternion_;
     targetRotation_ = targetRotation_.Normalize();
 
+    if (fabs(angleInput_.z) < 0.001f) {
+        Vector3 euler      = targetRotation_.ToEuler();
+        float currentYaw   = euler.y;
+        float currentPitch = euler.x;
+
+        // ロールだけゼロにした姿勢を作成
+        Quaternion noRollRotation = Quaternion::EulerToQuaternion(
+            Vector3(currentPitch, currentYaw, 0.0f));
+
+        // スムーズに補間
+        targetRotation_ = Quaternion::Slerp(
+            targetRotation_,
+            noRollRotation,
+            rollBackTime_ * deltaTime);
+    }
+
     // 回転補間
-    baseTransform_.quaternion_ = Quaternion::Slerp(baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
+    baseTransform_.quaternion_ = Quaternion::Slerp(
+        baseTransform_.quaternion_,
+        targetRotation_,
+        rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
     // 前方ベクトルをQuaternionから計算
@@ -130,7 +170,6 @@ void Player::UpdatePhysics() {
     // 位置を更新
     baseTransform_.translation_ += velocity_;
 }
-
 
 void Player::Move() {
 }
@@ -159,6 +198,7 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "pitchSpeed", &pitchSpeed_);
     globalParameter_->Bind(groupName_, "yawSpeed", &yawSpeed_);
     globalParameter_->Bind(groupName_, "rollSpeed", &rollSpeed_);
+    globalParameter_->Bind(groupName_, "rollBackTime", &rollBackTime_);
 }
 
 ///=========================================================
@@ -180,6 +220,7 @@ void Player::AdjustParam() {
         ImGui::DragFloat("Pitch Speed", &pitchSpeed_, 0.01f);
         ImGui::DragFloat("Yaw Speed", &yawSpeed_, 0.01f);
         ImGui::DragFloat("Roll Speed", &rollSpeed_, 0.01f);
+        ImGui::DragFloat("RollBackTime", &rollBackTime_, 0.01f);
 
         // デバッグ
         ImGui::Separator();

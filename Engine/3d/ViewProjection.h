@@ -57,6 +57,8 @@ public:
      // オフセット値
     Vector3 positionOffset_ = {0, 0, 0};
     Vector3 rotationOffset_ = {0, 0, 0};
+
+    bool ignoreParentRoll_=false;
  
     float fovAngleY_   = 45.0f;
     float aspectRatio_ = (float)16 / 9;

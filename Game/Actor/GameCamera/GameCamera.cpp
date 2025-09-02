@@ -35,7 +35,7 @@ void GameCamera::Update() {
         Vector3 playerEuler = target_->quaternion_.ToEuler();
         float playerRoll    = playerEuler.z;
 
-        // カメラのロール追従（
+        // カメラのロール追従
         float targetCameraRoll = playerRoll * rollFollowFactor_;
 
         // 目標のローカルオフセット位置
@@ -89,6 +89,7 @@ void GameCamera::SetTarget(const WorldTransform* target) {
     viewProjection_.SetParent(target);
 
     // 初期位置をリセット
+    viewProjection_.ignoreParentRoll_ = true;
     viewProjection_.translation_ = cameraOffset_;
     viewProjection_.rotation_    = rotationOffset_;
 

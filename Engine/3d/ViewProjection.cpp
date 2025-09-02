@@ -73,7 +73,29 @@ void ViewProjection::UpdateViewMatrix() {
     Matrix4x4 localCameraMatrix = rotateMatrix * translateMatrix;
 
     if (parent_) {
-        cameraMatrix_ = localCameraMatrix * parent_->matWorld_;
+        Matrix4x4 parentMatrix = parent_->matWorld_;
+
+        // ロール回転を無視
+        if (ignoreParentRoll_) {
+            // 親の行列からロール成分
+            Vector3 parentEuler = ExtractEulerAngles(parentMatrix);
+            parentEuler.z       = 0.0f; 
+        
+            Vector3 parentTranslation = Vector3(
+                parentMatrix.m[3][0],
+                parentMatrix.m[3][1],
+                parentMatrix.m[3][2]);
+
+            // ロールなしの親行列を再構築
+            Matrix4x4 parentWithoutRoll = MakeAffineMatrix(
+                Vector3::UnitVector(),
+                parentEuler,
+                parentTranslation);
+
+            cameraMatrix_ = localCameraMatrix * parentWithoutRoll;
+        } else {
+            cameraMatrix_ = localCameraMatrix * parentMatrix;
+        }
     } else {
         cameraMatrix_ = localCameraMatrix;
     }
