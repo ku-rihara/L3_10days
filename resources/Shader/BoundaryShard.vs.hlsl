@@ -7,14 +7,13 @@ struct TransformationMatrix {
 	float4x4 WorldInverseTranspose;
 };
 
-//StructuredBuffer<TransformationMatrix> gTransformations : register(t0);
-ConstantBuffer<TransformationMatrix> gTransomation : register(b0);
-ConstantBuffer<ShadowTransformBuffer> gShadowTransformBuffer : register(b1);
+StructuredBuffer<TransformationMatrix> gTransformations : register(t0);
+ConstantBuffer<ShadowTransformBuffer> gShadowTransformBuffer : register(b0);
 
 VSOutput main(VSInput input, uint instanceId : SV_InstanceID) {
 	VSOutput output;
 	
-	TransformationMatrix transformation = gTransomation;
+	TransformationMatrix transformation = gTransformations[instanceId];
 	
 	output.normal = normalize(mul(input.normal, (float3x3) transformation.WorldInverseTranspose));
 	output.position = mul(input.position, transformation.WVP);

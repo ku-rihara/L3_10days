@@ -18,6 +18,7 @@
 
 #include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryEdgePipeline.h"
+#include "Pipeline/BoundaryShardPipeline.h"
 
 #include <imgui.h>
 
@@ -104,6 +105,11 @@ void GameScene::ModelDraw() {
 	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
 	boundaryPipeline->PreDraw(commandList);
 	boundaryPipeline->Draw(commandList, viewProjection_);
+
+	/// 境界の破片の描画
+	BoundaryShardPipeline* boundaryShardPipeline = BoundaryShardPipeline::GetInstance();
+	boundaryShardPipeline->PreDraw(commandList);
+	boundaryShardPipeline->Draw(commandList, viewProjection_);
 
 	/// 境界の穴の境界を描画
 	BoundaryEdgePipeline* boundaryEdgePipeline = BoundaryEdgePipeline::GetInstance();

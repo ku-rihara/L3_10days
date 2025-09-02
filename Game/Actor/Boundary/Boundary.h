@@ -55,14 +55,31 @@ public:
 	void Init() override;
 	void Update() override;
 
-	void AddHole(const Vector3& pos, float radius);
+	/// ----- 他のメンバーが使いそうな関数 ----- ///
+
+	/// 罅の追加、罅が一定時間経過したら穴を追加する処理が走る
 	void AddCrack(const Vector3& _pos, float _radius, float _damage);
 
+	/// 現在出現している穴のリスト
 	const std::vector<Hole>& GetHoles() const;
+
+	/// 現在出現している罅のリスト
 	const std::vector<Crack>& GetCracks() const;
 	std::vector<Crack>& GetCracksRef();
 
+	/// 境界に出来た罅の全てを持っているクラスの取得
 	BoundaryShard* GetBoundaryShard();
+
+	/// 設置できる穴の最大数を設定(罅の最大数でもある)
+	size_t GetMaxHoleCount() const;
+
+
+	/// ----- おそらく大野(Boundary内部で)しか使わないであろう関数 ----- ///
+
+	/// 穴の追加、罅を追加していったら穴が追加される
+	void AddHole(const Vector3& pos, float radius);
+
+	ConstantBuffer<ShadowTransformData>& GetShadowTransformBufferRef();
 
 private:
 	/// ===================================================

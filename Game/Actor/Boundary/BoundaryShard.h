@@ -11,6 +11,7 @@
 #include "Vector3.h"
 #include "Vector2.h"
 #include "struct/Transform.h"
+#include "struct/TransformationMatrix.h"
 
 /// game/pipeline
 #include "Pipeline/Buffer/StructuredBuffer.h"
@@ -35,16 +36,17 @@ struct Shard {
 
 struct Breakable {
 	float maxLife;
-	float currentLife;
+	float currentLife; /// 0になったら破片に分かれる and Holeが生まれる
 	int stage; /// 罅の段階
 	std::vector<Shard> shards;
-	StructuredBuffer<Matrix4x4> transformBuffer;
+	StructuredBuffer<Matrix4x4> transformBuffer; /// 各破片の行列を送るbuffer
 };
 
 /// //////////////////////////////////////////////////////////
 /// 境界の破片 Boundaryに定義する
 /// //////////////////////////////////////////////////////////
 class BoundaryShard {
+	friend class BoundaryShardPipeline;
 public:
 	/// ===================================================
 	/// public : methods
@@ -60,6 +62,9 @@ public:
 	void LoadShardModel(const std::string& _filepath);
 
 	const std::vector<Breakable>& GetBreakables() const;
+	const std::vector<Shard>& GetLoadedShards() const;
+
+	void AddBreakable(float _maxLife, int _stage);
 
 private:
 	/// ===================================================
@@ -69,5 +74,6 @@ private:
 	std::vector<Shard> loadedShards_; /// 読み込んだ破片モデル
 
 	std::vector<Breakable> breakables_;
+	StructuredBuffer<TransformationMatrix> breakableTransformBuffer_;
 
 };
