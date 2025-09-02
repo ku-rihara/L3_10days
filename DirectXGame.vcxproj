@@ -319,6 +319,7 @@
     <ClInclude Include="Game\Details\Faction.h" />
     <ClInclude Include="Game\DebugGround\TestGround.h" />
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h" />
+    <ClInclude Include="Game\Pipeline\BoundaryShardPipeline.h" />
     <ClInclude Include="Game\Pipeline\Buffer\ConstantBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\StructuredBuffer.h" />
