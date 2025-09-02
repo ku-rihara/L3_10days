@@ -1,0 +1,16 @@
+{
+    "Bullets": {
+        "intervalTime1": 0.009999999776482582,
+        "intervalTime2": 0.0,
+        "lifeTime1": 10.0,
+        "lifeTime2": 0.0,
+        "maxBulletNum1": 21,
+        "maxBulletNum2": 0,
+        "reloadTime1": 1.0,
+        "reloadTime2": 0.0,
+        "shotNum1": 1,
+        "shotNum2": 0,
+        "speed1": 1000.0,
+        "speed2": 0.0
+    }
+}

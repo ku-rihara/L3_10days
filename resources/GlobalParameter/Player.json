@@ -1,11 +1,20 @@
 {
     "Player": {
-        "forwardSpeed": 54.36000061035156,
+        "downFactor": 1.5399999618530273,
+        "forwardSpeed": 200.0,
         "hp": 100,
         "lateralSpeed": 30.420000076293945,
-        "pitchSpeed": 300.0,
-        "rollSpeed": 300.0,
+        "pitchBackTime": 5.0,
+        "pitchReturnThreshold": 51.0,
+        "pitchSpeed": 100.0,
+        "rollBackTime": 5.0,
+        "rollRotateLimit": 83.06999969482422,
+        "rollSmoothness": 1.2000000476837158,
+        "rollSpeed": 100.0,
+        "rotationSmoothness": 0.33500000834465027,
+        "sideFactor": 0.5699999928474426,
         "speed": 50.0,
-        "yawSpeed": 300.0
+        "turnFactor": 5.769999980926514,
+        "yawSpeed": 100.0
     }
 }

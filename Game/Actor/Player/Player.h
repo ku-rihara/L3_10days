@@ -1,7 +1,9 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
+#include "Bullet/PlayerBulletShooter.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <cstdint>
+#include <memory>
 
 class Player : public BaseObject {
 public:
@@ -24,13 +26,14 @@ public:
     void BindParams();
 
     // ベクトル取得
-    Vector3 GetForwardVector() const; 
+    Vector3 GetForwardVector() const;
     Vector3 GetRightVector() const;
-    Vector3 GetUpVector() const; 
+    Vector3 GetUpVector() const;
 
 private:
     // viewProjection
     const ViewProjection* viewProjection_ = nullptr;
+    std::unique_ptr<PlayerBulletShooter> bulletShooter_;
 
     // globalParameter
     GlobalParameter* globalParameter_;
@@ -42,20 +45,28 @@ private:
 
     // スピードパラメータ
     float forwardSpeed_;
-    float pitchSpeed_; 
-    float yawSpeed_; 
-    float rollSpeed_; 
+    float pitchSpeed_;
+    float yawSpeed_;
+    float rollSpeed_;
 
     // 物理パラメータ
     Vector3 velocity_;
     Vector3 angularVelocity_;
     Vector3 angleInput_;
-    Quaternion targetRotation_; 
+    Quaternion targetRotation_;
 
     float rotationSmoothness_;
+    float rollRotateLimit_;
 
     Vector3 direction_;
     float objectiveAngle_;
+
+    float pitchBackTime_;
+    float rollBackTime_;
+    float pitchReturnThreshold_;
+
+    float sideFactor_;
+    float downFactor_;
 
 public:
     // ゲッター
@@ -63,6 +74,10 @@ public:
     Vector3 GetRotation() const { return baseTransform_.rotation_; }
     Vector3 GetVelocity() const { return velocity_; }
     float GetSpeed() const { return velocity_.Length(); }
-
-      void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
+    Quaternion GetQuaternion() const { return baseTransform_.quaternion_; }
+    std::vector<BasePlayerBullet*> GetActiveBullets() const {
+        return bulletShooter_ ? bulletShooter_->GetActiveBullets() : std::vector<BasePlayerBullet*>();
+    }
+    void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
+    PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
 };
