@@ -55,5 +55,6 @@ protected:
 	FactionType faction_;
 
 	bool isActive_;
+	bool isInitialized_ = false;
 	Vector3 Velocity_{};
 };

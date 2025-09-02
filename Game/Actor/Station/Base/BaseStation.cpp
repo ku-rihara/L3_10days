@@ -14,15 +14,6 @@ BaseStation::~BaseStation() = default;
 /// 初期化
 /// ===================================================
 void BaseStation::Init(){
-	if (isInitialized_) { return; }
-	isInitialized_ = true;
-
-	obj3d_.reset(Object3d::CreateModel("cube.obj"));
-	BaseObject::Init();
-	obj3d_->transform_.parent_ = &baseTransform_;
-
-	globalParam_ = GlobalParameter::GetInstance();
-
 	//メイングループの設定
 	globalParam_->CreateGroup(name_,true);
 

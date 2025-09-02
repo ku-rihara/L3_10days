@@ -36,6 +36,8 @@ protected:
 	virtual void SpawnNPC() = 0;		//< npcをスポーン
 	void CleanupSpawnedList();			//< リストの掃除
 
+private:
+
 protected:
 	/// ===================================================
 	///  protected variable
@@ -56,7 +58,6 @@ protected:
 	FactionType faction_;
 	float hp_;
 	float currentTime_ = 0;
-	bool isInitialized_ = false;
 
 	std::vector<NpcHandle> spawned_;
 	BaseStation* pRivalStation_ = nullptr; //< ライバル拠点

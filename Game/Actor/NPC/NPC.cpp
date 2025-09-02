@@ -7,9 +7,6 @@
 /// 初期化
 /// ===================================================
 void NPC::Init() {
-	obj3d_.reset(Object3d::CreateModel("cube.obj"));
-	BaseObject::Init();
-	obj3d_->transform_.parent_ = &baseTransform_;
 
 	globalParam_ = GlobalParameter::GetInstance();
 
