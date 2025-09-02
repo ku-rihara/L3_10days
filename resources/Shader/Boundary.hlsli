@@ -1,11 +1,11 @@
 #include "Noise.hlsli"
 
 struct VertexShaderOutput {
-	float4 position      : SV_POSITION;
-	float2 texcoord      : TEXCOORD0;
-	float3 normal        : NORMAL0;
+	float4 position : SV_POSITION;
+	float2 texcoord : TEXCOORD0;
+	float3 normal : NORMAL0;
 	float3 worldPosition : POSITION0;
-    float4 tpos          : TPOS;
+	float4 tpos : TPOS;
 };
 
 struct VertexShaderInput {
@@ -23,6 +23,11 @@ struct Hole {
 	float radius;
 	float startRadius;
 	float lifeTime;
+};
+
+struct Breakable {
+	float3 position;
+	float radius;
 };
 
 float fbm(float2 uv) {

@@ -4,6 +4,7 @@
 #include "Dx/DirectXCommon.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
+#include "3d/ModelManager.h"
 
 Boundary* Boundary::GetInstance() {
 	static Boundary instance;
@@ -11,8 +12,6 @@ Boundary* Boundary::GetInstance() {
 }
 
 Boundary::Boundary() {
-
-
 	indexBuffer_.Create(6, DirectXCommon::GetInstance()->GetDxDevice());
 	vertexBuffer_.Create(4, DirectXCommon::GetInstance()->GetDxDevice());
 	vertexBuffer_.SetVertices({
@@ -30,19 +29,19 @@ Boundary::Boundary() {
 	/// buffer init
 	holeBuffer_.Create(static_cast<uint32_t>(maxHoleCount_), DirectXCommon::GetInstance()->GetDxDevice());
 
-	for (int i = 0; i < maxHoleCount_; i++) {
-		int x = i % 16;
-		int y = i / 16;
-		AddHole({ (float)x * 100.0f - 75.0f, 0.0f, (float)y * 100.0f - 75.0f }, 32.0f);
-	}
-
 	transformBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	shadowTransformBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	timeBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
+
 }
 
 void Boundary::Init() {
 	baseTransform_.Init();
+
+	/// 
+	boundaryShard_ = std::make_unique<BoundaryShard>();
+	boundaryShard_->Init();
+
 }
 
 void Boundary::Update() {
@@ -50,12 +49,15 @@ void Boundary::Update() {
 
 	/// debugように
 	if (Input::GetInstance()->TrrigerKey(DIK_P)) {
-		AddHole({}, 100.0f);
+		AddCrack({}, 10.0f);
 	}
 
 	if (Input::GetInstance()->TrrigerKey(DIK_O)) {
-		AddHole({ 50.0f, 0.0f, 0.0f }, 100.0f);
+		AddCrack({ 200.0f, 0.0f, 0.0f }, 10.0f);
 	}
+
+
+	boundaryShard_->Update();
 
 
 	/// holeの更新
@@ -106,6 +108,14 @@ void Boundary::AddHole(const Vector3& pos, float radius) {
 	holes_.emplace_back(hole);
 }
 
+ConstantBuffer<ShadowTransformData>& Boundary::GetShadowTransformBufferRef() {
+	return shadowTransformBuffer_;
+}
+
+void Boundary::AddCrack(const Vector3& _pos, float _damage) {
+	boundaryShard_->AddBreakable(_pos, _damage);
+}
+
 const std::vector<Hole>& Boundary::GetHoles() const {
 	return holes_;
 }
@@ -133,4 +143,20 @@ RectXZ Boundary::GetRectXZWorld() const {
 void Boundary::GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const {
 	outOrigin = baseTransform_.translation_;
 	outNormal = { 0.0f, 1.0f, 0.0f };
+}
+
+const std::vector<Breakable>& Boundary::GetBreakables() const {
+	return boundaryShard_->GetBreakables();
+}
+
+std::vector<Breakable>& Boundary::GetBreakablesRef() {
+	return boundaryShard_->GetBreakablesRef();
+}
+
+BoundaryShard* Boundary::GetBoundaryShard() {
+	return boundaryShard_.get();
+}
+
+size_t Boundary::GetMaxHoleCount() const {
+	return maxHoleCount_;
 }

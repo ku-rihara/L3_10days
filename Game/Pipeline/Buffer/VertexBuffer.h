@@ -7,6 +7,9 @@
 /// std
 #include <vector>
 
+#include "Dx/DxDevice.h"
+
+
 using Microsoft::WRL::ComPtr;
 
 
@@ -28,7 +31,7 @@ public:
 	void Reserve(size_t _value);
 	void Resize(size_t _value);
 
-	void BindForCommandList(ID3D12GraphicsCommandList* _commandList);
+	void BindForCommandList(ID3D12GraphicsCommandList* _commandList) const;
 
 	void Map();
 
@@ -106,7 +109,7 @@ inline void VertexBuffer<T>::Resize(size_t _value) {
 }
 
 template<typename T>
-inline void VertexBuffer<T>::BindForCommandList(ID3D12GraphicsCommandList* _commandList) {
+inline void VertexBuffer<T>::BindForCommandList(ID3D12GraphicsCommandList* _commandList) const {
 	_commandList->IASetVertexBuffers(0, 1, &vbv_);
 }
 

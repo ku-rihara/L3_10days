@@ -1,20 +1,26 @@
-#include "BoundaryPipeline.h"
+#include "BoundaryShardPipeline.h"
 
-#include "Dx/DxCompiler.h"
-// Function
-#include "function/Log.h"
+/// std
 #include <cassert>
 #include <string>
+#include <numbers>
+
+/// engine
+#include "Dx/DxCompiler.h"
+#include "function/Log.h"
+#include "3d/ModelManager.h"
+#include "random.h"
+#include "Frame/Frame.h"
 
 /// 描画対象
 #include "../Actor/Boundary/Boundary.h"
 
-BoundaryPipeline* BoundaryPipeline::GetInstance() {
-	static BoundaryPipeline instance;
+BoundaryShardPipeline* BoundaryShardPipeline::GetInstance() {
+	static BoundaryShardPipeline instance;
 	return &instance;
 }
 
-void BoundaryPipeline::Init(DirectXCommon* dxCommon) {
+void BoundaryShardPipeline::Init(DirectXCommon* dxCommon) {
 
 	// 引数で受けとる
 	dxCommon_ = dxCommon;
@@ -22,7 +28,7 @@ void BoundaryPipeline::Init(DirectXCommon* dxCommon) {
 	CreateGraphicsPipeline();
 }
 
-void BoundaryPipeline::CreateGraphicsPipeline() {
+void BoundaryShardPipeline::CreateGraphicsPipeline() {
 
 	HRESULT hr = 0;
 
@@ -75,10 +81,10 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	D3D12_BLEND_DESC blendDescNormal = {};
 	blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
 	blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
 	blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
@@ -98,8 +104,8 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	// Shaderをコンパイルする
-	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Boundary.vs.hlsl", L"vs_6_0");
-	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Boundary.ps.hlsl", L"ps_6_0");
+	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/BoundaryShard.vs.hlsl", L"vs_6_0");
+	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/BoundaryShard.ps.hlsl", L"ps_6_0");
 
 	// PSO作成用関数
 	auto CreatePSO = [&](D3D12_BLEND_DESC& blendDesc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso) {
@@ -126,7 +132,7 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	CreatePSO(blendDescNormal, graphicsPipelineStateNone_);
 }
 
-void BoundaryPipeline::CreateRootSignature() {
+void BoundaryShardPipeline::CreateRootSignature() {
 	HRESULT hr = 0;
 	// RootSignatureを作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -143,7 +149,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// breakable (t1)
+	// 環境テクスチャ (t1)
 	descriptorRange[1].BaseShaderRegister = 1;
 	descriptorRange[1].NumDescriptors = 1;
 	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -174,37 +180,30 @@ void BoundaryPipeline::CreateRootSignature() {
 	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[5] = {};
+	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 
 	// 0: TransformationMatrix
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderを使う
-	rootParameters[0].Descriptor.ShaderRegister = 1; // レジスタ番号0とバインド
+	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
+	rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
+	rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
 
 	// 1: ShadowMap
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 2;
+	rootParameters[1].Descriptor.ShaderRegister = 0;
 
-	// 2: Hole
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].Descriptor.ShaderRegister = 0;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+	// 2: InstanceCount	
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	rootParameters[2].Descriptor.ShaderRegister = 1;
 
-	// 3: Time
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	rootParameters[3].Descriptor.ShaderRegister = 0;
-
-	// 4: Time
-	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[4].Descriptor.ShaderRegister = 1;
-	rootParameters[4].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
-	rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-
+	// 3: InstanceCount	
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	rootParameters[3].Constants.Num32BitValues = 1;
+	rootParameters[3].Constants.ShaderRegister = 2;
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -223,7 +222,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void BoundaryPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
+void BoundaryShardPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	// RootSignatureを設定
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	// パイプラインステートの設定
@@ -232,29 +231,66 @@ void BoundaryPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void BoundaryPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewProjection& _viewProjection) {
+void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewProjection& _viewProjection) {
 	Boundary* boundary = Boundary::GetInstance();
 	if (!boundary) { return; }
 
-	/// bufferの設定
-	boundary->vertexBuffer_.BindForCommandList(commandList);
-	boundary->indexBuffer_.BindForCommandList(commandList);
+	BoundaryShard* boundaryShard = boundary->GetBoundaryShard();
+	if (!boundaryShard) { return; }
+
+	const auto& breakables = boundary->GetBreakables();
+	UINT instanceCount = static_cast<UINT>(breakables.size());
+
+	/// 罅がなかったら描画しない
+	if (instanceCount == 0) { return; }
 
 	/// vertex shader buffers
-	Matrix4x4 matWVP = boundary->baseTransform_.matWorld_ * _viewProjection.matView_ * _viewProjection.matProjection_;
-	Matrix4x4 matWorldInverseTranspose = Transpose(Inverse(boundary->baseTransform_.matWorld_));
-	boundary->transformBuffer_.SetMappedData({ matWVP, boundary->baseTransform_.matWorld_, matWorldInverseTranspose });
-	boundary->transformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TRANSFORM);
+	auto& shadowBuf = boundary->GetShadowTransformBufferRef();
+	shadowBuf.SetMappedData({ ShadowMap::GetInstance()->GetLightCameraMatrix() });
+	shadowBuf.BindForGraphicsCommandList(commandList, ROOT_PARAM_SHADOW_TRANSFORM);
 
-	boundary->shadowTransformBuffer_.SetMappedData({ ShadowMap::GetInstance()->GetLightCameraMatrix() });
-	boundary->shadowTransformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_SHADOW_TRANSFORM);
+	/// 各罅の行列を計算してbufferに詰める
+	Matrix4x4 matWorld, matWVP, matWorldInverseTranspose;
+	for (size_t i = 0; i < breakables.size(); i++) {
+		const Breakable& breakable = breakables[i];
+		for (size_t j = 0; j < breakable.shards.size(); j++) {
+			const Shard& shard = breakable.shards[j];
 
-	BoundaryShard* shard = boundary->GetBoundaryShard();
-	shard->GetBreakableBufferRef().BindToCommandList(ROOT_PARAM_BREAKABLE, commandList);
+			matWorld = MakeIdentity4x4();
+			matWorld *= MakeScaleMatrix({ breakable.radius, breakable.radius, breakable.radius });
+			matWorld *= MakeRotateMatrix(shard.transform.rotate + shard.offsetRotate);
+			matWorld *= MakeTranslateMatrix((shard.transform.translate * breakable.radius) + shard.offsetPos);
+			matWorld *= MakeTranslateMatrix(breakable.position);
 
-	/// pixel shader buffers
-	boundary->holeBuffer_.BindToCommandList(ROOT_PARAM_HOLE, commandList);
-	boundary->timeBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_TIME);
-	
-	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;
+			matWorldInverseTranspose = Transpose(Inverse(matWorld));
+
+			size_t index = i * breakable.shards.size() + j;
+			boundaryShard->breakableTransformBuffer_.SetMappedData(index, { matWVP, matWorld, matWorldInverseTranspose });
+		}
+	}
+
+	boundaryShard->breakableTransformBuffer_.BindToCommandList(ROOT_PARAM_TRANSFORM, commandList);
+
+	//instanceCount *= static_cast<UINT>(boundaryShard->loadedShards_.size());
+	int shardCount = static_cast<int>(boundaryShard->GetLoadedShards().size());
+	boundaryShard->instanceCountBuffer_.SetMappedData(shardCount);
+	boundaryShard->instanceCountBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_INSTANCE_COUNT);
+
+
+
+	/// 描画
+	for (size_t i = 0; i < boundaryShard->GetLoadedShards().size(); i++) {
+		/// 破片モデルをセット
+		const Shard& shardModel = boundaryShard->GetLoadedShards()[i];
+		shardModel.vertexBuffer.BindForCommandList(commandList);
+		shardModel.indexBuffer.BindForCommandList(commandList);
+
+		commandList->SetGraphicsRoot32BitConstants(
+			ROOT_PARAM_ROOT_CONSTANT, 1, &i, 0
+		);
+
+		UINT indexCount = static_cast<UINT>(shardModel.indexBuffer.GetIndices().size());
+		commandList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
+	}
 }

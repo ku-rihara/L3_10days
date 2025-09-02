@@ -48,7 +48,7 @@ void IndexBuffer::Resize(size_t _value) {
 	indices_.resize(_value);
 }
 
-void IndexBuffer::BindForCommandList(ID3D12GraphicsCommandList* _commandList) {
+void IndexBuffer::BindForCommandList(ID3D12GraphicsCommandList* _commandList) const {
 	_commandList->IASetIndexBuffer(&ibv_);
 }
 

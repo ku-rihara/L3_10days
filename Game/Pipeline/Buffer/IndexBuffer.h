@@ -27,7 +27,7 @@ public:
 	void Reserve(size_t _value);
 	void Resize(size_t _value);
 
-	void BindForCommandList(ID3D12GraphicsCommandList* _commandList);
+	void BindForCommandList(ID3D12GraphicsCommandList* _commandList) const;
 
 	void Map();
 

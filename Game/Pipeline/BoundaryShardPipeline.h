@@ -9,19 +9,25 @@
 #include "Material/ModelMaterial.h"
 #include "Dx/DirectXCommon.h"
 #include "3d/ViewProjection.h"
+#include "struct/TransformationMatrix.h"
+#include "3d/Model.h"
+
+/// buffer
+#include "Buffer/StructuredBuffer.h"
+#include "Buffer/VertexBuffer.h"
+#include "Buffer/IndexBuffer.h"
+
 
 /// //////////////////////////////////////////////////////
-/// ボーダーの描画パイプライン
+/// 境界の破片の描画パイプライン
 /// //////////////////////////////////////////////////////
-class BoundaryPipeline {
-public:
+class BoundaryShardPipeline {
 
 	enum ROOT_PARAM {
 		ROOT_PARAM_TRANSFORM,
 		ROOT_PARAM_SHADOW_TRANSFORM,
-		ROOT_PARAM_HOLE,
-		ROOT_PARAM_TIME,
-		ROOT_PARAM_BREAKABLE,
+		ROOT_PARAM_INSTANCE_COUNT,
+		ROOT_PARAM_ROOT_CONSTANT,
 	};
 
 public:
@@ -29,11 +35,11 @@ public:
 	/// public : methods
 	/// ========================================================
 
-	BoundaryPipeline() = default;
-	~BoundaryPipeline() = default;
+	BoundaryShardPipeline()  = default;
+	~BoundaryShardPipeline() = default;
 
 	/// @brief シングルトン化
-	static BoundaryPipeline* GetInstance();
+	static BoundaryShardPipeline* GetInstance();
 
 	void Init(DirectXCommon* dxCommon);
 	void PreDraw(ID3D12GraphicsCommandList* commandList);
@@ -63,12 +69,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateNone_;
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc_;
 
-
-public:
-	// getter
-	DirectXCommon* GetDxCommon() const { return dxCommon_; }
-
-	// rootSignature
-	ID3D12RootSignature* GetRootSignature() const { return rootSignature_.Get(); }
 };
 

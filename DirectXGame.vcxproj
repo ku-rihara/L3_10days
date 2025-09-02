@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Pipeline\BoundaryShardPipeline.cpp" />
+    <ClCompile Include="Game\Actor\Boundary\BoundaryShard.cpp" />
     <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
     <ClCompile Include="Game\Actor\NPC\Navigation\MoveConstraint.cpp" />
     <ClCompile Include="Game\Actor\NPC\Navigation\NpcNavigator.cpp" />

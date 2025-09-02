@@ -80,7 +80,7 @@ private:
 	VertexBuffer<VertexData> vertexBuffer_;
 	IndexBuffer indexBuffer_;
 
-	size_t holeElementCount_ = 64;
+	size_t holeElementCount_ = 48;
 
 };
 
