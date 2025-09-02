@@ -25,7 +25,7 @@ void Player::Init() {
     velocity_        = Vector3::ZeroVector();
     angularVelocity_ = Vector3::ZeroVector();
 
-    targetRotation_     = Quaternion::Identity();
+    targetRotation_ = Quaternion::Identity();
 }
 
 void Player::Update() {
@@ -96,29 +96,41 @@ void Player::UpdatePhysics() {
     float deltaTime = Frame::DeltaTime();
 
     // 角速度の補間
-    angularVelocity_ = Lerp(angularVelocity_, angleInput_, 0.3f);
+    Vector3 targetAngularVelocity = angleInput_;
 
-    // 現在の回転をオイラー角に変換
+    // 入力がない場合は減衰させる
+    const float damping = 0.95f; // 減衰率
+    if (angleInput_.Length() < 0.001f) {
+        targetAngularVelocity = angularVelocity_ * damping;
+    }
+
+    // スムーズな角速度変化
+    angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.3f);
+
+    // 現在の回転をオイラー角に変換してロール制限をチェック
     Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
+    float currentRoll    = currentEuler.z;
 
-    // 現在のロール角（Z軸）
-    float currentRoll = currentEuler.z;
+    // ロール制限の改善版
+    const float maxRoll = ToRadian(rollRotateLimit_);
+    bool rollLimited    = false;
 
     // 次フレームでの予測ロール角
     float predictedRoll = currentRoll + angularVelocity_.z * deltaTime;
 
-    // 制限角度
-    const float maxRoll = ToRadian(rollRotateLimit_);
-
-    // 上限チェック
+    // ロールの回転の制限
     if (predictedRoll > maxRoll) {
-        predictedRoll      = maxRoll;
-        angularVelocity_.z = 0.0f;
-    }
-    // 下限チェック
-    else if (predictedRoll < -maxRoll) {
-        predictedRoll      = -maxRoll;
-        angularVelocity_.z = 0.0f;
+       
+        if (angularVelocity_.z > 0.0f) {
+            angularVelocity_.z = 0.0f;
+            rollLimited        = true;
+        }
+    } else if (predictedRoll < -maxRoll) {
+      
+        if (angularVelocity_.z < 0.0f) {
+            angularVelocity_.z = 0.0f;
+            rollLimited        = true;
+        }
     }
 
     // 現在の姿勢からローカル軸を取得
@@ -131,45 +143,74 @@ void Player::UpdatePhysics() {
     Quaternion yawRotation   = Quaternion::MakeRotateAxisAngle(localUp, angularVelocity_.y * deltaTime);
     Quaternion rollRotation  = Quaternion::MakeRotateAxisAngle(localForward, angularVelocity_.z * deltaTime);
 
-    // 合成回転を適用
-    Quaternion deltaRotation = yawRotation*pitchRotation * rollRotation;
+    // ヨーピッチロール
+    Quaternion deltaRotation = yawRotation * pitchRotation * rollRotation;
 
+    // 回転を適用
     targetRotation_ = deltaRotation * baseTransform_.quaternion_;
     targetRotation_ = targetRotation_.Normalize();
 
-    if (fabs(angleInput_.z) < 0.001f) {
-        Vector3 euler      = targetRotation_.ToEuler();
-        float currentYaw   = euler.y;
-        float currentPitch = euler.x;
+    // 機体の上方向ベクトルを取得
+    Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
+    Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
 
-        // ロールだけゼロにした姿勢を作成
-        Quaternion noRollRotation = Quaternion::EulerToQuaternion(
-            Vector3(currentPitch, currentYaw, 0.0f));
+ 
+    // 機体の上方向とワールドの上方向の内積を計算
+    float upDot = Vector3::Dot(targetUpVector, Vector3::ToUp());
 
-        // スムーズに補間
+    // 機体が逆さまかどうかを判定
+    const float upsideDownThreshold = -0.3f;
+    bool isUpsideDown               = upDot < upsideDownThreshold;
+
+    // 逆さまの場合の自動補正
+    if (isUpsideDown && angleInput_.Length() < 0.001f) {
+        Vector3 euler    = targetRotation_.ToEuler();
+        float currentYaw = euler.y;
+
+        // ピッチとロールを0にした回転を作成
+        Quaternion correctedRotation = Quaternion::EulerToQuaternion(
+            Vector3(0.0f, currentYaw, 0.0f));
+
+        // 補正の強度
+        float correctionStrength = std::abs(upDot + 0.3f) * 2.0f;
+        correctionStrength       = std::min(correctionStrength, 1.0f);
+
+        // スムーズに補正
         targetRotation_ = Quaternion::Slerp(
             targetRotation_,
-            noRollRotation,
-            rollBackTime_ * deltaTime);
+            correctedRotation,
+            correctionStrength * pitchBackTime_ * deltaTime);
+    }
+    // 通常時の自動復帰処理
+    else if (!isUpsideDown) {
+        Vector3 euler              = targetRotation_.ToEuler();
+        float currentYaw           = euler.y;
+        float currentPitch         = euler.x;
+        float currentRollForReturn = euler.z;
+
+        // ターゲット姿勢を作成
+        Vector3 targetEuler    = Vector3(currentPitch, currentYaw, currentRollForReturn);
+        bool shouldApplyReturn = false;
+
+        // ピッチ自動復帰
+        if (fabs(angleInput_.x) < 0.001f) {
+            targetEuler.x     = Lerp(currentPitch, 0.0f, pitchBackTime_ * deltaTime);
+            shouldApplyReturn = true;
+        }
     }
 
-    // 回転補間
+    // 最終的な回転補間
     baseTransform_.quaternion_ = Quaternion::Slerp(
         baseTransform_.quaternion_,
         targetRotation_,
         rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-    // 前方ベクトルをQuaternionから計算
+    // 前方ベクトルを取得して移動
     Vector3 forward = GetForwardVector();
-
-    // 常に前進
-    velocity_ = forward * forwardSpeed_ * deltaTime;
-
-    // 位置を更新
+    velocity_       = forward * forwardSpeed_ * deltaTime;
     baseTransform_.translation_ += velocity_;
 }
-
 void Player::Move() {
 }
 
@@ -197,16 +238,16 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "pitchSpeed", &pitchSpeed_);
     globalParameter_->Bind(groupName_, "yawSpeed", &yawSpeed_);
     globalParameter_->Bind(groupName_, "rollSpeed", &rollSpeed_);
-    globalParameter_->Bind(groupName_, "rollBackTime", &rollBackTime_);
     globalParameter_->Bind(groupName_, "rotationSmoothness", &rotationSmoothness_);
     globalParameter_->Bind(groupName_, "rollRotateLimit", &rollRotateLimit_);
+    globalParameter_->Bind(groupName_, "pitchBackTime", &pitchBackTime_);
+    globalParameter_->Bind(groupName_, "pitchReturnThreshold", &pitchReturnThreshold_);
 }
 
-    ///=========================================================
+///=========================================================
 /// パラメータ調整
 ///==========================================================
 void Player::AdjustParam() {
-
 #ifdef _DEBUG
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
         ImGui::PushID(groupName_.c_str());
@@ -221,9 +262,11 @@ void Player::AdjustParam() {
         ImGui::DragFloat("Pitch Speed", &pitchSpeed_, 0.01f);
         ImGui::DragFloat("Yaw Speed", &yawSpeed_, 0.01f);
         ImGui::DragFloat("Roll Speed", &rollSpeed_, 0.01f);
-        ImGui::DragFloat("RollBackTime", &rollBackTime_, 0.01f);
-        ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f,0.0f,1.0f);
+        ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
+        ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
+
         // デバッグ
         ImGui::Separator();
         ImGui::Text("Debug Info");
@@ -237,7 +280,34 @@ void Player::AdjustParam() {
             baseTransform_.rotation_.z * 180.0f / std::numbers::pi_v<float>);
         ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
 
+        // 機体姿勢の詳細デバッグ
+        ImGui::Separator();
+        ImGui::Text("Aircraft Attitude");
+        Vector3 euler = baseTransform_.quaternion_.ToEuler();
+        ImGui::Text("Euler (deg): P=%.1f, Y=%.1f, R=%.1f",
+            euler.x * 180.0f / std::numbers::pi_v<float>,
+            euler.y * 180.0f / std::numbers::pi_v<float>,
+            euler.z * 180.0f / std::numbers::pi_v<float>);
+
+        // 機体の上方向ベクトル
+        Matrix4x4 rotMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
+        Vector3 upVector    = TransformNormal(Vector3::ToUp(), rotMatrix);
+        Vector3 worldUp     = Vector3(0.0f, 1.0f, 0.0f);
+        float upDot         = Vector3::Dot(upVector, worldUp);
+
+        ImGui::Text("Up Vector: (%.2f, %.2f, %.2f)", upVector.x, upVector.y, upVector.z);
+        ImGui::Text("Up Dot Product: %.3f", upDot);
+
+        // 逆さま判定の表示
+        bool isUpsideDown = upDot < -0.3f;
+        if (isUpsideDown) {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "STATUS: UPSIDE DOWN!");
+        } else {
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "STATUS: Normal");
+        }
+
         // セーブ・ロード
+        ImGui::Separator();
         globalParameter_->ParamSaveForImGui(groupName_);
         globalParameter_->ParamLoadForImGui(groupName_);
 

@@ -53,11 +53,13 @@ private:
     Quaternion targetRotation_; 
 
     float rotationSmoothness_;
-    float rollBackTime_;
     float rollRotateLimit_;
 
     Vector3 direction_;
     float objectiveAngle_;
+
+     float pitchBackTime_; // ピッチ復帰速度
+    float pitchReturnThreshold_; 
 
 public:
     // ゲッター
