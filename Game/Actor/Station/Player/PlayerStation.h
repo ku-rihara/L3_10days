@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../Base/BaseStation.h"
+#include "Actor/NPC/Pool/NpcPool.h"
+#include "Actor/NPC/PlayerNPC.h"
 
 class PlayerStation final : public BaseStation {
 public:
@@ -15,5 +17,11 @@ public:
 	void Update() override;
 
 	void SpawnNPC()override;
+
+private:
+	/// ===================================================
+	///  private variable
+	/// ===================================================
+	NpcPool<PlayerNPC>pool_;
 };
 

@@ -27,6 +27,8 @@ void NPC::Init() {
 	globalParam_->SyncParamForGroup(groupName_);
 
 	//LoadData();
+
+	Activate();
 }
 
 /// ===================================================
@@ -87,5 +89,12 @@ void NPC::SetTarget(const BaseStation* target) { target_ = target; }
 ///  派閥を設定
 /// ===================================================
 void NPC::SetFaction(FactionType faction) { faction_ = faction; }
+
+/// ===================================================
+///  アクティブトグル
+/// ===================================================
+void NPC::Activate() { isActive_ = true; }
+
+void NPC::Deactivate() { isActive_ = false; }
 
 

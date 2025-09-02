@@ -24,6 +24,9 @@ public:
 	void SetFaction(FactionType faction);
 	bool GetIsAlive()const { return isActive_; }
 
+	void Activate();
+	void Deactivate();
+
 	// ---- 調整項目 ----
 	virtual void BindParms();
 	virtual void LoadData();

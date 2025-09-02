@@ -1,6 +1,7 @@
 #include "EnemyStation.h"
 
 #include "Actor/NPC/EnemyNPC.h"
+#include "Actor/NPC/Pool/NpcPool.h"
 #include "Frame/Frame.h"
 
 #include "imgui.h"
@@ -17,7 +18,6 @@ EnemyStation::EnemyStation(const std::string& name) :
 /// ===================================================
 void EnemyStation::Init() {
 	BaseStation::Init();
-
 }
 
 /// ===================================================
@@ -40,23 +40,20 @@ void EnemyStation::Update() {
 
 /// ===================================================
 /// npcのスポーン
-/// ===================================================
+
 void EnemyStation::SpawnNPC() {
-	//auto rival = GetRivalStation();
-	//if (!rival)return;
 
-	//上限チェック
-	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_)return;
+	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_) return;
 
-	//1体スポーン
-	auto npc = std::make_unique<EnemyNPC>();
+	auto npc = pool_.Acquire();
 	npc->Init();
+	npc->SetFaction(FactionType::Enemy);
+
 	Vector3 spawnOffset = { 1.0f,1.0f,1.0f };
 	const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;
 	npc->SetWorldPosition(worldSpawn);
 	npc->SetTarget(GetRivalStation());
 
 	spawned_.push_back(std::move(npc));
-
-	currentTime_ = 0.0f;//リセット
+	currentTime_ = 0.0f;
 }
