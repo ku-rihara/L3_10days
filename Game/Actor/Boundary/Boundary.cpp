@@ -4,6 +4,7 @@
 #include "Dx/DirectXCommon.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
+#include "3d/ModelManager.h"
 
 Boundary* Boundary::GetInstance() {
 	static Boundary instance;
@@ -43,6 +44,9 @@ Boundary::Boundary() {
 
 void Boundary::Init() {
 	baseTransform_.Init();
+
+	/// test
+	ModelManager::GetInstance()->LoadModel("BoundaryShard");
 }
 
 void Boundary::Update() {
