@@ -660,6 +660,7 @@
     <ClCompile Include="Game\Actor\Player\Bullet\PlayerNormalBullet.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryShardPipeline.cpp" />
     <ClCompile Include="Game\Actor\Boundary\BoundaryShard.cpp" />
+    <ClCompile Include="Game\Pipeline\MiniMapPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1134,6 +1135,7 @@
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerMissile.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerNormalBullet.h" />
     <ClInclude Include="Game\Pipeline\BoundaryShardPipeline.h" />
+    <ClInclude Include="Game\Pipeline\MiniMapPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

@@ -170,6 +170,7 @@
     <ClCompile Include="Game\Actor\NPC\PlayerNPC.cpp" />
     <ClCompile Include="Game\Actor\NPC\Pool\NpcPool.cpp" />
     <ClCompile Include="Game\Actor\NPC\Navigation\RectXZWithGatesConstraint.cpp" />
+    <ClCompile Include="Game\Pipeline\MiniMapPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\Boundary\RectXZ.h" />
@@ -350,6 +351,7 @@
     <ClInclude Include="Game\Actor\NPC\PlayerNPC.h" />
     <ClInclude Include="Game\Actor\NPC\Pool\NpcPool.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\RectXZWithGatesConstraint.h" />
+    <ClInclude Include="Game\Pipeline\MiniMapPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
