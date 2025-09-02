@@ -49,11 +49,11 @@ void Boundary::Update() {
 
 	/// debugように
 	if (Input::GetInstance()->TrrigerKey(DIK_P)) {
-		AddCrack({}, 100.0f, 0.5f);
+		AddCrack({}, 100.0f);
 	}
 
 	if (Input::GetInstance()->TrrigerKey(DIK_O)) {
-		AddCrack({ 50.0f, 0.0f, 0.0f }, 100.0f, 0.5f);
+		AddCrack({ 50.0f, 0.0f, 0.0f }, 100.0f);
 	}
 
 
@@ -109,41 +109,20 @@ ConstantBuffer<ShadowTransformData>& Boundary::GetShadowTransformBufferRef() {
 	return shadowTransformBuffer_;
 }
 
-void Boundary::AddCrack(const Vector3& _pos, float _radius, float _damage) {
-
-	/// 他の亀裂と比較、近かったらその亀裂のlifeを減らす
-	bool isNearCrack = false;
-	for (size_t i = 0; i < cracks_.size(); i++) {
-		Crack& otherCrack = cracks_[i];
-		float distance = (otherCrack.position - _pos).Length();
-		if (distance < otherCrack.radius) {
-			otherCrack.life -= _damage;
-			isNearCrack = true;
-		}
-	}
-
-
-	/// 近くに亀裂がなかったら新しい亀裂を追加
-	if (!isNearCrack) {
-		Crack crack = {
-			.position = _pos,
-			.radius = _radius,
-			.life = 1.0f
-		};
-		cracks_.emplace_back(crack);
-	}
+void Boundary::AddCrack(const Vector3& _pos, float _damage) {
+	boundaryShard_->AddBreakable(_pos, _damage);
 }
 
 const std::vector<Hole>& Boundary::GetHoles() const {
 	return holes_;
 }
 
-const std::vector<Crack>& Boundary::GetCracks() const {
-	return cracks_;
+const std::vector<Breakable>& Boundary::GetBreakables() const {
+	return boundaryShard_->GetBreakables();
 }
 
-std::vector<Crack>& Boundary::GetCracksRef() {
-	return cracks_;
+std::vector<Breakable>& Boundary::GetBreakablesRef() {
+	return boundaryShard_->GetBreakablesRef();
 }
 
 BoundaryShard* Boundary::GetBoundaryShard() {

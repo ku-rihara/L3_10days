@@ -228,8 +228,8 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 	BoundaryShard* shard = boundary->GetBoundaryShard();
 	if (!shard) { return; }
 
-	const auto& cracks = boundary->GetCracks();
-	UINT instanceCount = static_cast<UINT>(cracks.size());
+	const auto& breakables = boundary->GetBreakables();
+	UINT instanceCount = static_cast<UINT>(breakables.size());
 
 	/// 罅がなかったら描画しない
 	if (instanceCount == 0) { return; }
@@ -241,10 +241,10 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 
 	/// 各罅の行列を計算してbufferに詰める
 	Matrix4x4 matWorld, matWVP, matWorldInverseTranspose;
-	for (size_t i = 0; i < cracks.size(); i++) {
+	for (size_t i = 0; i < breakables.size(); i++) {
 		matWorld = MakeAffineMatrix(
-			{ cracks[i].radius, cracks[i].radius, cracks[i].radius },
-			Vector3(0, 0, 0), cracks[i].position
+			{ breakables[i].radius, breakables[i].radius, breakables[i].radius },
+			Vector3(0, 0, 0), breakables[i].position
 		);
 
 		matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;

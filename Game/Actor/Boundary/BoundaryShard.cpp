@@ -20,7 +20,6 @@ BoundaryShard::~BoundaryShard() {}
 
 void BoundaryShard::Init() {
 	/// ここで使用するモデルの読み込み
-	//ModelManager::GetInstance()->LoadModel("BoundaryShard.obj");
 	LoadShardModel("./Resources/Model/BoundaryShard/BoundaryShard.obj");
 
 	breakableTransformBuffer_.Create(
@@ -31,21 +30,20 @@ void BoundaryShard::Init() {
 
 void BoundaryShard::Update() {
 
-	/// 境界のポインタを取得
-	Boundary* boundary = Boundary::GetInstance();
-	if (!boundary) {
-		return;
-	}
+	for (auto& breakable : breakables_) {
+		/// 罅のmaxLifeとcurrentLifeを見てstageを決定
+		float lifeRatio = breakable.currentLife / breakable.maxLife;
 
-	/// 境界の罅の数を取得
-	auto& cracks = boundary->GetCracksRef();
-	if (cracks.size() == 0) {
-		return;
-	}
-
-	/// 罅の数だけ破片を生成
-	for (auto itr = cracks.begin(); itr != cracks.end(); ++itr) {
-		//const Crack& crack = *itr;
+		/// 4段階で設定 (0:無傷, 1:軽傷, 2:重傷, 3:破片に分かれる)
+		if (lifeRatio > 0.66f) {
+			breakable.stage = 0;
+		} else if (lifeRatio > 0.33f) {
+			breakable.stage = 1;
+		} else if (lifeRatio > 0.0f) {
+			breakable.stage = 2;
+		} else {
+			breakable.stage = 3;
+		}
 	}
 
 }
@@ -109,7 +107,47 @@ const std::vector<Breakable>& BoundaryShard::GetBreakables() const {
 	return breakables_;
 }
 
+std::vector<Breakable>& BoundaryShard::GetBreakablesRef() {
+	return breakables_;
+}
+
 const std::vector<Shard>& BoundaryShard::GetLoadedShards() const {
 	return loadedShards_;
+}
+
+void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
+
+	/// すでにある罅と近かったら追加しないで近い罅のlifeを減らす
+	bool isNearBreakable = false;
+	for (size_t i = 0; i < breakables_.size(); i++) {
+		Breakable& other = breakables_[i];
+		float distance = (other.position - _position).Length();
+		if (distance < 100.0f) {
+			other.currentLife -= _damage;
+			other.radius = std::min(other.radius + _damage, 200.0f);
+			isNearBreakable = true;
+		}
+	}
+
+	/// 近くに罅があったときの処理をしたかチェック、したならreturn
+	if (isNearBreakable) {
+		return;
+	}
+
+	/// 罅の追加
+	Breakable breakable;
+	breakable.position = _position;
+	breakable.maxLife = 320.0f;
+	breakable.currentLife = breakable.maxLife;
+	breakable.stage = 0;
+	breakable.radius = _damage;
+	breakable.shards = loadedShards_;
+	breakable.transformBuffer.Create(
+		static_cast<uint32_t>(breakable.shards.size()),
+		DirectXCommon::GetInstance()->GetDxDevice()
+	);
+
+	breakables_.push_back(std::move(breakable));
+
 }
 

@@ -22,11 +22,11 @@ struct Hole {
 };
 
 /// @brief 境界が割れる前の亀裂
-struct Crack {
-	Vector3 position;
-	float radius;
-	float life; /// 0になったらHoleが生まれる
-};
+//struct Crack {
+//	Vector3 position;
+//	float radius;
+//	float life; /// 0になったらHoleが生まれる
+//};
 
 struct BoundaryVertex {
 	Vector4 pos;    // xyz座標
@@ -58,14 +58,14 @@ public:
 	/// ----- 他のメンバーが使いそうな関数 ----- ///
 
 	/// 罅の追加、罅が一定時間経過したら穴を追加する処理が走る
-	void AddCrack(const Vector3& _pos, float _radius, float _damage);
+	void AddCrack(const Vector3& _pos, float _damage);
 
 	/// 現在出現している穴のリスト
 	const std::vector<Hole>& GetHoles() const;
 
 	/// 現在出現している罅のリスト
-	const std::vector<Crack>& GetCracks() const;
-	std::vector<Crack>& GetCracksRef();
+	const std::vector<Breakable>& GetBreakables() const;
+	std::vector<Breakable>& GetBreakablesRef();
 
 	/// 境界に出来た罅の全てを持っているクラスの取得
 	BoundaryShard* GetBoundaryShard();
@@ -88,7 +88,6 @@ private:
 
 	size_t maxHoleCount_ = 128;
 	std::vector<Hole> holes_;
-	std::vector<Crack> cracks_;
 
 	float holeMaxLifeTime_ = 16.0f;
 

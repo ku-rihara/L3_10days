@@ -35,9 +35,11 @@ struct Shard {
 };
 
 struct Breakable {
+	Vector3 position;
 	float maxLife;
 	float currentLife; /// 0になったら破片に分かれる and Holeが生まれる
 	int stage; /// 罅の段階
+	float radius; /// 罅の大きさ
 	std::vector<Shard> shards;
 	StructuredBuffer<Matrix4x4> transformBuffer; /// 各破片の行列を送るbuffer
 };
@@ -62,9 +64,11 @@ public:
 	void LoadShardModel(const std::string& _filepath);
 
 	const std::vector<Breakable>& GetBreakables() const;
+	std::vector<Breakable>& GetBreakablesRef();
+
 	const std::vector<Shard>& GetLoadedShards() const;
 
-	void AddBreakable(float _maxLife, int _stage);
+	void AddBreakable(const Vector3& _position, float _damage);
 
 private:
 	/// ===================================================
