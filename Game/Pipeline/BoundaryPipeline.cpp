@@ -143,7 +143,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// 環境テクスチャ (t1)
+	// breakable (t1)
 	descriptorRange[1].BaseShaderRegister = 1;
 	descriptorRange[1].NumDescriptors = 1;
 	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -174,7 +174,7 @@ void BoundaryPipeline::CreateRootSignature() {
 	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	D3D12_ROOT_PARAMETER rootParameters[5] = {};
 
 	// 0: TransformationMatrix
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
@@ -197,6 +197,13 @@ void BoundaryPipeline::CreateRootSignature() {
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 	rootParameters[3].Descriptor.ShaderRegister = 0;
+
+	// 4: Time
+	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[4].Descriptor.ShaderRegister = 1;
+	rootParameters[4].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
+	rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
 
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
@@ -242,6 +249,8 @@ void BoundaryPipeline::Draw(ID3D12GraphicsCommandList* commandList, const ViewPr
 	boundary->shadowTransformBuffer_.SetMappedData({ ShadowMap::GetInstance()->GetLightCameraMatrix() });
 	boundary->shadowTransformBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_SHADOW_TRANSFORM);
 
+	BoundaryShard* shard = boundary->GetBoundaryShard();
+	shard->GetBreakableBufferRef().BindToCommandList(ROOT_PARAM_BREAKABLE, commandList);
 
 	/// pixel shader buffers
 	boundary->holeBuffer_.BindToCommandList(ROOT_PARAM_HOLE, commandList);

@@ -205,7 +205,6 @@ void BoundaryShardPipeline::CreateRootSignature() {
 	rootParameters[3].Constants.Num32BitValues = 1;
 	rootParameters[3].Constants.ShaderRegister = 2;
 
-
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
 

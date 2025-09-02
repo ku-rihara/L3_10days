@@ -51,6 +51,11 @@ struct Breakable {
 	std::vector<Shard> shards;
 };
 
+struct BreakableBufferData {
+	Vector3 position;
+	float radius;
+};
+
 /// //////////////////////////////////////////////////////////
 /// 境界の破片 Boundaryに定義する
 /// //////////////////////////////////////////////////////////
@@ -68,6 +73,8 @@ public:
 	void Update();
 	void Draw();
 
+	void AddBreakable(const Vector3& _position, float _damage);
+
 	void LoadShardModel(const std::string& _filepath);
 
 	const std::vector<Breakable>& GetBreakables() const;
@@ -75,7 +82,7 @@ public:
 
 	const std::vector<Shard>& GetLoadedShards() const;
 
-	void AddBreakable(const Vector3& _position, float _damage);
+	StructuredBuffer<BreakableBufferData>& GetBreakableBufferRef();
 
 private:
 	/// ===================================================
@@ -86,6 +93,7 @@ private:
 
 	std::vector<Breakable> breakables_;
 	StructuredBuffer<TransformationMatrix> breakableTransformBuffer_;
+	StructuredBuffer<BreakableBufferData> breakableBuffer_;
 	ConstantBuffer<int> instanceCountBuffer_;
 
 };

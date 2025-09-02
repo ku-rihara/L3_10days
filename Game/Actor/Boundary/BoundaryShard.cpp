@@ -30,6 +30,11 @@ void BoundaryShard::Init() {
 		DirectXCommon::GetInstance()->GetDxDevice()
 	);
 
+	breakableBuffer_.Create(
+		static_cast<uint32_t>(Boundary::GetInstance()->GetMaxHoleCount()),
+		DirectXCommon::GetInstance()->GetDxDevice()
+	);
+
 	instanceCountBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 }
 
@@ -87,7 +92,18 @@ void BoundaryShard::Update() {
 				shard.offsetRotate = Vector3(0.0f, 0.0f, waveRot * amplitudeRot);
 			}
 		}
+	}
 
+
+	/// bufferに詰める
+	Boundary* boundary = Boundary::GetInstance();
+	for (size_t i = 0; i < boundary->GetMaxHoleCount(); i++) {
+		if (i < breakables_.size()) {
+			auto& breakable = breakables_[i];
+			breakableBuffer_.SetMappedData(i, { breakable.position, breakable.radius });
+		} else {
+			breakableBuffer_.SetMappedData(i, {});
+		}
 	}
 
 }
@@ -181,6 +197,10 @@ std::vector<Breakable>& BoundaryShard::GetBreakablesRef() {
 
 const std::vector<Shard>& BoundaryShard::GetLoadedShards() const {
 	return loadedShards_;
+}
+
+StructuredBuffer<BreakableBufferData>& BoundaryShard::GetBreakableBufferRef() {
+	return breakableBuffer_;
 }
 
 void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {

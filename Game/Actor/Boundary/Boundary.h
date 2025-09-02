@@ -21,13 +21,6 @@ struct Hole {
 	float lifeTime;    // 穴が空いてからの経過時間
 };
 
-/// @brief 境界が割れる前の亀裂
-//struct Crack {
-//	Vector3 position;
-//	float radius;
-//	float life; /// 0になったらHoleが生まれる
-//};
-
 struct BoundaryVertex {
 	Vector4 pos;    // xyz座標
 	Vector2 uv;     // uv座標

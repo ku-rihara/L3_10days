@@ -6,6 +6,7 @@ struct PSOutput {
 
 static const int kMaxHoles = 128;
 StructuredBuffer<Hole> gHoles : register(t0);
+StructuredBuffer<Breakable> gBreakable: register(t1);
 ConstantBuffer<Time> gTime : register(b0);
 
 /// 仮のベースとハイライトの色
@@ -15,9 +16,17 @@ static const float3 gHighlightColor = float3(0.173, 0.886, 0.647); // #2de1a5
 PSOutput main(VertexShaderOutput input) {
 	PSOutput output;
 
-	for (uint i = 0; i < kMaxHoles; i++) {
+	uint i = 0;
+	for (i = 0; i < kMaxHoles; i++) {
 		float distance = length(input.worldPosition - gHoles[i].position);
 		if (distance < gHoles[i].radius) {
+			discard;
+		}
+	}
+	
+	for(i = 0; i < kMaxHoles; i++) {
+		float distance = length(input.worldPosition - gBreakable[i].position);
+		if (distance < gBreakable[i].radius) {
 			discard;
 		}
 	}
