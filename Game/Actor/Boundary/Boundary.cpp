@@ -109,3 +109,28 @@ void Boundary::AddHole(const Vector3& pos, float radius) {
 const std::vector<Hole>& Boundary::GetHoles() const {
 	return holes_;
 }
+
+RectXZ Boundary::GetRectXZWorld() const {
+	RectXZ r = localRectXZ_;
+	const float sx = baseTransform_.scale_.x;
+	const float sz = baseTransform_.scale_.z;
+	const float tx = baseTransform_.translation_.x;
+	const float tz = baseTransform_.translation_.z;
+
+	float x0 = r.minX * sx + tx;
+	float x1 = r.maxX * sx + tx;
+	float z0 = r.minZ * sz + tz;
+	float z1 = r.maxZ * sz + tz;
+
+	RectXZ out;
+	out.minX = (std::min)(x0, x1);
+	out.maxX = (std::max)(x0, x1);
+	out.minZ = (std::min)(z0, z1);
+	out.maxZ = (std::max)(z0, z1);
+	return out;
+}
+
+void Boundary::GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const {
+	outOrigin = baseTransform_.translation_;
+	outNormal = { 0.0f, 1.0f, 0.0f };
+}
