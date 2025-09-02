@@ -17,6 +17,12 @@ PlayerStation::PlayerStation(const std::string& name) :
 /// 初期化
 /// ===================================================
 void PlayerStation::Init() {
+	obj3d_.reset(Object3d::CreateModel("PlayerBase.obj"));
+	BaseObject::Init();
+	obj3d_->transform_.parent_ = &baseTransform_;
+
+	globalParam_ = GlobalParameter::GetInstance();
+
 	BaseStation::Init();
 }
 
@@ -28,7 +34,7 @@ void PlayerStation::Update() {
 	//スポーン
 	currentTime_ += dt;
 	if (currentTime_ >= spawnInterbal_) {
-		SpawnNPC();
+		SpawnNPC();	
 	}
 
 	for (auto& enemy : spawned_) {

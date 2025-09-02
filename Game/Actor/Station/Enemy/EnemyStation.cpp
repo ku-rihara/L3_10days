@@ -17,6 +17,13 @@ EnemyStation::EnemyStation(const std::string& name) :
 /// 初期化
 /// ===================================================
 void EnemyStation::Init() {
+	obj3d_.reset(Object3d::CreateModel("EnemyBase.obj"));
+	BaseObject::Init();
+	obj3d_->transform_.parent_ = &baseTransform_;
+
+	globalParam_ = GlobalParameter::GetInstance();
+
+	BaseStation::Init();
 	BaseStation::Init();
 }
 
