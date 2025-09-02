@@ -4,6 +4,7 @@
 #include "MathFunction.h"
 #include <imgui.h>
 #include <numbers>
+#include <DirectXTex.h>
 
 void Player::Init() {
 
@@ -91,7 +92,27 @@ void Player::HandleInput() {
 
     // ロール
     angleInput_.z = -stickL.x * (rollSpeed_ * deltaTime);
+
+    // 現在のオイラー角を取得
+    Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
+    float currentRoll    = currentEuler.z;
+
+    // 最大ロール角
+    const float maxRoll = DirectX::XMConvertToRadians(60.0f);
+
+    // 入力値に基づくロール回転
+    float rollInput = -stickL.x * (rollSpeed_ * deltaTime);
+
+    // ロール制限処理
+    if ((currentRoll > maxRoll && rollInput > 0.0f) || (currentRoll < -maxRoll && rollInput < 0.0f)) {
+  
+        rollInput = 0.0f;
+    }
+
+    // 最終的なロール角速度入力
+    angleInput_.z = rollInput;
 }
+
 void Player::UpdatePhysics() {
     float deltaTime = Frame::DeltaTime();
 
