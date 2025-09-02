@@ -50,21 +50,13 @@ void BoundaryShard::Update() {
 
 		/// stageに応じて破片のtransformを更新
 		float baseOffset = 0.02f;
-		float stageOffset = 0.05f;
+		float stageOffset = 0.001f;
 
 		for (size_t i = 0; i < breakable.shards.size(); i++) {
 			Shard& shard = breakable.shards[i];
 
 			shard.transform.translate = shard.initPos + shard.normal * (baseOffset + stageOffset * breakable.stage);
 			shard.transform.rotate = shard.initRotate * (shard.randomSmallRotation * breakable.stage);
-
-			Matrix4x4 matWorld = MakeAffineMatrix(
-				{ 1.0f, 1.0f, 1.0f },
-				shard.transform.rotate,
-				shard.transform.translate
-			);
-
-			breakable.transformBuffer.SetMappedData(i, matWorld);
 		}
 
 	}
@@ -108,7 +100,7 @@ void BoundaryShard::LoadShardModel(const std::string& _filepath) {
 			vertices.push_back(vertex);
 		}
 
-		averageNormal.Normalize();
+		averageNormal = averageNormal.Normalize();
 		averagePos = averagePos / static_cast<float>(mesh->mNumVertices);
 
 		/// index 解析
@@ -132,7 +124,7 @@ void BoundaryShard::LoadShardModel(const std::string& _filepath) {
 		shard.indexBuffer.Map();
 
 		shard.initPos = averagePos;
-		shard.initRotate = {};
+		shard.initRotate = { Random::Range(-5.0f, 5.0f), Random::Range(-5.0f, 5.0f), Random::Range(-5.0f, 5.0f) };
 		shard.normal = averageNormal;
 		shard.randomSmallRotation = Random::Range(0.0f, 1.0f);
 
@@ -159,7 +151,7 @@ void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
 	for (size_t i = 0; i < breakables_.size(); i++) {
 		Breakable& other = breakables_[i];
 		float distance = (other.position - _position).Length();
-		if (distance < 100.0f) {
+		if (distance < other.radius) {
 			other.currentLife -= _damage;
 			other.radius = std::min(other.radius + _damage, 200.0f);
 			isNearBreakable = true;
@@ -179,12 +171,7 @@ void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
 	breakable.stage = 0;
 	breakable.radius = _damage;
 	breakable.shards = loadedShards_;
-	breakable.transformBuffer.Create(
-		static_cast<uint32_t>(breakable.shards.size()),
-		DirectXCommon::GetInstance()->GetDxDevice()
-	);
 
 	breakables_.push_back(std::move(breakable));
-
 }
 

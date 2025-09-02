@@ -14,7 +14,7 @@ float3 CalculateLighting(float3 normal) {
 PSOutput main(VSOutput input) {
 	PSOutput output;
 
-	output.color.rgb = CalculateLighting(input.normal);
+	output.color.rgb = CalculateLighting(input.normal) * float3(1, 0, 0);
 	output.color.a = 1.0;
 
 	return output;

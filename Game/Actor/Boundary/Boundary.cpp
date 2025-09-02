@@ -57,6 +57,9 @@ void Boundary::Update() {
 	}
 
 
+	boundaryShard_->Update();
+
+
 	/// holeの更新
 	for (auto itr = holes_.begin(); itr != holes_.end(); ) {
 		itr->lifeTime -= Frame::DeltaTime();

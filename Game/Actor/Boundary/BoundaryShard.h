@@ -45,7 +45,6 @@ struct Breakable {
 	int stage; /// 罅の段階
 	float radius; /// 罅の大きさ
 	std::vector<Shard> shards;
-	StructuredBuffer<Matrix4x4> transformBuffer; /// 各破片の行列を送るbuffer
 };
 
 /// //////////////////////////////////////////////////////////

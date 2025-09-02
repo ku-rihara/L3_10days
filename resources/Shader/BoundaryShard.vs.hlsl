@@ -11,14 +11,19 @@ struct InstanceData {
 	int shardMaxSize; // 破片の最大数
 };
 
+struct RootConstant {
+	int value;
+};
+
 StructuredBuffer<TransformationMatrix> gTransformations : register(t0);
 ConstantBuffer<ShadowTransformBuffer> gShadowTransformBuffer : register(b0);
 ConstantBuffer<InstanceData> gInstanceCount : register(b1);
+ConstantBuffer<RootConstant> gRootConstant : register(b2);
 
 VSOutput main(VSInput input, uint instanceId : SV_InstanceID) {
 	VSOutput output;
 	
-	int id = instanceId + (instanceId * gInstanceCount.shardMaxSize);
+	int id = gRootConstant.value + (instanceId * gInstanceCount.shardMaxSize);
 	TransformationMatrix transformation = gTransformations[id];
 	
 	output.normal = normalize(mul(input.normal, (float3x3) transformation.WorldInverseTranspose));

@@ -180,7 +180,7 @@ void BoundaryShardPipeline::CreateRootSignature() {
 	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 
 	// 0: TransformationMatrix
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う
@@ -198,6 +198,12 @@ void BoundaryShardPipeline::CreateRootSignature() {
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[2].Descriptor.ShaderRegister = 1;
+
+	// 3: InstanceCount	
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	rootParameters[3].Constants.Num32BitValues = 1;
+	rootParameters[3].Constants.ShaderRegister = 2;
 
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
@@ -251,11 +257,10 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 		for (size_t j = 0; j < breakable.shards.size(); j++) {
 			const Shard& shard = breakable.shards[j];
 
-			matWorld = MakeAffineMatrix(
-				{ breakable.radius, breakable.radius, breakable.radius },
-				shard.transform.rotate,
-				breakable.position + shard.transform.translate
-			);
+			matWorld = MakeScaleMatrix({ breakable.radius, breakable.radius, breakable.radius });
+			matWorld *= MakeTranslateMatrix(breakable.position);
+			matWorld *= MakeRotateMatrix(shard.transform.rotate);
+			matWorld *= MakeTranslateMatrix(-shard.transform.translate);
 
 			matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;
 			matWorldInverseTranspose = Transpose(Inverse(matWorld));
@@ -272,12 +277,18 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 	boundaryShard->instanceCountBuffer_.SetMappedData(shardCount);
 	boundaryShard->instanceCountBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_INSTANCE_COUNT);
 
+
+
 	/// 描画
 	for (size_t i = 0; i < boundaryShard->GetLoadedShards().size(); i++) {
 		/// 破片モデルをセット
 		const Shard& shardModel = boundaryShard->GetLoadedShards()[i];
 		shardModel.vertexBuffer.BindForCommandList(commandList);
 		shardModel.indexBuffer.BindForCommandList(commandList);
+
+		commandList->SetGraphicsRoot32BitConstants(
+			ROOT_PARAM_ROOT_CONSTANT, 1, &i, 0
+		);
 
 		UINT indexCount = static_cast<UINT>(shardModel.indexBuffer.GetIndices().size());
 		commandList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
