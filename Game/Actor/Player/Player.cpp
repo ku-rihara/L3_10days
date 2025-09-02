@@ -4,7 +4,6 @@
 #include "MathFunction.h"
 #include <imgui.h>
 #include <numbers>
-#include <DirectXTex.h>
 
 void Player::Init() {
 
@@ -98,7 +97,7 @@ void Player::HandleInput() {
     float currentRoll    = currentEuler.z;
 
     // 最大ロール角
-    const float maxRoll = DirectX::XMConvertToRadians(60.0f);
+    const float maxRoll = ToRadian(60.0f);
 
     // 入力値に基づくロール回転
     float rollInput = -stickL.x * (rollSpeed_ * deltaTime);
