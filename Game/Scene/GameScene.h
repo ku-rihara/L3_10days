@@ -9,9 +9,8 @@
 // game
 #include "Actor/Station/Base/BaseStation.h"
 #include"DebugGround/TestGround.h"
-
-/// game
-#include "../Actor/Boundary/Boundary.h"
+#include "Actor/Boundary/Boundary.h"
+#include "Actor/MiniMap/MiniMap.h"
 
 #include<map>
 
@@ -27,6 +26,10 @@ private:
 	 std::unique_ptr<TestGround> testGround_     = nullptr;
 	/// game objects
 	Boundary* boundary_ = nullptr;
+
+	/// ----- UI ----- ///
+	std::unique_ptr<MiniMap> miniMap_ = nullptr;
+
 
 	std::map<FactionType,std::unique_ptr<BaseStation>> stations_;
 public:

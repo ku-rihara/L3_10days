@@ -38,6 +38,10 @@ void GameScene::Init() {
 	gameCamera_ = std::make_unique<GameCamera>();
 	testGround_ = std::make_unique<TestGround>();
 
+	/// UI -----
+	miniMap_ = std::make_unique<MiniMap>();
+
+
 	//====================================初期化===================================================
 	skuBox_->Init();
 	player_->Init();
@@ -48,9 +52,14 @@ void GameScene::Init() {
 	boundary_ = Boundary::GetInstance();
 	boundary_->Init();
 
+	/// UI -----
+	miniMap_->Init();
+
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
-   //====================================Class Set===================================================
+
+
+	//====================================Class Set===================================================
 	player_->SetViewProjection(&viewProjection_);
 	gameCamera_->SetTarget(&player_->GetTransform());
 
@@ -67,7 +76,7 @@ void GameScene::Update() {
 	// class Update
 	boundary_->Update();
 	player_->Update();
-    gameCamera_->Update();
+	gameCamera_->Update();
 	for (auto& kv : stations_) { kv.second->Update(); }
 	skuBox_->Update();
 	testGround_->Update();
@@ -128,7 +137,9 @@ void GameScene::SkyBoxDraw() {
 /// ======================================================
 /// スプライト描画
 /// ======================================================
-void GameScene::SpriteDraw() {}
+void GameScene::SpriteDraw() {
+	miniMap_->DrawMiniMap();
+}
 
 /// ======================================================
 /// 影描画

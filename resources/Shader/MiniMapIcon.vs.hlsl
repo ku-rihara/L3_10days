@@ -1,6 +1,6 @@
-#include "MiniMap.hlsli"
+#include "MiniMapIcon.hlsli"
 
-StructuredBuffer<Icon> gIcons : register(b0);
+StructuredBuffer<Icon> gIcons : register(t0);
 
 VSOutput main(VSInput input, uint instanceId : SV_InstanceID) {
 	VSOutput output;
