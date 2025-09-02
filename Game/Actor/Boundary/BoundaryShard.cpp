@@ -11,6 +11,7 @@
 
 /// engine
 #include "3d/ModelManager.h"
+#include "random.h"
 
 /// game
 #include "Boundary.h"
@@ -26,6 +27,8 @@ void BoundaryShard::Init() {
 		static_cast<uint32_t>(Boundary::GetInstance()->GetMaxHoleCount()),
 		DirectXCommon::GetInstance()->GetDxDevice()
 	);
+
+	instanceCountBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 }
 
 void BoundaryShard::Update() {
@@ -44,6 +47,26 @@ void BoundaryShard::Update() {
 		} else {
 			breakable.stage = 3;
 		}
+
+		/// stageに応じて破片のtransformを更新
+		float baseOffset = 0.02f;
+		float stageOffset = 0.05f;
+
+		for (size_t i = 0; i < breakable.shards.size(); i++) {
+			Shard& shard = breakable.shards[i];
+
+			shard.transform.translate = shard.initPos + shard.normal * (baseOffset + stageOffset * breakable.stage);
+			shard.transform.rotate = shard.initRotate * (shard.randomSmallRotation * breakable.stage);
+
+			Matrix4x4 matWorld = MakeAffineMatrix(
+				{ 1.0f, 1.0f, 1.0f },
+				shard.transform.rotate,
+				shard.transform.translate
+			);
+
+			breakable.transformBuffer.SetMappedData(i, matWorld);
+		}
+
 	}
 
 }
@@ -70,14 +93,23 @@ void BoundaryShard::LoadShardModel(const std::string& _filepath) {
 		indices.reserve(mesh->mNumFaces * 3);
 
 		/// vertex 解析
+		Vector3 averageNormal = {};
+		Vector3 averagePos = {};
 		for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
 			ShardVertex&& vertex = {
 				Vector4(-mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f),
 				Vector2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y),
 				Vector3(-mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z)
 			};
+
+			averageNormal += Vector3(-mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+			averagePos += Vector3(-mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+
 			vertices.push_back(vertex);
 		}
+
+		averageNormal.Normalize();
+		averagePos = averagePos / static_cast<float>(mesh->mNumVertices);
 
 		/// index 解析
 		for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {
@@ -98,6 +130,11 @@ void BoundaryShard::LoadShardModel(const std::string& _filepath) {
 
 		shard.vertexBuffer.Map();
 		shard.indexBuffer.Map();
+
+		shard.initPos = averagePos;
+		shard.initRotate = {};
+		shard.normal = averageNormal;
+		shard.randomSmallRotation = Random::Range(0.0f, 1.0f);
 
 		loadedShards_.push_back(std::move(shard));
 	}

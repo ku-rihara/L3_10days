@@ -15,6 +15,7 @@
 
 /// game/pipeline
 #include "Pipeline/Buffer/StructuredBuffer.h"
+#include "Pipeline/Buffer/ConstantBuffer.h"
 #include "Pipeline/Buffer/VertexBuffer.h"
 #include "Pipeline/Buffer/IndexBuffer.h"
 
@@ -31,7 +32,10 @@ struct Shard {
 	VertexBuffer<ShardVertex> vertexBuffer;
 	IndexBuffer indexBuffer;
 	EulerTransform transform;
-	bool active;
+	Vector3 initPos;
+	Vector3 initRotate;
+	Vector3 normal;
+	float randomSmallRotation;
 };
 
 struct Breakable {
@@ -79,5 +83,6 @@ private:
 
 	std::vector<Breakable> breakables_;
 	StructuredBuffer<TransformationMatrix> breakableTransformBuffer_;
+	ConstantBuffer<int> instanceCountBuffer_;
 
 };

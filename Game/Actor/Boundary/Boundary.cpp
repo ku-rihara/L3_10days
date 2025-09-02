@@ -53,7 +53,7 @@ void Boundary::Update() {
 	}
 
 	if (Input::GetInstance()->TrrigerKey(DIK_O)) {
-		AddCrack({ 50.0f, 0.0f, 0.0f }, 100.0f);
+		AddCrack({ 200.0f, 0.0f, 0.0f }, 100.0f);
 	}
 
 

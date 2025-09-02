@@ -180,7 +180,7 @@ void BoundaryShardPipeline::CreateRootSignature() {
 	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 
 	// 0: TransformationMatrix
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う
@@ -193,6 +193,11 @@ void BoundaryShardPipeline::CreateRootSignature() {
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[1].Descriptor.ShaderRegister = 0;
+
+	// 2: InstanceCount	
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	rootParameters[2].Descriptor.ShaderRegister = 1;
 
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
@@ -225,8 +230,8 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 	Boundary* boundary = Boundary::GetInstance();
 	if (!boundary) { return; }
 
-	BoundaryShard* shard = boundary->GetBoundaryShard();
-	if (!shard) { return; }
+	BoundaryShard* boundaryShard = boundary->GetBoundaryShard();
+	if (!boundaryShard) { return; }
 
 	const auto& breakables = boundary->GetBreakables();
 	UINT instanceCount = static_cast<UINT>(breakables.size());
@@ -242,24 +247,35 @@ void BoundaryShardPipeline::Draw(ID3D12GraphicsCommandList* commandList, const V
 	/// 各罅の行列を計算してbufferに詰める
 	Matrix4x4 matWorld, matWVP, matWorldInverseTranspose;
 	for (size_t i = 0; i < breakables.size(); i++) {
-		matWorld = MakeAffineMatrix(
-			{ breakables[i].radius, breakables[i].radius, breakables[i].radius },
-			Vector3(0, 0, 0), breakables[i].position
-		);
+		const Breakable& breakable = breakables[i];
+		for (size_t j = 0; j < breakable.shards.size(); j++) {
+			const Shard& shard = breakable.shards[j];
 
-		matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;
-		matWorldInverseTranspose = Transpose(Inverse(matWorld));
+			matWorld = MakeAffineMatrix(
+				{ breakable.radius, breakable.radius, breakable.radius },
+				shard.transform.rotate,
+				breakable.position + shard.transform.translate
+			);
 
-		shard->breakableTransformBuffer_.SetMappedData(i, { matWVP, matWorld, matWorldInverseTranspose });
+			matWVP = matWorld * _viewProjection.matView_ * _viewProjection.matProjection_;
+			matWorldInverseTranspose = Transpose(Inverse(matWorld));
+
+			size_t index = i * breakable.shards.size() + j;
+			boundaryShard->breakableTransformBuffer_.SetMappedData(index, { matWVP, matWorld, matWorldInverseTranspose });
+		}
 	}
 
-	shard->breakableTransformBuffer_.BindToCommandList(ROOT_PARAM_TRANSFORM, commandList);
+	boundaryShard->breakableTransformBuffer_.BindToCommandList(ROOT_PARAM_TRANSFORM, commandList);
 
+	//instanceCount *= static_cast<UINT>(boundaryShard->loadedShards_.size());
+	int shardCount = static_cast<int>(boundaryShard->GetLoadedShards().size());
+	boundaryShard->instanceCountBuffer_.SetMappedData(shardCount);
+	boundaryShard->instanceCountBuffer_.BindForGraphicsCommandList(commandList, ROOT_PARAM_INSTANCE_COUNT);
 
 	/// 描画
-	for (size_t i = 0; i < shard->GetLoadedShards().size(); i++) {
+	for (size_t i = 0; i < boundaryShard->GetLoadedShards().size(); i++) {
 		/// 破片モデルをセット
-		const Shard& shardModel = shard->GetLoadedShards()[i];
+		const Shard& shardModel = boundaryShard->GetLoadedShards()[i];
 		shardModel.vertexBuffer.BindForCommandList(commandList);
 		shardModel.indexBuffer.BindForCommandList(commandList);
 

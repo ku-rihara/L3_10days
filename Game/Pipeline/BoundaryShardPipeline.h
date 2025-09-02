@@ -26,6 +26,7 @@ class BoundaryShardPipeline {
 	enum ROOT_PARAM {
 		ROOT_PARAM_TRANSFORM,
 		ROOT_PARAM_SHADOW_TRANSFORM,
+		ROOT_PARAM_INSTANCE_COUNT,
 	};
 
 public:
