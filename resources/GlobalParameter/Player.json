@@ -8,7 +8,7 @@
         "pitchReturnThreshold": 11.0,
         "pitchSpeed": 100.0,
         "rollBackTime": 5.0,
-        "rollRotateLimit": 60.0,
+        "rollRotateLimit": 40.0,
         "rollSmoothness": 1.2000000476837158,
         "rollSpeed": 200.0,
         "rotationSmoothness": 0.33500000834465027,

@@ -117,7 +117,7 @@ void Player::HandleInput() {
     // ロール制限処理
     if ((currentRoll > maxRoll && rollInput > 0.0f) || (currentRoll < -maxRoll && rollInput < 0.0f)) {
 
-        rollInput = 0.0f;
+        rollInput = maxRoll;
     }
 
     // 最終的なロール角速度入力
@@ -222,39 +222,32 @@ void Player::RotateUpdate() {
     Vector3 right   = GetRightVector();
     Vector3 up      = GetUpVector();
 
-    // ロール角による横移動
-    float rollSin = sin(currentRoll);
+  
    
-    // ヨー方向への推進力
-    float yawInfluence = -rollSin * forwardSpeed_ * sideFactor_;
+    // ロールに基づくヨー角速度を計算
+    float rollToYawRate = 1.5f; 
+    float yawFromRoll   = -sin(currentRoll) * rollToYawRate * deltaTime;
+  
+     // ヨー回転をQuaternionで作成
+    if (fabs(yawFromRoll) > 0.0001f) {
+        Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(
+            Vector3::ToUp(), // ワールド上方向
+            yawFromRoll);
 
-    float rollToYawRate = 0.3f; 
-    float additionalYaw = -rollSin * rollToYawRate * deltaTime;
-
-    // 追加のヨー回転を適用
-    if (fabs(additionalYaw) > 0.001f) {
-        Quaternion additionalYawRotation = Quaternion::MakeRotateAxisAngle(
-            Vector3::ToUp(), 
-            additionalYaw);
-        baseTransform_.quaternion_ = additionalYawRotation * baseTransform_.quaternion_;
+        // 回転を適用
+        baseTransform_.quaternion_ = yawFromRollRotation * baseTransform_.quaternion_;
         baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
-
-        // 更新されたベクトルを再取得
-        forward = GetForwardVector();
-        right   = GetRightVector();
-        up      = GetUpVector();
     }
 
-    // 下方向の力
-    float downInfluence = fabs(rollSin) * forwardSpeed_ * downFactor_;
 
-    // 速度計算
+  
+   
+  
+   // 速度計算
     Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
-    Vector3 yawVelocity     = Vector3::ToUp() * yawInfluence * deltaTime;
-    Vector3 downVelocity    = up * downInfluence * deltaTime;
-
+   
     // 合成速度
-    velocity_ = forwardVelocity + yawVelocity + downVelocity;
+    velocity_ = forwardVelocity;
 
     // 位置を更新
     baseTransform_.translation_ += velocity_;
