@@ -54,8 +54,10 @@ private:
 	/// ----- other ----- ///
 	class BaseStation* pAllyStation_;
 	class BaseStation* pEnemyStation_;
-
 	std::unique_ptr<Sprite> miniMapFrameSprite_;
+	std::unique_ptr<Sprite> miniMapPlayerIconSprite_;
+
+	Vector2 miniMapPos_;  /// ミニマップの位置
 
 	/// 表示対象のオブジェクト
 	BaseObject* playerPtr_;

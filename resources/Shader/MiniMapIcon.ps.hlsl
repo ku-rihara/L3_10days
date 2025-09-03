@@ -25,7 +25,7 @@ PSOutput main(VSOutput input) {
 		//discard;
 	}
 
-	float4 texColor = gTexture.Sample(gSampler, input.texcoord); /*float4(1, 0, 0, 1);*/
+	float4 texColor = gTexture.Sample(gSampler, input.texcoord);
 	output.color = texColor;
 	if(output.color.a < 0.1) {
 		discard;
