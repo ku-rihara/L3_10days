@@ -79,8 +79,7 @@ void GameScene::Update() {
 	gameCamera_->Update();
 	for (auto& kv : stations_) { kv.second->Update(); }
 	skuBox_->Update();
-	//testGround_->Update();
-
+	
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
 	AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());

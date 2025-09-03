@@ -22,8 +22,6 @@ void GameCamera::Init() {
     rendition_->Init();
     rendition_->SetGameCamera(this);
     rendition_->SetViewProjection(&viewProjection_);
-
-    smoothness_ = 0.1f;
 }
 
 void GameCamera::Update() {
@@ -66,7 +64,6 @@ Vector3 GameCamera::OffsetCalc(const Vector3& offset) const {
 void GameCamera::BindParams() {
     globalParameter_->Bind(groupName_, "rotationOffset", &rotationOffset_);
     globalParameter_->Bind(groupName_, "cameraOffset", &cameraOffset_);
-  
 }
 
 void GameCamera::SetTarget(const WorldTransform* target) {
@@ -94,12 +91,9 @@ void GameCamera::AdjustParam() {
         ImGui::DragFloat3("Rotation Offset", &rotationOffset_.x, 0.01f);
         ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
 
-     
-        if (ImGui::Button("Apply Offset")) {
-            if (target_) {
-                viewProjection_.translation_ = cameraOffset_;
-                viewProjection_.rotation_    = rotationOffset_;
-            }
+        if (target_) {
+            viewProjection_.translation_ = cameraOffset_;
+            viewProjection_.rotation_    = rotationOffset_;
         }
 
         globalParameter_->ParamSaveForImGui(groupName_);
@@ -126,8 +120,6 @@ Vector3 GameCamera::GetTargetPos() const {
 }
 
 void GameCamera::Debug() {
-
-   
 }
 
 void GameCamera::PlayAnimation(const std::string& filename) {
