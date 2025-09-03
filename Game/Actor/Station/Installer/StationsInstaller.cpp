@@ -1,12 +1,24 @@
 #include "StationsInstaller.h"
-
 #include "Actor/Station/Base/BaseStation.h"
+#include "Actor/Station/UnitDirector/IUnitDirector.h"
 
-void Installer::InstallStations(const std::unique_ptr<BaseStation>& ps,
-								const std::unique_ptr<BaseStation>& es) {
+void Installer::InstallStations(BaseStation* ps, BaseStation* es) {
+	if (!ps || !es) return;
+
+	// 先に Rival を
+	ps->SetRivalStation(es);
+	es->SetRivalStation(ps);
+
+	// 初期化
 	ps->Init();
 	es->Init();
+}
 
-	ps->SetRivalStation(es.get());
-	es->SetRivalStation(ps.get());
+void Installer::InstallStations(BaseStation* ps, BaseStation* es, IUnitDirector* director) {
+	if (!ps || !es) return;
+
+	ps->SetUnitDirector(director);
+	es->SetUnitDirector(director);
+
+	InstallStations(ps, es);
 }
