@@ -19,6 +19,7 @@ void PlayerNPC::Init() {
 	obj3d_->transform_.parent_ = &baseTransform_;
 
 	NPC::Init();
+	SetColor(Vector4(0.0f, 0.0f, 1.0f, 1.0f));
 }
 
 /// ===================================================
