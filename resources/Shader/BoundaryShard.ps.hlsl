@@ -16,8 +16,8 @@ PSOutput main(VSOutput input) {
 	PSOutput output;
 
 	float noise = PerlinNoise(input.texcoord * 10);
-	output.color.rgb = float3(0.855, 0.867, 0.173) * CalculateLighting(input.normal) * noise;
-	output.color.a = noise;
+	output.color.rgb = float3(0.855, 0.867, 0.173) * noise;
+	output.color.a = noise * 2.0f;
 
 	return output;
 }

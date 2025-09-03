@@ -170,8 +170,11 @@
     <ClCompile Include="Game\Actor\NPC\PlayerNPC.cpp" />
     <ClCompile Include="Game\Actor\NPC\Pool\NpcPool.cpp" />
     <ClCompile Include="Game\Actor\NPC\Navigation\RectXZWithGatesConstraint.cpp" />
+    <ClCompile Include="Game\Pipeline\MiniMapIconPipeline.cpp" />
+    <ClCompile Include="Game\Actor\MiniMap\MiniMap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
     <ClInclude Include="Game\Actor\Boundary\RectXZ.h" />
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\MoveConstraint.h" />
@@ -319,6 +322,7 @@
     <ClInclude Include="Game\Details\Faction.h" />
     <ClInclude Include="Game\DebugGround\TestGround.h" />
     <ClInclude Include="Game\EasingTestObj\EasingTestObj.h" />
+    <ClInclude Include="Game\Pipeline\BoundaryShardPipeline.h" />
     <ClInclude Include="Game\Pipeline\Buffer\ConstantBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\StructuredBuffer.h" />
@@ -349,6 +353,8 @@
     <ClInclude Include="Game\Actor\NPC\PlayerNPC.h" />
     <ClInclude Include="Game\Actor\NPC\Pool\NpcPool.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\RectXZWithGatesConstraint.h" />
+    <ClInclude Include="Game\Pipeline\MiniMapIconPipeline.h" />
+    <ClInclude Include="Game\Actor\MiniMap\MiniMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

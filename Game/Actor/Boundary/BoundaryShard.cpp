@@ -40,7 +40,9 @@ void BoundaryShard::Init() {
 
 void BoundaryShard::Update() {
 
-	for (auto& breakable : breakables_) {
+	for (auto itr = breakables_.begin(); itr != breakables_.end();) {
+		auto& breakable = *itr;
+
 		breakable.frameTime += Frame::DeltaTime();
 
 		/// 罅のmaxLifeとcurrentLifeを見てstageを決定
@@ -61,6 +63,8 @@ void BoundaryShard::Update() {
 		float baseOffset = 0.02f;
 		float stageOffset = 0.001f;
 
+
+		/// 要素の破片を更新する
 		for (size_t i = 0; i < breakable.shards.size(); i++) {
 			Shard& shard = breakable.shards[i];
 
@@ -71,7 +75,7 @@ void BoundaryShard::Update() {
 			shard.transform.translate = shard.initPos + shard.normal * (baseOffset + stageOffset * (breakable.radius));
 			{
 				float amplitude = 0.05f * (breakable.radius * 0.1f); // 揺れる大きさ
-				float frequency = 2.0f; // 揺れる速さ
+				float frequency = 4.0f; // 揺れる速さ
 
 				float wave1 = sin(breakable.frameTime * frequency + shard.phase);
 				float wave2 = cos(breakable.frameTime * (frequency * 0.7f) + shard.phase);
@@ -83,7 +87,7 @@ void BoundaryShard::Update() {
 			shard.transform.rotate = shard.initRotate * (shard.randomSmallRotation * (breakable.radius * 0.1f));
 			{
 				float amplitudeRot = 5.0f * (std::numbers::pi_v<float> / 180.0f); // 揺れる角度（ラジアン）
-				float frequencyRot = 1.5f; // 揺れる速さ
+				float frequencyRot = 2.0f; // 揺れる速さ
 
 				// shardごとにランダム位相を持っていると自然
 				float waveRot = std::sin(breakable.frameTime * frequencyRot + shard.phase);
@@ -92,6 +96,18 @@ void BoundaryShard::Update() {
 				shard.offsetRotate = Vector3(0.0f, 0.0f, waveRot * amplitudeRot);
 			}
 		}
+
+		/// lifeが0なら自身を消してHoleを追加
+		if(breakable.currentLife <= 0.0f) {
+			Boundary* boundary = Boundary::GetInstance();
+			if (boundary) {
+				boundary->AddHole(breakable.position, breakable.radius);
+			}
+			itr = breakables_.erase(itr);
+		} else {
+			++itr;
+		}
+
 	}
 
 
