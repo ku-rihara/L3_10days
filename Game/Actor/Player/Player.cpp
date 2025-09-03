@@ -2,6 +2,9 @@
 #include "Frame/Frame.h"
 #include "input/Input.h"
 #include "MathFunction.h"
+// behavior
+#include "Behavior/PlayerBoost.h"
+#include "Behavior/PlayerSpeedDown.h"
 #include <imgui.h>
 #include <numbers>
 
@@ -24,11 +27,12 @@ void Player::Init() {
 
     velocity_        = Vector3::ZeroVector();
     angularVelocity_ = Vector3::ZeroVector();
-
-    targetRotation_ = Quaternion::Identity();
+    targetRotation_  = Quaternion::Identity();
 
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
+
+    ChangeSpeedBehavior(std::make_unique<PlayerSpeedDown>(this));
 }
 
 void Player::Update() {
@@ -36,9 +40,9 @@ void Player::Update() {
     HandleInput();
 
     // 物理計算
-    UpdatePhysics();
+    RotateUpdate();
 
-     // 弾丸システム更新
+    // 弾丸システム更新
     if (bulletShooter_) {
         bulletShooter_->Update(this);
     }
@@ -105,7 +109,7 @@ void Player::HandleInput() {
     float currentRoll    = currentEuler.z;
 
     // 最大ロール角
-    const float maxRoll = ToRadian(60.0f);
+    const float maxRoll = ToRadian(rollRotateLimit_);
 
     // 入力値に基づくロール回転
     float rollInput = -stickL.x * (rollSpeed_ * deltaTime);
@@ -113,14 +117,14 @@ void Player::HandleInput() {
     // ロール制限処理
     if ((currentRoll > maxRoll && rollInput > 0.0f) || (currentRoll < -maxRoll && rollInput < 0.0f)) {
 
-        rollInput = 0.0f;
+        rollInput = maxRoll;
     }
 
     // 最終的なロール角速度入力
     angleInput_.z = rollInput;
 }
 
-void Player::UpdatePhysics() {
+void Player::RotateUpdate() {
     float deltaTime = Frame::DeltaTime();
 
     // 角速度の補間
@@ -165,38 +169,33 @@ void Player::UpdatePhysics() {
 
     // 逆さまの場合の自動補正
     if (isUpsideDown && angleInput_.Length() < 0.001f) {
-        Vector3 euler    = targetRotation_.ToEuler();
-        float currentYaw = euler.y;
-
-        // ピッチとロールを0にした回転を作成
-        Quaternion correctedRotation = Quaternion::EulerToQuaternion(
-            Vector3(0.0f, currentYaw, 0.0f));
-
-        // 補正の強度
-        float correctionStrength = std::abs(upDot + 0.3f) * 2.0f;
-        correctionStrength       = std::min(correctionStrength, 1.0f);
-
-        // 補正
-        targetRotation_ = Quaternion::Slerp(
-            targetRotation_,
-            correctedRotation,
-            correctionStrength * pitchBackTime_ * deltaTime);
-    }
-    // 通常時の自動復帰処理
-    else if (!isUpsideDown) {
         Vector3 euler      = targetRotation_.ToEuler();
         float currentYaw   = euler.y;
         float currentPitch = euler.x;
         float currentRoll  = euler.z;
 
-        // ターゲット姿勢を作成
-        Vector3 targetEuler = Vector3(currentPitch, currentYaw, currentRoll);
+        currentPitch = Lerp(currentPitch, 0.0f, rollBackTime_ * deltaTime);
+        currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
+        currentYaw   = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
 
-        // ピッチ自動復帰
-        if (fabs(angleInput_.x) < 0.001f || fabs(angleInput_.z) < 0.001f) {
-            targetEuler.x = Lerp(currentPitch, 0.0f, pitchBackTime_ * deltaTime);
-            targetEuler.z = Lerp(currentRoll, 0.0f, pitchBackTime_ * deltaTime);
+        // 補正された回転を適用
+        targetRotation_ = Quaternion::EulerToQuaternion(
+            Vector3(currentPitch, currentYaw, currentRoll));
+    }
+    // 通常時の自動復帰処理
+    else if (!isUpsideDown && angleInput_.Length() < 0.001f) {
+        Vector3 euler      = targetRotation_.ToEuler();
+        float currentYaw   = euler.y;
+        float currentPitch = euler.x;
+        float currentRoll  = euler.z;
+
+        if (fabs(angleInput_.z) < 0.001f) { // ロール入力なし
+            currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
         }
+
+        // 補正された回転を適用
+        targetRotation_ = Quaternion::EulerToQuaternion(
+            Vector3(currentPitch, currentYaw, currentRoll));
     }
 
     // 最終的な回転補間
@@ -215,29 +214,32 @@ void Player::UpdatePhysics() {
     Vector3 right   = GetRightVector();
     Vector3 up      = GetUpVector();
 
-    // ロール角
-    float rollSin = sin(currentRoll);
+    // ロールに基づくヨー角速度を計算
+    float rollToYawRate = 1.5f;
+    float yawFromRoll   = -sin(currentRoll) * rollToYawRate * deltaTime;
 
-    // 横方向の力
-    float sideInfluence = -rollSin * forwardSpeed_ * sideFactor_;
+    // ヨー回転をQuaternionで作成
+    if (fabs(yawFromRoll) > 0.0001f) {
+        Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(
+            Vector3::ToUp(), // ワールド上方向
+            yawFromRoll);
 
-    // 下方向の力
-    float downInfluence = fabs(rollSin) * forwardSpeed_ * downFactor_;
+        // 回転を適用
+        baseTransform_.quaternion_ = yawFromRollRotation * baseTransform_.quaternion_;
+        baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
+    }
 
     // 速度計算
     Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
-    Vector3 sideVelocity    = right * sideInfluence * deltaTime;
-    Vector3 downVelocity    = up * downInfluence * deltaTime;
 
     // 合成速度
-    velocity_ = forwardVelocity + sideVelocity + downVelocity;
+    velocity_ = forwardVelocity;
 
     // 位置を更新
     baseTransform_.translation_ += velocity_;
 }
-void Player::Move() {
+void Player::SpeedChange() {
 }
-
 Vector3 Player::GetForwardVector() const {
     Matrix4x4 rotationMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
     return TransformNormal(Vector3::ToForward(), rotationMatrix).Normalize();
@@ -252,9 +254,10 @@ Vector3 Player::GetUpVector() const {
     Matrix4x4 rotationMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
     return TransformNormal(Vector3::ToUp(), rotationMatrix).Normalize();
 }
-///=========================================================
+
+///========================================================================
 /// バインド
-///==========================================================
+///========================================================================
 void Player::BindParams() {
     globalParameter_->Bind(groupName_, "hp", &hp_);
     globalParameter_->Bind(groupName_, "speed", &speed_);
@@ -353,4 +356,28 @@ void Player::AdjustParam() {
 /// 移動
 ///==========================================================
 void Player::DirectionToCamera() {
+}
+
+void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior) {
+    speedBehavior_ = std::move(behavior);
+}
+
+void Player::UpdateSpeedBehavior() {
+
+    // LBボタンの状態を取得
+    isLBPressed_ = Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER);
+
+    // ボタンが押された瞬間の処理
+    if (isLBPressed_ && !wasLBPressed_) {
+        // BoostBehaviorに切り替え
+        ChangeSpeedBehavior(std::make_unique<PlayerBoost>(this));
+    }
+    // ボタンが離された瞬間の処理
+    else if (!isLBPressed_ && wasLBPressed_) {
+        // SpeedDownBehaviorに切り替え
+        ChangeSpeedBehavior(std::make_unique<PlayerSpeedDown>(this));
+    }
+
+    // 前フレームのボタン状態を保存
+    wasLBPressed_ = isLBPressed_;
 }

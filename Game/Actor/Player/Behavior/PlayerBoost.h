@@ -1,8 +1,8 @@
 #pragma once
 
-#include "BasePlayerBehavior.h"
+#include "BasePlayerSpeedBehavior.h"
 
-class PlayerBoost : public BasePlayerBehavior {
+class PlayerBoost : public BasePlayerSpeedBehavior {
 private:
     
     /// ===================================================

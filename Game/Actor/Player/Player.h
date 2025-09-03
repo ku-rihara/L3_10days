@@ -1,6 +1,10 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
+#include "Behavior/BasePlayerSpeedBehavior.h"
+#include "Behavior/PlayerBoost.h"
+#include "Behavior/PlayerSpeedDown.h"
 #include "Bullet/PlayerBulletShooter.h"
+#include "Easing/Easing.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <cstdint>
 #include <memory>
@@ -15,9 +19,10 @@ public:
     void Update();
 
     // Move
-    void Move();
     void HandleInput(); // 入力処理
-    void UpdatePhysics(); // 物理更新
+    void RotateUpdate(); // 物理更新
+
+    void SpeedChange();
 
     void DirectionToCamera();
 
@@ -30,10 +35,23 @@ public:
     Vector3 GetRightVector() const;
     Vector3 GetUpVector() const;
 
+    // Behavior management
+    void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
+    void UpdateSpeedBehavior();
+
 private:
     // viewProjection
     const ViewProjection* viewProjection_ = nullptr;
     std::unique_ptr<PlayerBulletShooter> bulletShooter_;
+    std::unique_ptr<BasePlayerSpeedBehavior> speedBehavior_;
+
+    // Behavior instances
+    std::unique_ptr<PlayerBoost> boostBehavior_;
+    std::unique_ptr<PlayerSpeedDown> speedDownBehavior_;
+
+    // Button state tracking
+    bool isLBPressed_;
+    bool wasLBPressed_;
 
     // globalParameter
     GlobalParameter* globalParameter_;
@@ -65,19 +83,21 @@ private:
     float rollBackTime_;
     float pitchReturnThreshold_;
 
+    Easing<float> speedChangeEase_;
+
     float sideFactor_;
     float downFactor_;
 
 public:
     // ゲッター
-    Vector3 GetPosition() const { return baseTransform_.translation_; }
-    Vector3 GetRotation() const { return baseTransform_.rotation_; }
-    Vector3 GetVelocity() const { return velocity_; }
-    float GetSpeed() const { return velocity_.Length(); }
-    Quaternion GetQuaternion() const { return baseTransform_.quaternion_; }
-    std::vector<BasePlayerBullet*> GetActiveBullets() const {
-        return bulletShooter_ ? bulletShooter_->GetActiveBullets() : std::vector<BasePlayerBullet*>();
-    }
-    void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
+    const Vector3& GetPosition() const { return baseTransform_.translation_; }
+    const Vector3& GetRotation() const { return baseTransform_.rotation_; }
+    const Vector3& GetVelocity() const { return velocity_; }
+    const float& GetSpeed() const { return velocity_.Length(); }
+    const Quaternion& GetQuaternion() const { return baseTransform_.quaternion_; }
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
+    const float& GetForwardSpeed() const { return forwardSpeed_; }
+
+    void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
+   
 };
