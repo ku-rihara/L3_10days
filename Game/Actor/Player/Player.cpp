@@ -187,20 +187,23 @@ void Player::RotateUpdate() {
             correctionStrength * pitchBackTime_ * deltaTime);
     }
     // 通常時の自動復帰処理
-    else if (!isUpsideDown) {
+    else if (!isUpsideDown && angleInput_.Length() < 0.001f) {
         Vector3 euler      = targetRotation_.ToEuler();
         float currentYaw   = euler.y;
         float currentPitch = euler.x;
         float currentRoll  = euler.z;
 
-        // ターゲット姿勢を作成
-        Vector3 targetEuler = Vector3(currentPitch, currentYaw, currentRoll);
-
-        // ピッチ自動復帰
-        if (fabs(angleInput_.x) < 0.001f || fabs(angleInput_.z) < 0.001f) {
-            targetEuler.x = Lerp(currentPitch, 0.0f, pitchBackTime_ * deltaTime);
-            targetEuler.z = Lerp(currentRoll, 0.0f, pitchBackTime_ * deltaTime);
+        // ピッチとロール自動復帰
+        if (fabs(angleInput_.x) < 0.001f) { // ピッチ入力なし
+            currentPitch = Lerp(currentPitch, 0.0f, pitchBackTime_ * deltaTime);
         }
+        if (fabs(angleInput_.z) < 0.001f) { // ロール入力なし
+            currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
+        }
+
+        // 補正された回転を適用
+        targetRotation_ = Quaternion::EulerToQuaternion(
+            Vector3(currentPitch, currentYaw, currentRoll));
     }
 
     // 最終的な回転補間
@@ -219,22 +222,39 @@ void Player::RotateUpdate() {
     Vector3 right   = GetRightVector();
     Vector3 up      = GetUpVector();
 
-    // ロール角
+    // ロール角による横移動
     float rollSin = sin(currentRoll);
+   
+    // ヨー方向への推進力
+    float yawInfluence = -rollSin * forwardSpeed_ * sideFactor_;
 
-    // 横方向の力
-    float sideInfluence = -rollSin * forwardSpeed_ * sideFactor_;
+    float rollToYawRate = 0.3f; 
+    float additionalYaw = -rollSin * rollToYawRate * deltaTime;
+
+    // 追加のヨー回転を適用
+    if (fabs(additionalYaw) > 0.001f) {
+        Quaternion additionalYawRotation = Quaternion::MakeRotateAxisAngle(
+            Vector3::ToUp(), 
+            additionalYaw);
+        baseTransform_.quaternion_ = additionalYawRotation * baseTransform_.quaternion_;
+        baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
+
+        // 更新されたベクトルを再取得
+        forward = GetForwardVector();
+        right   = GetRightVector();
+        up      = GetUpVector();
+    }
 
     // 下方向の力
     float downInfluence = fabs(rollSin) * forwardSpeed_ * downFactor_;
 
     // 速度計算
     Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
-    Vector3 sideVelocity    = right * sideInfluence * deltaTime;
+    Vector3 yawVelocity     = Vector3::ToUp() * yawInfluence * deltaTime;
     Vector3 downVelocity    = up * downInfluence * deltaTime;
 
     // 合成速度
-    velocity_ = forwardVelocity + sideVelocity + downVelocity;
+    velocity_ = forwardVelocity + yawVelocity + downVelocity;
 
     // 位置を更新
     baseTransform_.translation_ += velocity_;
@@ -255,9 +275,10 @@ Vector3 Player::GetUpVector() const {
     Matrix4x4 rotationMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
     return TransformNormal(Vector3::ToUp(), rotationMatrix).Normalize();
 }
-///=========================================================
+
+///========================================================================
 /// バインド
-///==========================================================
+///========================================================================
 void Player::BindParams() {
     globalParameter_->Bind(groupName_, "hp", &hp_);
     globalParameter_->Bind(groupName_, "speed", &speed_);
@@ -365,7 +386,7 @@ void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavi
 void Player::UpdateSpeedBehavior() {
 
     // LBボタンの状態を取得
-    isLBPressed_ = Input::IsPressPad(0, XINPUT_GAMEPAD_LEFT_SHOULDER);
+    isLBPressed_ = Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
     // ボタンが押された瞬間の処理
     if (isLBPressed_ && !wasLBPressed_) {
