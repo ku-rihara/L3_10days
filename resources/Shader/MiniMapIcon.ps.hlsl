@@ -22,10 +22,10 @@ PSOutput main(VSOutput input) {
 	
 	float dist = length(uv);
 	if (dist > 1.0) {
-		discard;
+		//discard;
 	}
 
-	float4 texColor = gTexture.Sample(gSampler, input.texcoord);
+	float4 texColor = gTexture.Sample(gSampler, input.texcoord); /*float4(1, 0, 0, 1);*/
 	output.color = texColor;
 	if(output.color.a < 0.1) {
 		discard;

@@ -19,6 +19,7 @@
 #include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryEdgePipeline.h"
 #include "Pipeline/BoundaryShardPipeline.h"
+#include "Pipeline/MiniMapIconPipeline.h"
 
 #include <imgui.h>
 
@@ -53,7 +54,8 @@ void GameScene::Init() {
 	boundary_->Init();
 
 	/// UI -----
-	miniMap_->Init();
+	miniMap_->Init(stations_[FactionType::Ally].get(), stations_[FactionType::Enemy].get());
+	miniMap_->RegisterPlayer(player_.get());
 
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -80,6 +82,8 @@ void GameScene::Update() {
 	for (auto& kv : stations_) { kv.second->Update(); }
 	skuBox_->Update();
 	//testGround_->Update();
+
+	miniMap_->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
@@ -125,6 +129,11 @@ void GameScene::ModelDraw() {
 	boundaryEdgePipeline->PreDraw(commandList);
 	boundaryEdgePipeline->Draw(commandList, viewProjection_);
 
+
+	/// UI用に
+	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
+	miniMapIconPipeline->PreDraw(commandList);
+	miniMapIconPipeline->Draw(commandList, miniMap_.get());
 }
 
 /// ===================================================
