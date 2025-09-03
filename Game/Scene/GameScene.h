@@ -11,6 +11,7 @@
 #include"DebugGround/TestGround.h"
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/MiniMap/MiniMap.h"
+#include "Actor/Station/UnitDirector/QuotaUnitDirector.h"
 
 #include<map>
 
@@ -32,6 +33,7 @@ private:
 
 
 	std::map<FactionType,std::unique_ptr<BaseStation>> stations_;
+	std::unique_ptr<QuotaUnitDirector> director_;
 public:
 	///========================================================
 	/// Constralt destract

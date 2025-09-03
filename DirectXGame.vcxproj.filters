@@ -662,6 +662,8 @@
     <ClCompile Include="Game\Actor\Boundary\BoundaryShard.cpp" />
     <ClCompile Include="Game\Pipeline\MiniMapIconPipeline.cpp" />
     <ClCompile Include="Game\Actor\MiniMap\MiniMap.cpp" />
+    <ClCompile Include="Game\AI\Station\StationAI.cpp" />
+    <ClCompile Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1139,6 +1141,9 @@
     <ClInclude Include="Game\Pipeline\MiniMapIconPipeline.h" />
     <ClInclude Include="Game\Actor\MiniMap\MiniMap.h" />
     <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
+    <ClInclude Include="Game\Actor\Station\UnitDirector\IUnitDirector.h" />
+    <ClInclude Include="Game\AI\Station\StationAI.h" />
+    <ClInclude Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
