@@ -36,21 +36,30 @@ void GameScene::Init() {
 	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
 	gameCamera_ = std::make_unique<GameCamera>();
-	testGround_ = std::make_unique<TestGround>();
+	//testGround_ = std::make_unique<TestGround>();
+
+	/// UI -----
+	miniMap_ = std::make_unique<MiniMap>();
+
 
 	//====================================初期化===================================================
 	skuBox_->Init();
 	player_->Init();
 	Installer::InstallStations(stations_[FactionType::Ally], stations_[FactionType::Enemy]);
 	gameCamera_->Init();
-	testGround_->Init();
+	//testGround_->Init();
 
 	boundary_ = Boundary::GetInstance();
 	boundary_->Init();
 
+	/// UI -----
+	miniMap_->Init();
+
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
-   //====================================Class Set===================================================
+
+
+	//====================================Class Set===================================================
 	player_->SetViewProjection(&viewProjection_);
 	gameCamera_->SetTarget(&player_->GetTransform());
 
@@ -67,10 +76,10 @@ void GameScene::Update() {
 	// class Update
 	boundary_->Update();
 	player_->Update();
-    gameCamera_->Update();
+	gameCamera_->Update();
 	for (auto& kv : stations_) { kv.second->Update(); }
 	skuBox_->Update();
-	testGround_->Update();
+	//testGround_->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
@@ -128,7 +137,9 @@ void GameScene::SkyBoxDraw() {
 /// ======================================================
 /// スプライト描画
 /// ======================================================
-void GameScene::SpriteDraw() {}
+void GameScene::SpriteDraw() {
+	miniMap_->DrawMiniMap();
+}
 
 /// ======================================================
 /// 影描画
