@@ -130,10 +130,10 @@ void GameScene::ModelDraw() {
 	boundaryEdgePipeline->Draw(commandList, viewProjection_);
 
 
-	/// UI用に
-	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
-	miniMapIconPipeline->PreDraw(commandList);
-	miniMapIconPipeline->Draw(commandList, miniMap_.get());
+	///// UI用に
+	//MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
+	//miniMapIconPipeline->PreDraw(commandList);
+	//miniMapIconPipeline->Draw(commandList, miniMap_.get());
 }
 
 /// ===================================================

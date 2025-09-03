@@ -9,9 +9,9 @@
 #include "Pipeline/Buffer/ConstantBuffer.h"
 #include "Pipeline/Buffer/StructuredBuffer.h"
 
-struct MiniMapSize {
-	Vector2 min;
-	Vector2 max;
+struct MiniMapData{
+	Vector2 position;
+	float radius;
 };
 
 struct IconBufferData {
@@ -39,7 +39,7 @@ public:
 	void RegisterPlayer(BaseObject* _player);
 
 	/// ----- Bufferの取得
-	ConstantBuffer<MiniMapSize>& GetMiniMapSizeBuffer();
+	ConstantBuffer<MiniMapData>& GetMiniMapDataBuffer();
 	StructuredBuffer<IconBufferData>& GetFriendIconBuffer();
 	StructuredBuffer<IconBufferData>& GetEnemyIconBuffer();
 
@@ -65,7 +65,7 @@ private:
 	std::vector<BaseObject*> enemies_; /// 敵
 
 	/// Buffer
-	ConstantBuffer<MiniMapSize> miniMapBuffer_;
+	ConstantBuffer<MiniMapData> miniMapBuffer_;
 	StructuredBuffer<IconBufferData> friendIconBuffer_;
 	StructuredBuffer<IconBufferData> enemyIconBuffer_;
 };

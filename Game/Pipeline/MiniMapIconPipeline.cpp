@@ -78,15 +78,21 @@ void MiniMapIconPipeline::CreateGraphicsPipeline() {
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
 	// BlendMode None
+	D3D12_RENDER_TARGET_BLEND_DESC rtBlend = {};
+	rtBlend.BlendEnable = FALSE;   // ブレンド無効
+	rtBlend.LogicOpEnable = FALSE; // 論理演算も無効
+	rtBlend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
 	D3D12_BLEND_DESC blendDescNormal = {};
-	blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
-	blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-	blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-	blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDescNormal.RenderTarget[0] = rtBlend;
+	//blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
+	//blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	//blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	//blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	//blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	//blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+	//blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	//blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	// RasterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -223,7 +229,7 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 	};
 
 	/// MiniMapSize Bind
-	_miniMap->GetMiniMapSizeBuffer().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_MINI_MAP_SIZE);
+	_miniMap->GetMiniMapDataBuffer().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_MINI_MAP_SIZE);
 
 	/// Texture Bind
 	TextureManager* textureManager = TextureManager::GetInstance();

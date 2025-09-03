@@ -13,6 +13,7 @@ StructuredBuffer<Icon> gIcons : register(t0);
 
 VSOutput main(VSInput input, uint instanceId : SV_InstanceID) {
 	VSOutput output;
+	output.screenPosition = mul(float4(input.position.xyz, 1.0), gIcons[instanceId].mat);
 	output.position = mul(float4(input.position.xyz, 1.0), mul(gIcons[instanceId].mat, gScreenToNDC));
 	output.texcoord = input.texcoord;
 	return output;

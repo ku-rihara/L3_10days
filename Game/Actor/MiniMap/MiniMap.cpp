@@ -45,7 +45,7 @@ void MiniMap::Init(BaseStation* _ally, BaseStation* _enemy) {
 	Vector2 size = miniMapFrameSprite_->GetTextureSize();
 	size.x *= miniMapFrameSprite_->transform_.scale.x;
 	size.y *= miniMapFrameSprite_->transform_.scale.y;
-	miniMapBuffer_.SetMappedData({ miniMapPos_ - size, miniMapPos_ + size });
+	miniMapBuffer_.SetMappedData({ miniMapPos_, texSize.x / 2.0f });
 }
 
 
@@ -66,7 +66,7 @@ void MiniMap::Update() {
 
 	/// ICONに積める
 	Player* player = dynamic_cast<Player*>(playerPtr_);
-	player->SetWorldPosition({-100, 0,0});
+	player->SetWorldPosition({-110, 0,0});
 	if (player) {
 		/// playerの位置、回転を取得
 		const Vector3& playerPos = player->GetWorldPosition();
@@ -140,7 +140,7 @@ void MiniMap::RegisterPlayer(BaseObject* _player) {
 	playerPtr_ = _player;
 }
 
-ConstantBuffer<MiniMapSize>& MiniMap::GetMiniMapSizeBuffer() {
+ConstantBuffer<MiniMapData>& MiniMap::GetMiniMapDataBuffer() {
 	return miniMapBuffer_;
 }
 
