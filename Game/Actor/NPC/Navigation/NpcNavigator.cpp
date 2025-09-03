@@ -163,16 +163,42 @@ Vector3 NpcNavigator::Tick(float dt,
 						   const Vector3& npcPos,
 						   const Vector3& tgtPos,
 						   const std::vector<Hole>& holes) {
-	// 穴の候補を調べる
-	int pick = SelectBestHole(holes, npcPos, tgtPos);
-	const bool hasHole = (pick >= 0);
+	// ★ ここを追加：穴が無い間は常にロイター
+	if (holes.empty()) {
+		if (state_ != State::Orbit) {
+			StartOrbit(npcPos);                 // その場旋回開始
+		} else {
+			orbitAngle_ += cfg_.orbitAngularSpd * dt;
+		}
+		Vector3 des = DesiredDirLoiter(npcPos, orbitAngle_);
+		SteerTowards(des, dt, false);
+		UpdateSpeed(false, false, dt);
 
-	// ★ NPC とターゲットが“境界の反対側”か？
-	const bool needCross = ShouldCrossBoundary(npcPos, tgtPos);
-	const bool useHole = hasHole && needCross;
+		Vector3 delta = heading_ * speed_ * dt;
+
+		// 壁クリップ（穴が無いので絶対に越えない）
+		Vector3 P, N;
+		if (GetBoundaryPlane(P, N)) {
+			float tHit; Vector3 Q;
+			const Vector3 nextPos = npcPos + delta;
+			if (SegmentPlaneHit(npcPos, nextPos, P, N, tHit, Q)) {
+				const float backEps = 0.01f;
+				const float tStop = (std::max)(0.0f, tHit - backEps);
+				delta = (nextPos - npcPos) * tStop;
+				Vector3 tangent = Normalize3(heading_ - N * Dot(heading_, N), heading_);
+				heading_ = tangent;
+			}
+		}
+		return delta; // ★ 早期リターン
+	}
+
+	// ===== 以降は穴がある場合のみ =====
+	int  pick = SelectBestHole(holes, npcPos, tgtPos);
+	bool hasHole = (pick >= 0);
+	bool needCross = ShouldCrossBoundary(npcPos, tgtPos);
+	bool useHole = hasHole && needCross;
 
 	if (useHole) {
-		// ---- 境界を渡る必要がある時だけ ToHole ----
 		if (state_ != State::ToHole || pick != holeIndex_) {
 			holeIndex_ = pick;
 			holePos_ = holes[pick].position;
@@ -186,49 +212,41 @@ Vector3 NpcNavigator::Tick(float dt,
 		const float d = Len3(holePos_ - npcPos);
 		const float passDist = (std::max)(1.0f, holeRadius_ * cfg_.passFrac);
 		if (d <= passDist) {
-			state_ = State::ToTarget;     // 穴を抜けたらターゲットへ
+			state_ = State::ToTarget;           // 穴通過後にターゲットへ
 			holeIndex_ = -1; holePos_ = {}; holeRadius_ = 0.0f;
 		}
 	} else if (state_ == State::Orbit) {
-		// ---- 防衛アンカーなどで Orbit 指定中はそのまま旋回 ----
 		orbitAngle_ += cfg_.orbitAngularSpd * dt;
 		Vector3 des = DesiredDirLoiter(npcPos, orbitAngle_);
 		SteerTowards(des, dt, false);
 		UpdateSpeed(false, false, dt);
 	} else {
-		// ---- 境界を渡る必要が無いので、普通にターゲットへ ----
+		// 同じ側なら普通にターゲットへ（防衛帰投など）
 		state_ = State::ToTarget;
 		Vector3 des = DesiredDirToTarget(npcPos, tgtPos);
 		SteerTowards(des, dt, false);
-		// 近いとき減速したいなら、ここで brake=true を使う実装に拡張可
-		UpdateSpeed(false, /*brake=*/false, dt);
+		UpdateSpeed(false, false, dt);
 	}
 
-	// このフレームの実移動
 	Vector3 delta = heading_ * speed_ * dt;
 
-	// ===== 境界クリップ：穴以外では越えない =====
+	// 境界クリップ（穴以外で越えない）
 	Vector3 P, N;
 	if (GetBoundaryPlane(P, N)) {
 		float tHit; Vector3 Q;
 		const Vector3 nextPos = npcPos + delta;
-
 		if (SegmentPlaneHit(npcPos, nextPos, P, N, tHit, Q)) {
 			const int   preferIdx = (state_ == State::ToHole) ? holeIndex_ : -1;
 			const float preferRadius = (state_ == State::ToHole) ? holeRadius_ : 0.0f;
-
 			const bool passable = IsPassableAt(Q, holes, cfg_.passFrac, preferIdx, preferRadius);
 			if (!passable) {
 				const float backEps = 0.01f;
 				const float tStop = (std::max)(0.0f, tHit - backEps);
 				delta = (nextPos - npcPos) * tStop;
-
 				Vector3 tangent = Normalize3(heading_ - N * Dot(heading_, N), heading_);
 				heading_ = tangent;
 			}
 		}
 	}
-	// ===== クリップここまで =====
-
 	return delta;
 }
