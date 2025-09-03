@@ -66,12 +66,20 @@ void MiniMap::Update() {
 
 	/// ICONに積める
 	Player* player = dynamic_cast<Player*>(playerPtr_);
+	player->SetWorldPosition({-100, 0,0});
 	if (player) {
 		/// playerの位置、回転を取得
-		const Vector3& playerPos = player->GetPosition();
-		float playerRotY = player->GetQuaternion().ToEuler().y;
+		const Vector3& playerPos = player->GetWorldPosition();
+
+		const Quaternion& playerRot = player->GetQuaternion();
+		float playerRotY = std::atan2(
+			2.0f * (playerRot.w * playerRot.y + playerRot.x * playerRot.z),
+			1.0f - 2.0f * (playerRot.y * playerRot.y + playerRot.z * playerRot.z)
+		);
 
 		miniMapFrameSprite_->transform_.rotate.z = -playerRotY;
+
+		float scale = 32.0f; 
 
 		/// 味方のアイコン更新
 		size_t index = 0;
@@ -88,15 +96,15 @@ void MiniMap::Update() {
 
 			/// player から見た方向を計算
 			Vector2 position = { toPlayerDirection.x * distance, -toPlayerDirection.z * distance };
-			position = position * 0.1f;
 			/// mini map上の位置に変換
 			position += miniMapPos_;
-			Matrix4x4 matMiniMap = MakeAffineMatrix(Vector3(12.0f, 12.0f, 1.0f), Vector3(0.0f, playerRotY, 0.0f), Vector3(position.x, position.y, 0.0f));
+			Matrix4x4 matMiniMap = MakeAffineMatrix(Vector3(scale, scale, 1.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(position.x, position.y, 0.0f));
 
 			friendIconBuffer_.SetMappedData(index++, { matMiniMap });
 		}
 
 
+		///// 敵のアイコン更新
 		//index = 0;
 		//for (auto& enemy : enemies_) {
 		//	Vector3 toPlayerDirection = enemy->GetWorldPosition() - playerPos;
@@ -105,17 +113,19 @@ void MiniMap::Update() {
 
 		//	/// ある程度離れていたら表示しても意味がないのでスルー
 		//	float distance = (enemy->GetWorldPosition() - playerPos).Length();
-		//	if (distance > 1000.0f) {
-		//		continue;
+		//	if (distance > 320.0f) {
+		//		//continue;
 		//	}
 
-		//	/// ミニマップ上の位置を計算
-		//	Vector2 miniMapPos = { toPlayerDirection.x * distance, toPlayerDirection.z * distance };
-		//	miniMapPos += miniMapPos_;
-		//	Matrix4x4 matMiniMap = MakeAffineMatrix(Vector3(12.0f, 12.0f, 1.0f), Vector3(0.0f, -playerRotY, 0.0f), Vector3(miniMapPos.x, -miniMapPos.y, 0.0f));
+		//	/// player から見た方向を計算
+		//	Vector2 position = { toPlayerDirection.x * distance, -toPlayerDirection.z * distance };
+		//	/// mini map上の位置に変換
+		//	position += miniMapPos_;
+		//	Matrix4x4 matMiniMap = MakeAffineMatrix(Vector3(scale, scale, 1.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(position.x, position.y, 0.0f));
 
-		//	enemyIconBuffer_.SetMappedData(index++, { matMiniMap });
+		//	friendIconBuffer_.SetMappedData(index++, { matMiniMap });
 		//}
+
 	}
 
 }

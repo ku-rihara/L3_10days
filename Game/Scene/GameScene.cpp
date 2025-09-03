@@ -148,6 +148,12 @@ void GameScene::SkyBoxDraw() {
 /// ======================================================
 void GameScene::SpriteDraw() {
 	miniMap_->DrawMiniMap();
+
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	/// UI用に
+	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
+	miniMapIconPipeline->PreDraw(commandList);
+	miniMapIconPipeline->Draw(commandList, miniMap_.get());
 }
 
 /// ======================================================
