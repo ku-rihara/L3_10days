@@ -169,22 +169,18 @@ void Player::RotateUpdate() {
 
     // 逆さまの場合の自動補正
     if (isUpsideDown && angleInput_.Length() < 0.001f) {
-        Vector3 euler    = targetRotation_.ToEuler();
-        float currentYaw = euler.y;
+        Vector3 euler      = targetRotation_.ToEuler();
+        float currentYaw   = euler.y;
+        float currentPitch = euler.x;
+        float currentRoll  = euler.z;
 
-        // ピッチとロールを0にした回転を作成
-        Quaternion correctedRotation = Quaternion::EulerToQuaternion(
-            Vector3(0.0f, currentYaw, 0.0f));
+        currentPitch = Lerp(currentPitch, 0.0f, rollBackTime_ * deltaTime);
+        currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
+        currentYaw   = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
 
-        // 補正の強度
-        float correctionStrength = std::abs(upDot + 0.3f) * 2.0f;
-        correctionStrength       = std::min(correctionStrength, 1.0f);
-
-        // 補正
-        targetRotation_ = Quaternion::Slerp(
-            targetRotation_,
-            correctedRotation,
-            correctionStrength * pitchBackTime_ * deltaTime);
+        // 補正された回転を適用
+        targetRotation_ = Quaternion::EulerToQuaternion(
+            Vector3(currentPitch, currentYaw, currentRoll));
     }
     // 通常時の自動復帰処理
     else if (!isUpsideDown && angleInput_.Length() < 0.001f) {
@@ -193,10 +189,6 @@ void Player::RotateUpdate() {
         float currentPitch = euler.x;
         float currentRoll  = euler.z;
 
-        // ピッチとロール自動復帰
-        if (fabs(angleInput_.x) < 0.001f) { // ピッチ入力なし
-            currentPitch = Lerp(currentPitch, 0.0f, pitchBackTime_ * deltaTime);
-        }
         if (fabs(angleInput_.z) < 0.001f) { // ロール入力なし
             currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
         }
@@ -222,13 +214,11 @@ void Player::RotateUpdate() {
     Vector3 right   = GetRightVector();
     Vector3 up      = GetUpVector();
 
-  
-   
     // ロールに基づくヨー角速度を計算
-    float rollToYawRate = 1.5f; 
+    float rollToYawRate = 1.5f;
     float yawFromRoll   = -sin(currentRoll) * rollToYawRate * deltaTime;
-  
-     // ヨー回転をQuaternionで作成
+
+    // ヨー回転をQuaternionで作成
     if (fabs(yawFromRoll) > 0.0001f) {
         Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(
             Vector3::ToUp(), // ワールド上方向
@@ -239,13 +229,9 @@ void Player::RotateUpdate() {
         baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
     }
 
-
-  
-   
-  
-   // 速度計算
+    // 速度計算
     Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
-   
+
     // 合成速度
     velocity_ = forwardVelocity;
 

@@ -52,7 +52,7 @@ void GameCamera::Reset() {
     destinationAngleY_ = viewProjection_.rotation_.y;
 
     // 追従対象からのオフセット
-    Vector3 offset               = OffsetCalc(offset_);
+    Vector3 offset               = OffsetCalc(cameraOffset_);
     viewProjection_.translation_ = interTarget_ + offset;
 }
 
@@ -66,8 +66,7 @@ Vector3 GameCamera::OffsetCalc(const Vector3& offset) const {
 void GameCamera::BindParams() {
     globalParameter_->Bind(groupName_, "rotationOffset", &rotationOffset_);
     globalParameter_->Bind(groupName_, "cameraOffset", &cameraOffset_);
-    globalParameter_->Bind(groupName_, "rollFollowFactor", &rollFollowFactor_);
-    globalParameter_->Bind(groupName_, "rollSmoothness", &rollSmoothness_);
+  
 }
 
 void GameCamera::SetTarget(const WorldTransform* target) {
@@ -95,11 +94,7 @@ void GameCamera::AdjustParam() {
         ImGui::DragFloat3("Rotation Offset", &rotationOffset_.x, 0.01f);
         ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
 
-        ImGui::Separator();
-        ImGui::Text("Roll Follow Settings");
-        ImGui::DragFloat("Roll Follow Factor", &rollFollowFactor_, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Roll Smoothness", &rollSmoothness_, 0.01f, 0.01f, 1.0f);
-
+     
         if (ImGui::Button("Apply Offset")) {
             if (target_) {
                 viewProjection_.translation_ = cameraOffset_;
@@ -132,8 +127,7 @@ Vector3 GameCamera::GetTargetPos() const {
 
 void GameCamera::Debug() {
 
-    ImGui::DragFloat("rotate", &baseRotateOffsetX_, 0.01f);
-    ImGui::DragFloat3("offset", &offset_.x, 0.1f);
+   
 }
 
 void GameCamera::PlayAnimation(const std::string& filename) {
