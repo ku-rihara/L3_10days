@@ -52,6 +52,12 @@ void Vector3::operator-=(const Vector3& obj) {
     z -= obj.z;
 }
 
+void Vector3::operator*=(const float& scalar) {
+    x *=scalar;
+    y *=scalar;
+    z *=scalar;
+ }
+
 // 比較演算子
 bool operator!=(const Vector3& lhs, const Vector3& rhs) {
     return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z;

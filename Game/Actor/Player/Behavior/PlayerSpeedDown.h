@@ -1,8 +1,8 @@
 #pragma once
 
-#include "BasePlayerBehavior.h"
+#include "BasePlayerSpeedBehavior.h"
 
-class PlayerInputAccepted : public BasePlayerBehavior {
+class PlayerSpeedDown : public BasePlayerSpeedBehavior {
 private:
     /// ===================================================
     /// private variable
@@ -10,8 +10,8 @@ private:
 
 public:
     // コンストラクタ
-    PlayerInputAccepted(Player* player);
-    ~PlayerInputAccepted();
+    PlayerSpeedDown(Player* player);
+    ~PlayerSpeedDown();
 
     void Update() override;
     void Debug() override;
