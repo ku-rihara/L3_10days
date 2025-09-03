@@ -70,7 +70,6 @@ void NPC::Move() {
 	const Vector3 npcPos = GetWorldPosition();
 	const Vector3 tgtPos = (target_) ? target_->GetWorldPosition() : npcPos;
 
-	// 航法ロジック：望ましい「移動量（速度×dt）」を得る
 	const Boundary* boundary = Boundary::GetInstance();
 	const std::vector<Hole>& holes = boundary->GetHoles();
 
@@ -109,7 +108,6 @@ void NPC::BindParms() {
 	globalParam_->Bind(groupName_, "maxHP", &maxHP_);
 	globalParam_->Bind(groupName_, "speed", &speed_);
 
-	// 必要に応じて Navigator 設定も GUI で触れるように
 	// globalParam_->Bind(groupName_, "arriveSlowRadius",  &navConfig_.arriveSlowRadius);
 	// globalParam_->Bind(groupName_, "minHoleRadius",     &navConfig_.minHoleRadius);
 	// globalParam_->Bind(groupName_, "passFrac",          &navConfig_.passFrac);
