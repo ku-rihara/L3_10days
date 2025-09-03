@@ -36,7 +36,7 @@ void GameScene::Init() {
 	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
 	gameCamera_ = std::make_unique<GameCamera>();
-	testGround_ = std::make_unique<TestGround>();
+	//testGround_ = std::make_unique<TestGround>();
 
 	/// UI -----
 	miniMap_ = std::make_unique<MiniMap>();
@@ -47,7 +47,7 @@ void GameScene::Init() {
 	player_->Init();
 	Installer::InstallStations(stations_[FactionType::Ally], stations_[FactionType::Enemy]);
 	gameCamera_->Init();
-	testGround_->Init();
+	//testGround_->Init();
 
 	boundary_ = Boundary::GetInstance();
 	boundary_->Init();
@@ -79,7 +79,7 @@ void GameScene::Update() {
 	gameCamera_->Update();
 	for (auto& kv : stations_) { kv.second->Update(); }
 	skuBox_->Update();
-	testGround_->Update();
+	//testGround_->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();

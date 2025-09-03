@@ -1138,6 +1138,7 @@
     <ClInclude Include="Game\Pipeline\BoundaryShardPipeline.h" />
     <ClInclude Include="Game\Pipeline\MiniMapIconPipeline.h" />
     <ClInclude Include="Game\Actor\MiniMap\MiniMap.h" />
+    <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

@@ -38,6 +38,19 @@ void MiniMapIconPipeline::CreateGraphicsPipeline() {
 	staticSamplers_.ShaderRegister = 0; // レジスタ番号０
 	staticSamplers_.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // pxelShaderで使う
 
+	//// シャドウマップ用比較サンプラー
+	//staticSamplers_[1].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	//staticSamplers_[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	//staticSamplers_[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	//staticSamplers_[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	//staticSamplers_[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+	//staticSamplers_[1].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	//staticSamplers_[1].MaxLOD = D3D12_FLOAT32_MAX;
+	//staticSamplers_[1].ShaderRegister = 1; // レジスタ番号1
+	//staticSamplers_[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	//staticSamplers_[1].MaxAnisotropy = 1;
+
+
 	CreateRootSignature();
 
 	// InputLayoutの設定を行う
@@ -120,7 +133,7 @@ void MiniMapIconPipeline::CreateRootSignature() {
 	descriptionRootSignature.NumStaticSamplers = 1; // 通常サンプラーの1個
 
 	// DescriptorRangeの設定
-	D3D12_DESCRIPTOR_RANGE descriptorRange[6] = {};
+	D3D12_DESCRIPTOR_RANGE descriptorRange[2] = {};
 
 	// holes (t0)
 	descriptorRange[0].BaseShaderRegister = 0;
@@ -128,51 +141,35 @@ void MiniMapIconPipeline::CreateRootSignature() {
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// 環境テクスチャ (t1)
+	// テクスチャ (t0)
 	descriptorRange[1].BaseShaderRegister = 1;
 	descriptorRange[1].NumDescriptors = 1;
+	//descriptorRange[1].RegisterSpace = 1;
 	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// ポイントライト (t2)
-	descriptorRange[2].BaseShaderRegister = 2;
-	descriptorRange[2].NumDescriptors = 1;
-	descriptorRange[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	// スポットライト (t3)
-	descriptorRange[3].BaseShaderRegister = 3;
-	descriptorRange[3].NumDescriptors = 1;
-	descriptorRange[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[3].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	// シャドウマップ (t4)
-	descriptorRange[4].BaseShaderRegister = 4;
-	descriptorRange[4].NumDescriptors = 1;
-	descriptorRange[4].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[4].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	// dissolve (t5)
-	descriptorRange[5].BaseShaderRegister = 5;
-	descriptorRange[5].NumDescriptors = 1;
-	descriptorRange[5].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 
-	// 0: TransformationMatrix
+	// 0: gIcons
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderを使う
 	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
 	rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
 	rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
 
-	// 1: ShadowMap
+	// 1: MiniMapSize
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[1].Descriptor.ShaderRegister = 0;
 
+	// 2: Texture
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].Descriptor.ShaderRegister = 1; // レジスタ番号0とバインド
+	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ

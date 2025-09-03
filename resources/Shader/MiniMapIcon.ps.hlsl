@@ -6,6 +6,8 @@ struct MiniMapSize {
 };
 
 ConstantBuffer<MiniMapSize> gMiniMapSize : register(b0);
+Texture2D<float4> gTexture : register(t1);
+SamplerState gSampler : register(s0);
 
 
 PSOutput main(VSOutput input) {
@@ -22,8 +24,12 @@ PSOutput main(VSOutput input) {
 	if (dist > 1.0) {
 		discard;
 	}
-	
-	output.color = float4(1.0, 1.0, 1.0, 1.0);
+
+	float4 texColor = gTexture.Sample(gSampler, input.texcoord);
+	output.color = texColor;
+	if(output.color.a < 0.1) {
+		discard;
+	}
 	
 	return output;
 }
