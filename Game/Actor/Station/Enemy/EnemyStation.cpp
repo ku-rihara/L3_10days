@@ -51,27 +51,17 @@ void EnemyStation::Update() {
 /// npcのスポーン
 
 void EnemyStation::SpawnNPC() {
-    if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_) return;
+	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_) return;
 
-    auto npc = pool_.Acquire();
-    npc->Init();
-    npc->SetFaction(FactionType::Enemy);
+	auto npc = pool_.Acquire();
+	npc->Init();
+	npc->SetFaction(FactionType::Ally);
 
-    Vector3 spawnOffset = { 1.0f,1.0f,1.0f };
-    const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;
-    npc->SetWorldPosition(worldSpawn);
+	Vector3 spawnOffset = { 1.0f,1.0f,1.0f };
+	const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;
+	npc->SetWorldPosition(worldSpawn);
+	npc->SetTarget(GetRivalStation());
 
-    npc->SetDefendAnchor(GetWorldPosition()); // 拠点座標を旋回中心に
-    npc->SetTarget(nullptr);                  // その場（アンカー）旋回で待機
-
-    if (!unitDirector_) {
-        const auto& holes = Boundary::GetInstance()->GetHoles();
-        if (!holes.empty()) {
-            npc->ClearDefendAnchor();
-            npc->SetTarget(GetRivalStation());
-        }
-    }
-
-    spawned_.push_back(std::move(npc));
-    currentTime_ = 0.0f;
+	spawned_.push_back(std::move(npc));
+	currentTime_ = 0.0f;
 }
