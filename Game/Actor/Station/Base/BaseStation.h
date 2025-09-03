@@ -32,6 +32,13 @@ public:
 	void SetFaction(FactionType type);
 	FactionType GetFactionType()const;
 
+	std::vector<NPC*> GetLiveNpcs() const;
+
+	template<class Fn>
+	void ForEachNpc(Fn&& fn) {
+		for (auto& h : spawned_) if (h) fn(*h.get());
+	}
+
 protected:
 	virtual void SpawnNPC() = 0;		//< npcをスポーン
 	void CleanupSpawnedList();			//< リストの掃除

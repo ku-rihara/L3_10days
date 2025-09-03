@@ -101,6 +101,16 @@ void BaseStation::SetFaction(FactionType type) {faction_ = type;}
 FactionType BaseStation::GetFactionType() const { return faction_; }
 
 /// ===================================================
+/// 生きているnpc参照
+/// ===================================================
+std::vector<NPC*> BaseStation::GetLiveNpcs() const {
+	std::vector<NPC*> out;
+	out.reserve(spawned_.size());
+	for (auto& h : spawned_) if (h) out.push_back(h.get());
+	return out;
+}
+
+/// ===================================================
 /// リストを掃除
 /// ===================================================
 void BaseStation::CleanupSpawnedList() {
