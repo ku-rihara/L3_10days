@@ -71,7 +71,6 @@ void NPC::Move() {
 	const float dt = Frame::DeltaTime();
 
 	const Vector3 npcPos = GetWorldPosition();
-	// ★ target が無いとき、アンカーがあればアンカーを目標に扱う
 	const Vector3 tgtPos = (target_)
 		? target_->GetWorldPosition()
 		: (hasDefendAnchor_ ? defendAnchor_ : npcPos);
@@ -154,7 +153,6 @@ void NPC::SetFaction(FactionType faction) { faction_ = faction; }
 void NPC::Activate() { isActive_ = true; }
 void NPC::Deactivate() { isActive_ = false; }
 
-// ★ 追加：防衛アンカー API
 void NPC::SetDefendAnchor(const Vector3& p) {
 	defendAnchor_ = p;
 	hasDefendAnchor_ = true;

@@ -12,7 +12,24 @@ static inline Vector3 Normalize3(const Vector3& v, const Vector3& fb = { 0,0,-1 
 	float l = Len3(v);
 	return (l > 1e-6f) ? (v * (1.0f / l)) : fb;
 }
+
+// --- 境界平面(P,N) 取得（Boundary の API に確定）
+static inline bool GetBoundaryPlane(Vector3& P, Vector3& N) {
+	const auto* bd = Boundary::GetInstance();
+	if (!bd) return false;
+	bd->GetDividePlane(P, N);      // ← ここを使う
+	N = Normalize3(N, { 0,1,0 });  // 念のため正規化
+	return true;
+}
 static inline float Rad(float deg) { return deg * 3.1415926535f / 180.0f; }
+static inline bool ShouldCrossBoundary(const Vector3& npcPos, const Vector3& tgtPos) {
+	Vector3 P, N;
+	if (!GetBoundaryPlane(P, N)) return false; // 境界が無ければ不要
+	const float sNpc = Dot(N, npcPos - P);
+	const float sTgt = Dot(N, tgtPos - P);
+	// 片側が+、片側が- なら境界を跨ぐ必要あり
+	return (sNpc * sTgt) < 0.0f;
+}
 
 // cur から des へ、最大回頭角 maxAngleRad でだけ向きを寄せる
 static inline Vector3 RotateToward(const Vector3& cur, const Vector3& des, float maxAngleRad) {
@@ -24,14 +41,7 @@ static inline Vector3 RotateToward(const Vector3& cur, const Vector3& des, float
 	return Normalize3(a * (1.0f - t) + b * t, b);
 }
 
-// --- 境界平面(P,N) 取得（Boundary の API に確定）
-static inline bool GetBoundaryPlane(Vector3& P, Vector3& N) {
-	const auto* bd = Boundary::GetInstance();
-	if (!bd) return false;
-	bd->GetDividePlane(P, N);      // ← ここを使う
-	N = Normalize3(N, { 0,1,0 });  // 念のため正規化
-	return true;
-}
+
 
 // 線分 AB が平面(P,N)と交差するなら t∈[0,1] と交点 Q を返す
 static inline bool SegmentPlaneHit(const Vector3& A, const Vector3& B,
@@ -153,40 +163,45 @@ Vector3 NpcNavigator::Tick(float dt,
 						   const Vector3& npcPos,
 						   const Vector3& tgtPos,
 						   const std::vector<Hole>& holes) {
-	// 穴検索
+	// 穴の候補を調べる
 	int pick = SelectBestHole(holes, npcPos, tgtPos);
 	const bool hasHole = (pick >= 0);
 
-	if (hasHole) {
-		// 穴へ向かう
+	// ★ NPC とターゲットが“境界の反対側”か？
+	const bool needCross = ShouldCrossBoundary(npcPos, tgtPos);
+	const bool useHole = hasHole && needCross;
+
+	if (useHole) {
+		// ---- 境界を渡る必要がある時だけ ToHole ----
 		if (state_ != State::ToHole || pick != holeIndex_) {
 			holeIndex_ = pick;
 			holePos_ = holes[pick].position;
 			holeRadius_ = holes[pick].radius;
 			state_ = State::ToHole;
 		}
-
 		Vector3 des = DesiredDirToHole(npcPos);
 		SteerTowards(des, dt, false);
 		UpdateSpeed(false, false, dt);
 
-		// 通過判定（半径 * passFrac）
 		const float d = Len3(holePos_ - npcPos);
 		const float passDist = (std::max)(1.0f, holeRadius_ * cfg_.passFrac);
 		if (d <= passDist) {
-			state_ = State::ToTarget;
+			state_ = State::ToTarget;     // 穴を抜けたらターゲットへ
 			holeIndex_ = -1; holePos_ = {}; holeRadius_ = 0.0f;
 		}
-	} else {
-		// ★穴がない → 旋回（ロイター）
-		if (state_ != State::Orbit) {
-			StartOrbit(npcPos);                  // その場旋回を開始
-		} else {
-			orbitAngle_ += cfg_.orbitAngularSpd * dt; // 見た目安定用（任意）
-		}
+	} else if (state_ == State::Orbit) {
+		// ---- 防衛アンカーなどで Orbit 指定中はそのまま旋回 ----
+		orbitAngle_ += cfg_.orbitAngularSpd * dt;
 		Vector3 des = DesiredDirLoiter(npcPos, orbitAngle_);
 		SteerTowards(des, dt, false);
 		UpdateSpeed(false, false, dt);
+	} else {
+		// ---- 境界を渡る必要が無いので、普通にターゲットへ ----
+		state_ = State::ToTarget;
+		Vector3 des = DesiredDirToTarget(npcPos, tgtPos);
+		SteerTowards(des, dt, false);
+		// 近いとき減速したいなら、ここで brake=true を使う実装に拡張可
+		UpdateSpeed(false, /*brake=*/false, dt);
 	}
 
 	// このフレームの実移動
@@ -199,18 +214,15 @@ Vector3 NpcNavigator::Tick(float dt,
 		const Vector3 nextPos = npcPos + delta;
 
 		if (SegmentPlaneHit(npcPos, nextPos, P, N, tHit, Q)) {
-			// 穴の中を通れるか？
 			const int   preferIdx = (state_ == State::ToHole) ? holeIndex_ : -1;
 			const float preferRadius = (state_ == State::ToHole) ? holeRadius_ : 0.0f;
 
 			const bool passable = IsPassableAt(Q, holes, cfg_.passFrac, preferIdx, preferRadius);
 			if (!passable) {
-				// 境界手前で停止（ほんの少し余裕をもって止める）
 				const float backEps = 0.01f;
 				const float tStop = (std::max)(0.0f, tHit - backEps);
 				delta = (nextPos - npcPos) * tStop;
 
-				// 面に沿う向きに寄せておくと滑らか（任意）
 				Vector3 tangent = Normalize3(heading_ - N * Dot(heading_, N), heading_);
 				heading_ = tangent;
 			}
