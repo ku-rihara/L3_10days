@@ -88,6 +88,8 @@ private:
     float sideFactor_;
     float downFactor_;
 
+     bool isAutoRecovering_ = false;
+
 public:
     // ゲッター
     const Vector3& GetPosition() const { return baseTransform_.translation_; }

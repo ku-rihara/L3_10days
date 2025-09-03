@@ -131,7 +131,7 @@ void Player::RotateUpdate() {
     Vector3 targetAngularVelocity = angleInput_;
 
     // 入力がない場合は減衰させる
-    const float damping = 0.95f; // 減衰率
+    const float damping = 0.95f;
     if (angleInput_.Length() < 0.001f) {
         targetAngularVelocity = angularVelocity_ * damping;
     }
@@ -158,30 +158,53 @@ void Player::RotateUpdate() {
 
     // 機体の上方向ベクトルを取得
     Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
-    Vector3 targetUpVector = TransformNormal(GetUpVector(), targetMatrix);
+    Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
 
     // 機体の上方向とワールドの上方向の内積を計算
-    float upDot = Vector3::Dot(targetUpVector, GetUpVector());
+    Vector3 worldUp = Vector3::ToUp();
+    float upDot     = Vector3::Dot(targetUpVector, worldUp);
 
     // 機体が逆さまかどうかを判定
     const float upsideDownThreshold = -0.3f;
     bool isUpsideDown               = upDot < upsideDownThreshold;
 
-    // 逆さまの場合の自動補正
-    if (isUpsideDown && angleInput_.Length() < 0.001f) {
-        Vector3 euler      = targetRotation_.ToEuler();
-        float currentYaw   = euler.y;
-        float currentPitch = euler.x;
-        float currentRoll  = euler.z;
-
-        currentPitch = Lerp(currentPitch, 0.0f, rollBackTime_ * deltaTime);
-        currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
-        currentYaw   = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
-
-        // 補正された回転を適用
-        targetRotation_ = Quaternion::EulerToQuaternion(
-            Vector3(currentPitch, currentYaw, currentRoll));
+    // 補正開始フラグ
+    if (!isAutoRecovering_ && isUpsideDown && angleInput_.Length() < 0.001f) {
+        isAutoRecovering_ = true;
     }
+
+    // 補正処理
+    if (isAutoRecovering_) {
+        Vector3 currentEuler = targetRotation_.ToEuler();
+        float currentYaw     = currentEuler.y;
+
+        // 目標は水平 
+        float targetPitch = 0.0f;
+        float targetRoll  = 0.0f;
+
+        Quaternion horizontalRotation = Quaternion::EulerToQuaternion(
+            Vector3(targetPitch, currentYaw, targetRoll));
+
+        //ロール補正
+        float roll = currentEuler.z;
+        if (roll < 0.0f) {
+            roll += 2.0f * std::numbers::pi_v<float>;
+            Quaternion adjustedCurrent = Quaternion::EulerToQuaternion(
+                Vector3(currentEuler.x, currentEuler.y, roll));
+            targetRotation_ = Quaternion::Slerp(
+                adjustedCurrent, horizontalRotation, 3.5f * deltaTime);
+        } else {
+            targetRotation_ = Quaternion::Slerp(
+                targetRotation_, horizontalRotation, 3.5f * deltaTime);
+        }
+
+        // --- 補正終了判定 ---
+        if (fabs(currentEuler.x) < 0.01f && fabs(currentEuler.z) < 0.01f) {
+            isAutoRecovering_ = false;
+        }
+    }
+
+
     // 通常時の自動復帰処理
     else if (!isUpsideDown && angleInput_.Length() < 0.001f) {
         Vector3 euler      = targetRotation_.ToEuler();
@@ -189,7 +212,8 @@ void Player::RotateUpdate() {
         float currentPitch = euler.x;
         float currentRoll  = euler.z;
 
-        if (fabs(angleInput_.z) < 0.001f) { // ロール入力なし
+        // ロール入力なしの場合のみロールを0に戻す
+        if (fabs(angleInput_.z) < 0.001f) {
             currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
         }
 
@@ -215,7 +239,7 @@ void Player::RotateUpdate() {
     Vector3 up      = GetUpVector();
 
     // ロールに基づくヨー角速度を計算
-    float rollToYawRate = 1.5f;
+    float rollToYawRate = 0.7f;
     float yawFromRoll   = -sin(currentRoll) * rollToYawRate * deltaTime;
 
     // ヨー回転をQuaternionで作成
@@ -238,6 +262,7 @@ void Player::RotateUpdate() {
     // 位置を更新
     baseTransform_.translation_ += velocity_;
 }
+
 void Player::SpeedChange() {
 }
 Vector3 Player::GetForwardVector() const {

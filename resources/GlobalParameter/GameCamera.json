@@ -5,12 +5,15 @@
         "cameraHeight": 4.5,
         "cameraOffset": [
             0.0,
-            17.299999237060547,
-            -33.900001525878906
+            20.399999618530273,
+            -26.799999237060547
         ],
         "followDistance": 10.0,
         "followHeight": 2.0,
-        "followSmoothness": 0.5299999713897705,
+        "followPitch": true,
+        "followRoll": false,
+        "followSmoothness": 0.10000000149011612,
+        "followYaw": true,
         "offset": [
             -0.30000001192092896,
             1.5399999618530273,
@@ -19,7 +22,7 @@
         "rollFollowFactor": 0.1899999976158142,
         "rollSmoothness": 1.0,
         "rotationOffset": [
-            0.25,
+            0.4300000071525574,
             0.0,
             0.0
         ],
