@@ -3,10 +3,10 @@
 #include "BasePlayerSpeedBehavior.h"
 #include "Easing/Easing.h"
 
-class PlayerAccelerator : public BasePlayerSpeedBehavior {
+class PlayerBrake : public BasePlayerSpeedBehavior {
 public:
-    PlayerAccelerator(Player* player);
-    ~PlayerAccelerator();
+    PlayerBrake(Player* player);
+    ~PlayerBrake();
 
     void Update() override;
     void Debug() override;
@@ -20,6 +20,6 @@ public:
     void SetCurrentEaseTime(float time) override;
 
 private:
-    void InitEasing();
+    void InitializeEasing();
     void ResetEasing();
 };

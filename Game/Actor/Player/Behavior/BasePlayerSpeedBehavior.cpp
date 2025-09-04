@@ -16,8 +16,8 @@ BasePlayerSpeedBehavior::BasePlayerSpeedBehavior(const std::string& name, Player
 void BasePlayerSpeedBehavior::TransferStateFrom(BasePlayerSpeedBehavior* previousBehavior) {
     if (previousBehavior) {
         // 前のBehaviorから現在の速度を取得
-        float prevSpeed    = previousBehavior->GetCurrentSpeed();
-       /* float prevEaseTime = previousBehavior->GetCurrentEaseTime();*/
+        float prevSpeed = previousBehavior->GetCurrentSpeed();
+        /* float prevEaseTime = previousBehavior->GetCurrentEaseTime();*/
 
         // 現在のBehaviorの開始値を前のBehaviorの現在値に設定
         speedEase_.SetStartValue(prevSpeed);
@@ -26,14 +26,18 @@ void BasePlayerSpeedBehavior::TransferStateFrom(BasePlayerSpeedBehavior* previou
         speedEase_.SetCurrentEaseTime(0.0f);
 
         // 入力状態も引き継ぐ
-        wasLBPressed_ = previousBehavior->wasLBPressed_;
-        isLBPressed_  = previousBehavior->isLBPressed_;
+        wasRTPressed_ = previousBehavior->wasRTPressed_;
+        isRTPressed_  = previousBehavior->isRTPressed_;
+        wasLTPressed_ = previousBehavior->wasLTPressed_;
+        isLTPressed_  = previousBehavior->isLTPressed_;
     }
 }
 
 void BasePlayerSpeedBehavior::UpdateInputState() {
-    wasLBPressed_ = isLBPressed_;
-    isLBPressed_  = Input::IsPressRightTrigger(0, 1);
+    wasRTPressed_ = isRTPressed_;
+    wasLTPressed_ = isLTPressed_;
+    isRTPressed_  = Input::IsPressRightTrigger(0, 1);
+    isLTPressed_  = Input::IsPressLeftTrigger(0, 1);
 }
 
 Input* BasePlayerSpeedBehavior::GetInput() {

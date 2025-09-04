@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
+    <ClCompile Include="Game\Actor\Player\Behavior\PlayerBrake.cpp" />
     <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
     <ClCompile Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerAccelerator.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerAcceleUnattended.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\PlayerBrake.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\BasePlayerBullet.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\BulletFactory.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerBulletShooter.h" />

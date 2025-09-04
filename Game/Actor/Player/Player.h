@@ -12,6 +12,7 @@ public:
     struct SpeedParam {
         float startForwardSpeed;
         float minForwardSpeed;
+        float brakeForwardSpeed;
         float maxForwardSpeed;
         float currentForwardSpeed;
         float pitchSpeed;

@@ -3,7 +3,6 @@
 #include "input/Input.h"
 #include "MathFunction.h"
 // behavior
-#include "Behavior/PlayerAccelerator.h"
 #include "Behavior/PlayerAcceleUnattended.h"
 #include <imgui.h>
 #include <numbers>
@@ -240,6 +239,7 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "rollSpeed", &speedParam_.rollSpeed);
     globalParameter_->Bind(groupName_, "minForwardSpeed", &speedParam_.minForwardSpeed);
     globalParameter_->Bind(groupName_, "maxForwardSpeed", &speedParam_.maxForwardSpeed);
+    globalParameter_->Bind(groupName_, "brakeForwardSpeed", &speedParam_.brakeForwardSpeed);
     globalParameter_->Bind(groupName_, "rotationSmoothness", &rotationSmoothness_);
     globalParameter_->Bind(groupName_, "rollRotateLimit", &rollRotateLimit_);
     globalParameter_->Bind(groupName_, "pitchBackTime", &pitchBackTime_);
@@ -265,6 +265,7 @@ void Player::AdjustParam() {
         ImGui::DragFloat("StartForward Speed", &speedParam_.startForwardSpeed, 0.01f);
         ImGui::DragFloat("minForward Speed", &speedParam_.minForwardSpeed, 0.01f);
         ImGui::DragFloat("maxForward Speed", &speedParam_.maxForwardSpeed, 0.01f);
+        ImGui::DragFloat("brakeForward Speed", &speedParam_.brakeForwardSpeed, 0.01f);
         ImGui::DragFloat("Pitch Speed", &speedParam_.pitchSpeed, 0.01f);
         ImGui::DragFloat("Yaw Speed", &speedParam_.yawSpeed, 0.01f);
         ImGui::DragFloat("Roll Speed", &speedParam_.rollSpeed, 0.01f);
