@@ -14,8 +14,17 @@ struct MiniMapData{
 	float radius;
 };
 
+struct MiniMapMatrix {
+	Matrix4x4 mat;
+	MiniMapData data;
+};
+
 struct IconBufferData {
 	Matrix4x4 matrix; /// SRT
+};
+
+struct PlayerBufferData {
+	Vector3 position;
 };
 
 /// //////////////////////////////////////////////////////
@@ -39,9 +48,11 @@ public:
 	void RegisterPlayer(BaseObject* _player);
 
 	/// ----- Bufferの取得
-	ConstantBuffer<MiniMapData>& GetMiniMapDataBuffer();
-	StructuredBuffer<IconBufferData>& GetFriendIconBuffer();
-	StructuredBuffer<IconBufferData>& GetEnemyIconBuffer();
+	ConstantBuffer<MiniMapData>& GetMiniMapDataBufferRef();
+	StructuredBuffer<IconBufferData>& GetFriendIconBufferRef();
+	StructuredBuffer<IconBufferData>& GetEnemyIconBufferRef();
+	ConstantBuffer<PlayerBufferData>& GetPlayerBufferRef();
+	ConstantBuffer<MiniMapMatrix>& GetMiniMapMatrixBufferRef();
 
 	UINT GetFriendIconCount() const;
 	UINT GetEnemyIconCount() const;
@@ -58,6 +69,7 @@ private:
 	std::unique_ptr<Sprite> miniMapPlayerIconSprite_;
 
 	Vector2 miniMapPos_;  /// ミニマップの位置
+	Vector2 miniMapSize_; /// ミニマップのサイズ
 
 	/// 表示対象のオブジェクト
 	BaseObject* playerPtr_;
@@ -68,5 +80,7 @@ private:
 	ConstantBuffer<MiniMapData> miniMapBuffer_;
 	StructuredBuffer<IconBufferData> friendIconBuffer_;
 	StructuredBuffer<IconBufferData> enemyIconBuffer_;
+	ConstantBuffer<PlayerBufferData> playerBuffer_;
+	ConstantBuffer<MiniMapMatrix> miniMapMatrixBuffer_;
 };
 

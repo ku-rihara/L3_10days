@@ -20,6 +20,7 @@
 #include "Pipeline/BoundaryEdgePipeline.h"
 #include "Pipeline/BoundaryShardPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
+#include "Pipeline/MiniMapPipeline.h"
 
 #include <imgui.h>
 
@@ -129,11 +130,9 @@ void GameScene::ModelDraw() {
 	boundaryEdgePipeline->PreDraw(commandList);
 	boundaryEdgePipeline->Draw(commandList, viewProjection_);
 
-
-	///// UI用に
-	//MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
-	//miniMapIconPipeline->PreDraw(commandList);
-	//miniMapIconPipeline->Draw(commandList, miniMap_.get());
+	MiniMapPipeline* miniMapPipeline = MiniMapPipeline::GetInstance();
+	miniMapPipeline->PreDraw(commandList);
+	miniMapPipeline->Draw(commandList, miniMap_.get());
 }
 
 /// ===================================================
@@ -154,6 +153,9 @@ void GameScene::SpriteDraw() {
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
 	miniMapIconPipeline->Draw(commandList, miniMap_.get());
+
+
+
 }
 
 /// ======================================================
