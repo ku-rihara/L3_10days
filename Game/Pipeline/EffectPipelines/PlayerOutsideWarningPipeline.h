@@ -12,10 +12,16 @@
 #include "struct/TransformationMatrix.h"
 #include "3d/Model.h"
 
+#include "Pipeline/Buffer/ConstantBuffer.h"
+
 /// 描画対象
 #include "Actor/Effects/PlayerOutsideWarning/PlayerOutsideWarning.h"
 
 class PlayerOutsideWarningPipeline {
+
+	enum ROOT_PARAM {
+		ROOT_PARAM_TIME,
+	};
 
 public:
 	/// ========================================================
@@ -31,7 +37,7 @@ public:
 	void Init(DirectXCommon* dxCommon);
 	void PreDraw(ID3D12GraphicsCommandList* commandList);
 	void Draw(
-		ID3D12GraphicsCommandList* commandList,
+		ID3D12GraphicsCommandList* _cmdList,
 		PlayerOutsideWarning* _playerOutsideWarning
 	);
 
@@ -58,6 +64,8 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateNone_;
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc_;
+
+	ConstantBuffer<float> timeBuffer_;
 
 };
 

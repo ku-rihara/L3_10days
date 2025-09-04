@@ -25,6 +25,8 @@ void PlayerOutsideWarningPipeline::Init(DirectXCommon* dxCommon) {
 	// グラフィックスパイプラインの生成
 	CreateGraphicsPipeline();
 
+	timeBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
+	timeBuffer_.SetMappedData(0);
 }
 
 void PlayerOutsideWarningPipeline::CreateGraphicsPipeline() {
@@ -118,45 +120,6 @@ void PlayerOutsideWarningPipeline::CreateRootSignature() {
 	descriptionRootSignature.pStaticSamplers = staticSamplers_;
 	descriptionRootSignature.NumStaticSamplers = 2; // 通常サンプラーとシャドウサンプラーの2個
 
-	//// DescriptorRangeの設定
-	//D3D12_DESCRIPTOR_RANGE descriptorRange[6] = {};
-
-	//// transformations (t0)
-	//descriptorRange[0].BaseShaderRegister = 0;
-	//descriptorRange[0].NumDescriptors = 1;
-	//descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	//descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	//// 環境テクスチャ (t1)
-	//descriptorRange[1].BaseShaderRegister = 1;
-	//descriptorRange[1].NumDescriptors = 1;
-	//descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	//descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	//// ポイントライト (t2)
-	//descriptorRange[2].BaseShaderRegister = 2;
-	//descriptorRange[2].NumDescriptors = 1;
-	//descriptorRange[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	//descriptorRange[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	//// スポットライト (t3)
-	//descriptorRange[3].BaseShaderRegister = 3;
-	//descriptorRange[3].NumDescriptors = 1;
-	//descriptorRange[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	//descriptorRange[3].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	//// シャドウマップ (t4)
-	//descriptorRange[4].BaseShaderRegister = 4;
-	//descriptorRange[4].NumDescriptors = 1;
-	//descriptorRange[4].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	//descriptorRange[4].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	//// dissolve (t5)
-	//descriptorRange[5].BaseShaderRegister = 5;
-	//descriptorRange[5].NumDescriptors = 1;
-	//descriptorRange[5].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	//descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
 	// RootParameterを作成
 	D3D12_ROOT_PARAMETER rootParameters[1] = {};
 
@@ -164,19 +127,6 @@ void PlayerOutsideWarningPipeline::CreateRootSignature() {
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
-
-	//// 2: Hole
-	//rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	//rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	//rootParameters[2].Descriptor.ShaderRegister = 0;
-	//rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
-	//rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
-
-	//// 3: Time
-	//rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
-	//rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	//rootParameters[3].Descriptor.ShaderRegister = 0;
-
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -204,11 +154,16 @@ void PlayerOutsideWarningPipeline::PreDraw(ID3D12GraphicsCommandList* commandLis
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void PlayerOutsideWarningPipeline::Draw(ID3D12GraphicsCommandList* commandList, PlayerOutsideWarning* _playerOutsideWarning) {
+void PlayerOutsideWarningPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, PlayerOutsideWarning* _playerOutsideWarning) {
 	if (!_playerOutsideWarning) {
 		return;
 	}
 
+	timeBuffer_.SetMappedData(timeBuffer_.GetMappingData() + Frame::DeltaTime());
+	timeBuffer_.BindForGraphicsCommandList(_cmdList, ROOT_PARAM_TIME);
 
-	commandList;
+	/// vertexは
+	_cmdList->DrawIndexedInstanced(
+		6, 1, 0, 0, 0
+	);
 }

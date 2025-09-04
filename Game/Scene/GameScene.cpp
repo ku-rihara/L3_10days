@@ -21,6 +21,7 @@
 #include "Pipeline/BoundaryShardPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
 #include "Pipeline/MiniMapPipeline.h"
+#include "Pipeline/EffectPipelines/PlayerOutsideWarningPipeline.h"
 
 #include <imgui.h>
 
@@ -50,6 +51,9 @@ void GameScene::Init() {
 	miniMap_ = std::make_unique<MiniMap>();
 	uis_ = std::make_unique<GameUIs>();
 
+	/// Effect -----
+	outsideWarning_ = std::make_unique<PlayerOutsideWarning>();
+
 
 	//====================================初期化===================================================
 	skyDome_->Init();
@@ -68,6 +72,8 @@ void GameScene::Init() {
 	miniMap_->RegisterPlayer(player_.get());
 	uis_->Init();
 	
+	/// Effect -----
+	outsideWarning_->Init();
 
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -173,6 +179,10 @@ void GameScene::SpriteDraw() {
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
 	miniMapIconPipeline->Draw(commandList, miniMap_.get());
+
+	PlayerOutsideWarningPipeline* outsideWarning = PlayerOutsideWarningPipeline::GetInstance();
+	outsideWarning->PreDraw(commandList);
+	outsideWarning->Draw(commandList, outsideWarning_.get());
 }
 
 /// ======================================================
