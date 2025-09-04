@@ -149,6 +149,7 @@
     <ClCompile Include="Game\DebugGround\TestGround.cpp" />
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp" />
     <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
+    <ClCompile Include="Game\Pipeline\MiniMapPipeline.cpp" />
     <ClCompile Include="Game\Scene\BaseScene.cpp" />
     <ClCompile Include="Game\Scene\EditorScene.cpp" />
     <ClCompile Include="Game\Scene\Factory\SceneFactory.cpp" />
@@ -337,6 +338,7 @@
     <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\StructuredBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
+    <ClInclude Include="Game\Pipeline\MiniMapPipeline.h" />
     <ClInclude Include="Game\Scene\BaseScene.h" />
     <ClInclude Include="Game\Scene\EditorScene.h" />
     <ClInclude Include="Game\Scene\Factory\AbstractSceneFactory.h" />
@@ -537,7 +539,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{18750579-e839-444c-a284-141a94dc7efb}</ProjectGuid>
     <RootNamespace>DirectXGame</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

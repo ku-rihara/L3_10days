@@ -1,4 +1,4 @@
-#include "MiniMapIconPipeline.h"
+#include "MiniMapPipeline.h"
 
 /// std
 #include <cassert>
@@ -15,38 +15,27 @@
 
 /// game
 #include "Actor/MiniMap/MiniMap.h"
+#include "Actor/Boundary/Boundary.h"
 
 
-MiniMapIconPipeline* MiniMapIconPipeline::GetInstance() {
-	static MiniMapIconPipeline instance;
+MiniMapPipeline* MiniMapPipeline::GetInstance() {
+	static MiniMapPipeline instance;
 	return &instance;
 }
 
-void MiniMapIconPipeline::Init(DirectXCommon* _dxCommon) {
+void MiniMapPipeline::Init(DirectXCommon* _dxCommon) {
 	// 引数で受けとる
 	dxCommon_ = _dxCommon;
 	// グラフィックスパイプラインの生成
 	CreateGraphicsPipeline();
-
-	/// vbv ibv
-	vertexBuffer_.Create(4, DirectXCommon::GetInstance()->GetDxDevice());
+	
 	indexBuffer_.Create(6, DirectXCommon::GetInstance()->GetDxDevice());
-
-	vertexBuffer_.SetVertices({
-		{ { -0.5f, +0.5f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
-		{ { +0.5f, +0.5f, 0.0f, 1.0f }, { 1.0f, 0.0f } },
-		{ { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
-		{ { +0.5f, -0.5f, 0.0f, 1.0f }, { 1.0f, 1.0f } }
-		});
-
 	indexBuffer_.SetIndices({ 0, 1, 2, 1, 3, 2 });
-
-	vertexBuffer_.Map();
 	indexBuffer_.Map();
 
 }
 
-void MiniMapIconPipeline::CreateGraphicsPipeline() {
+void MiniMapPipeline::CreateGraphicsPipeline() {
 	HRESULT hr = 0;
 
 	// 通常のサンプラー
@@ -77,22 +66,15 @@ void MiniMapIconPipeline::CreateGraphicsPipeline() {
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
-	// BlendMode None
-	D3D12_RENDER_TARGET_BLEND_DESC rtBlend = {};
-	rtBlend.BlendEnable = FALSE;   // ブレンド無効
-	rtBlend.LogicOpEnable = FALSE; // 論理演算も無効
-	rtBlend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
 	D3D12_BLEND_DESC blendDescNormal = {};
-	blendDescNormal.RenderTarget[0] = rtBlend;
-	//blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
-	//blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	//blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-	//blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	//blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	//blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-	//blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	//blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
+	blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	// RasterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -110,8 +92,8 @@ void MiniMapIconPipeline::CreateGraphicsPipeline() {
 	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	// Shaderをコンパイルする
-	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/MiniMapIcon.vs.hlsl", L"vs_6_0");
-	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/MiniMapIcon.ps.hlsl", L"ps_6_0");
+	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/MiniMap.vs.hlsl", L"vs_6_0");
+	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/MiniMap.ps.hlsl", L"ps_6_0");
 
 	// PSO作成用関数
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc = {};
@@ -136,7 +118,7 @@ void MiniMapIconPipeline::CreateGraphicsPipeline() {
 	//CreatePSO(blendDescNormal, graphicsPipelineStateNone_);
 }
 
-void MiniMapIconPipeline::CreateRootSignature() {
+void MiniMapPipeline::CreateRootSignature() {
 	HRESULT hr = 0;
 	// RootSignatureを作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -144,40 +126,38 @@ void MiniMapIconPipeline::CreateRootSignature() {
 	descriptionRootSignature.pStaticSamplers = &staticSamplers_;
 	descriptionRootSignature.NumStaticSamplers = 1; // 通常サンプラーの1個
 
-	// DescriptorRangeの設定
-	D3D12_DESCRIPTOR_RANGE descriptorRange[2] = {};
+	//// DescriptorRangeの設定
+	//D3D12_DESCRIPTOR_RANGE descriptorRange[] = {};
 
-	// holes (t0)
-	descriptorRange[0].BaseShaderRegister = 1;
-	descriptorRange[0].NumDescriptors = 1;
-	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	//// holes (t0)
+	//descriptorRange[0].BaseShaderRegister = 1;
+	//descriptorRange[0].NumDescriptors = 1;
+	//descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// テクスチャ (t1)
-	descriptorRange[1].BaseShaderRegister = 0;
-	descriptorRange[1].NumDescriptors = 1;
-	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	//// テクスチャ (t1)
+	//descriptorRange[1].BaseShaderRegister = 0;
+	//descriptorRange[1].NumDescriptors = 1;
+	//descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
 	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 
-	// 0: gIcons
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderを使う
-	rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
-	rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
+	// MiniMapData
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rootParameters[0].Descriptor.ShaderRegister = 0;
 
-	// 2: Texture
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
-
-	// 1: MiniMapSize
+	// Time
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[1].Descriptor.ShaderRegister = 0;
+	rootParameters[1].Descriptor.ShaderRegister = 1;
+
+	// PlayerData
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].Descriptor.ShaderRegister = 2;
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -197,7 +177,7 @@ void MiniMapIconPipeline::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void MiniMapIconPipeline::PreDraw(ID3D12GraphicsCommandList* _cmdList) {
+void MiniMapPipeline::PreDraw(ID3D12GraphicsCommandList* _cmdList) {
 	// パイプラインステートの設定
 	_cmdList->SetPipelineState(graphicsPipelineStateNone_.Get());
 	// RootSignatureを設定
@@ -206,41 +186,22 @@ void MiniMapIconPipeline::PreDraw(ID3D12GraphicsCommandList* _cmdList) {
 	_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _miniMap) {
+void MiniMapPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _miniMap) {
 	if (!_miniMap) {
 		return;
 	}
 
-
-
-	vertexBuffer_.BindForCommandList(_cmdList);
 	indexBuffer_.BindForCommandList(_cmdList);
 
+	/// MiniMapMatrix
+	_miniMap->GetMiniMapMatrixBufferRef().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_MINI_MAP_SIZE);
 
-	const size_t kIconCount = 2;
-	StructuredBuffer<IconBufferData>* iconBuffer[kIconCount] = {
-		&_miniMap->GetFriendIconBufferRef(),
-		&_miniMap->GetEnemyIconBufferRef()
-	};
+	/// Time
+	Boundary* boundary = Boundary::GetInstance();
+	boundary->GetTimeBufferRef().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_TIME);
 
-	UINT instanceCounts[kIconCount] = {
-		_miniMap->GetFriendIconCount(),
-		_miniMap->GetEnemyIconCount()
-	};
+	/// PlayerData
+	_miniMap->GetPlayerBufferRef().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_PLAYER_DATA);
 
-	/// MiniMapSize Bind
-	_miniMap->GetMiniMapDataBufferRef().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_MINI_MAP_SIZE);
-
-	/// Texture Bind
-	TextureManager* textureManager = TextureManager::GetInstance();
-	uint32_t textureIndex = textureManager->LoadTexture("./resources/Texture/MiniMap/Icon.png");
-	D3D12_GPU_DESCRIPTOR_HANDLE	gpuHandle = textureManager->GetTextureHandle(textureIndex);
-	_cmdList->SetGraphicsRootDescriptorTable(ROOT_PARAM_TEXTURE, gpuHandle);
-
-	UINT indexCount = static_cast<UINT>(indexBuffer_.GetIndices().size());
-	for (size_t i = 0; i < kIconCount; i++) {
-		iconBuffer[i]->BindToCommandList(ROOT_PARAM_ICON, _cmdList);
-
-		_cmdList->DrawIndexedInstanced(indexCount, instanceCounts[i], 0, 0, 0);
-	}
+	_cmdList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

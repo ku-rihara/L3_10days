@@ -1,11 +1,11 @@
 #include "MiniMapIcon.hlsli"
 
-struct MiniMapSize {
-	float2 min;
-	float2 max;
+struct MiniMapData{
+	float2 position;
+	float radius;
 };
 
-ConstantBuffer<MiniMapSize> gMiniMapSize : register(b0);
+ConstantBuffer<MiniMapData> gMiniMapSize : register(b0);
 Texture2D<float4> gTexture : register(t1);
 SamplerState gSampler : register(s0);
 
@@ -13,20 +13,15 @@ SamplerState gSampler : register(s0);
 PSOutput main(VSOutput input) {
 	PSOutput output;
 	
-	float2 uv = (input.texcoord - float2(0.5, 0.5)) * 2.0;
-	uv.y *= -1.0;
+	float4 baseColor = float4(1, 0, 0, 1);
 	
-	float2 size = gMiniMapSize.max - gMiniMapSize.min;
-	float aspect = size.x / size.y;
-	uv.x *= aspect;
-	
-	float dist = length(uv);
-	if (dist > 1.0) {
+	float distance = length(input.screenPosition.xy - gMiniMapSize.position);
+	if(distance > gMiniMapSize.radius) {
 		discard;
 	}
 
 	float4 texColor = gTexture.Sample(gSampler, input.texcoord);
-	output.color = texColor;
+	output.color = texColor * baseColor;
 	if(output.color.a < 0.1) {
 		discard;
 	}
