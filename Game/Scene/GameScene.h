@@ -13,6 +13,7 @@
 #include "Actor/MiniMap/MiniMap.h"
 #include "Actor/SkyDome/SkyDome.h"
 #include "Actor/Station/UnitDirector/QuotaUnitDirector.h"
+#include "Actor/UI/GameUIs.h"
 
 #include<map>
 
@@ -31,6 +32,7 @@ private:
 
 	/// ----- UI ----- ///
 	std::unique_ptr<MiniMap> miniMap_ = nullptr;
+	std::unique_ptr<GameUIs> uis_ = nullptr;
 
 
 	std::map<FactionType,std::unique_ptr<BaseStation>> stations_;

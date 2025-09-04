@@ -669,6 +669,9 @@
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerSpeedDown.cpp" />
     <ClCompile Include="Game\Pipeline\MiniMapPipeline.cpp" />
     <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
+    <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.cpp" />
+    <ClCompile Include="Game\Actor\UI\GameUIs.cpp" />
+    <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerAltUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1154,6 +1157,9 @@
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerSpeedDown.h" />
     <ClInclude Include="Game\Pipeline\MiniMapPipeline.h" />
     <ClInclude Include="Game\Actor\SkyDome\SkyDome.h" />
+    <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.h" />
+    <ClInclude Include="Game\Actor\UI\GameUIs.h" />
+    <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerAltUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

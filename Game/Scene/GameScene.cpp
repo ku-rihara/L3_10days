@@ -48,6 +48,7 @@ void GameScene::Init() {
 
 	/// UI -----
 	miniMap_ = std::make_unique<MiniMap>();
+	uis_ = std::make_unique<GameUIs>();
 
 
 	//====================================初期化===================================================
@@ -65,6 +66,8 @@ void GameScene::Init() {
 	/// UI -----
 	miniMap_->Init(stations_[FactionType::Ally].get(), stations_[FactionType::Enemy].get());
 	miniMap_->RegisterPlayer(player_.get());
+	uis_->Init();
+	
 
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -92,6 +95,7 @@ void GameScene::Update() {
 	skyDome_->Update();
 
 	miniMap_->Update();
+	uis_->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
@@ -152,6 +156,9 @@ void GameScene::SkyBoxDraw() {
 /// スプライト描画
 /// ======================================================
 void GameScene::SpriteDraw() {
+	uis_->Draw();
+
+	/// ミニマップ描画
 	miniMap_->DrawMiniMap();
 
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();

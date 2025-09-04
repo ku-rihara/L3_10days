@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Actor\UI\GameUIs.cpp" />
     <ClCompile Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBoost.cpp" />
@@ -179,8 +180,11 @@
     <ClCompile Include="Game\Actor\MiniMap\MiniMap.cpp" />
     <ClCompile Include="Game\AI\Station\StationAI.cpp" />
     <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
+    <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.cpp" />
+    <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerAltUI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Actor\UI\GameUIs.h" />
     <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
     <ClInclude Include="Game\Actor\Boundary\RectXZ.h" />
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
@@ -370,6 +374,8 @@
     <ClInclude Include="Game\Actor\MiniMap\MiniMap.h" />
     <ClInclude Include="Game\AI\Station\StationAI.h" />
     <ClInclude Include="Game\Actor\SkyDome\SkyDome.h" />
+    <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.h" />
+    <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerAltUI.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
