@@ -25,7 +25,6 @@ void Player::Init() {
     baseTransform_.rotateOder_ = RotateOder::Quaternion;
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
-
     velocity_        = Vector3::ZeroVector();
     angularVelocity_ = Vector3::ZeroVector();
     targetRotation_  = Quaternion::Identity();
@@ -102,33 +101,21 @@ void Player::HandleInput() {
     // ヨー
     angleInput_.y = stickR.x * (yawSpeed_ * deltaTime);
 
-    // ロール
-    angleInput_.z = -stickL.x * (rollSpeed_ * deltaTime);
+   // ロール入力を角速度ではなく「目標角度」に反映
+    float rollInput = -stickL.x; // -1.0f ～ 1.0f
 
-    // 現在のオイラー角を取得<
-    Vector3 currentEuler = obj3d_->transform_.quaternion_.ToEuler();
-    float currentRoll    = currentEuler.z;
+    // 目標ロール角を更新
+    targetRoll_ += rollInput * rollSpeed_ * deltaTime;
 
-    // 最大ロール角
+    // 制限
     const float maxRoll = ToRadian(rollRotateLimit_);
-
-    // 入力値に基づくロール回転
-    float rollInput = -stickL.x * (rollSpeed_ * deltaTime);
-
-    // ロール制限処理
-    if ((currentRoll > maxRoll && rollInput > 0.0f) || (currentRoll < -maxRoll && rollInput < 0.0f)) {
-
-        rollInput = maxRoll;
-    }
-
-    // 最終的なロール角速度入力
-    angleInput_.z = rollInput;
+    targetRoll_         = std::clamp(targetRoll_, -maxRoll, maxRoll);
 }
 
 void Player::RotateUpdate() {
     float deltaTime = Frame::DeltaTime();
 
-    // ---- 入力から角速度計算 ----//
+    // ---- ピッチ・ヨーは今のまま ---- //
     Vector3 targetAngularVelocity = angleInput_;
     const float damping           = 0.95f;
     if (angleInput_.Length() < 0.001f) {
@@ -136,7 +123,6 @@ void Player::RotateUpdate() {
     }
     angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);
 
-    // ---- ピッチ・ヨーの回転 ----//
     Vector3 localRight = GetRightVector();
     Vector3 localUp    = GetUpVector();
 
@@ -147,29 +133,24 @@ void Player::RotateUpdate() {
     targetRotation_          = deltaRotation * baseTransform_.quaternion_;
     targetRotation_          = targetRotation_.Normalize();
 
-    // baseTransform_ はピッチ・ヨーだけ保持
     baseTransform_.quaternion_ = Quaternion::Slerp(
         baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-     // ---- 逆さ時の補正処理 ----//
+    // ---- ロールをスムーズに追従 ---- //
+    const float rollLerpSpeed = 5.0f; // ← ここ調整で滑らかさ変わる
+    currentRoll_              = Lerp(currentRoll_, targetRoll_, rollLerpSpeed * deltaTime);
 
-
-    // ---- バンクターン処理 ---- //
-    Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
-    float currentRoll    = angularVelocity_.z * deltaTime; 
-
-    float rollToYawRate = 0.7f;
-    float yawFromRoll   = -sin(currentRoll) * rollToYawRate * deltaTime;
-
+    // バンクターン処理
+    float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
     if (fabs(yawFromRoll) > 0.0001f) {
         Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), yawFromRoll);
         baseTransform_.quaternion_     = yawFromRollRotation * baseTransform_.quaternion_;
         baseTransform_.quaternion_     = baseTransform_.quaternion_.Normalize();
     }
 
-    // ---- 見た目のロールを obj3d_->transform に適用 ----
-    Quaternion visualRoll          = Quaternion::MakeRotateAxisAngle(Vector3::ToForward(), currentRoll);
+    // ---- obj3d は見た目のロールだけ ----
+    Quaternion visualRoll          = Quaternion::MakeRotateAxisAngle(Vector3::ToForward(), currentRoll_);
     obj3d_->transform_.quaternion_ = visualRoll;
     obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
 
@@ -178,6 +159,7 @@ void Player::RotateUpdate() {
     velocity_               = forwardVelocity;
     baseTransform_.translation_ += velocity_;
 }
+
 
 void Player::SpeedChange() {
 }
@@ -211,8 +193,8 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "pitchBackTime", &pitchBackTime_);
     globalParameter_->Bind(groupName_, "rollBackTime", &rollBackTime_);
     globalParameter_->Bind(groupName_, "pitchReturnThreshold", &pitchReturnThreshold_);
-    globalParameter_->Bind(groupName_, "sideFactor", &sideFactor_);
-    globalParameter_->Bind(groupName_, "downFactor", &downFactor_);
+    globalParameter_->Bind(groupName_, "reverseDecisionValue", &reverseDecisionValue_);
+    globalParameter_->Bind(groupName_, "bankRate", &bankRate_);
 }
 
 ///=========================================================
@@ -238,8 +220,8 @@ void Player::AdjustParam() {
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
-        ImGui::DragFloat("sideFactor", &sideFactor_, 0.01f);
-        ImGui::DragFloat("downFactor", &downFactor_, 0.01f);
+        ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_,0.01f,-1.0f,0.0f);
+        ImGui::DragFloat("bankRate", &bankRate_,0.01f);
 
         // デバッグ
         ImGui::Separator();
@@ -248,10 +230,6 @@ void Player::AdjustParam() {
             baseTransform_.translation_.x,
             baseTransform_.translation_.y,
             baseTransform_.translation_.z);
-        ImGui::Text("Rotation: (%.2f, %.2f, %.2f)",
-            baseTransform_.rotation_.x * 180.0f / std::numbers::pi_v<float>,
-            baseTransform_.rotation_.y * 180.0f / std::numbers::pi_v<float>,
-            baseTransform_.rotation_.z * 180.0f / std::numbers::pi_v<float>);
         ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
 
         // 機体姿勢のデバッグ
@@ -259,9 +237,7 @@ void Player::AdjustParam() {
         ImGui::Text("Aircraft Attitude");
         Vector3 euler = baseTransform_.quaternion_.ToEuler();
         ImGui::Text("Euler (deg): P=%.1f, Y=%.1f, R=%.1f",
-            ToDegree(euler.x),
-            ToDegree(euler.y),
-            ToDegree(euler.z));
+            ToDegree(euler.x),ToDegree(euler.y),ToDegree(euler.z));
 
         // 機体の上方向ベクトル
         Matrix4x4 rotMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
@@ -273,7 +249,7 @@ void Player::AdjustParam() {
         ImGui::Text("Up Dot Product: %.3f", upDot);
 
         // 逆さま判定の表示
-        bool isUpsideDown = upDot < -0.3f;
+        bool isUpsideDown = upDot < reverseDecisionValue_;
         if (isUpsideDown) {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "STATUS: UPSIDE DOWN!");
         } else {

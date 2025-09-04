@@ -40,16 +40,12 @@ public:
     void UpdateSpeedBehavior();
 
 private:
-    // viewProjection
+    // other class
     const ViewProjection* viewProjection_ = nullptr;
     std::unique_ptr<PlayerBulletShooter> bulletShooter_;
     std::unique_ptr<BasePlayerSpeedBehavior> speedBehavior_;
 
-    // Behavior instances
-    std::unique_ptr<PlayerBoost> boostBehavior_;
-    std::unique_ptr<PlayerSpeedDown> speedDownBehavior_;
-
-    // Button state tracking
+    // ブースト
     bool isLBPressed_;
     bool wasLBPressed_;
 
@@ -85,11 +81,13 @@ private:
 
     Easing<float> speedChangeEase_;
 
-    float sideFactor_;
-    float downFactor_;
+    bool isAutoRecovering_ = false;
 
-     bool isAutoRecovering_ = false;
+    float bankRate_;
+    float reverseDecisionValue_;
 
+     float targetRoll_  = 0.0f; // 目標のロール角
+    float currentRoll_ = 0.0f; // 実際のロール角
 public:
     // ゲッター
     const Vector3& GetPosition() const { return baseTransform_.translation_; }
@@ -101,5 +99,4 @@ public:
     const float& GetForwardSpeed() const { return forwardSpeed_; }
 
     void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
-   
 };

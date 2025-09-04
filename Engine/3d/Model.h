@@ -85,7 +85,7 @@ private:
     TextureManager* textureManager_ = nullptr;
     DirectXCommon* dxCommon_        = nullptr;
 
-    uint32_t textureHandle_;
+    uint32_t textureIndex_;
     ModelData modelData_;
 
     /// GPUHandle,BufferView
@@ -106,6 +106,7 @@ public:
     ///============================================================
     /// getter method
     ///============================================================
+    const uint32_t GetTextureIndex() const { return textureIndex_; }
     const ModelData& GetModelData() { return modelData_; }
     bool GetIsFileGltf() const { return isFileGltf_; }
 };
