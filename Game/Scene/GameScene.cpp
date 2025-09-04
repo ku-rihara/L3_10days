@@ -33,7 +33,7 @@ void GameScene::Init() {
 
 	// 生成
 	//====================================生成===================================================
-	skuBox_ = std::make_unique<SkyBox>();
+	skyDome_ = std::make_unique<SkyDome>();
 	player_ = std::make_unique<Player>();
 	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
@@ -48,10 +48,11 @@ void GameScene::Init() {
 
 	/// UI -----
 	miniMap_ = std::make_unique<MiniMap>();
+	uis_ = std::make_unique<GameUIs>();
 
 
 	//====================================初期化===================================================
-	skuBox_->Init();
+	skyDome_->Init();
 	player_->Init();
 	Installer::InstallStations(stations_[FactionType::Ally].get(),
 							   stations_[FactionType::Enemy].get(),
@@ -65,6 +66,8 @@ void GameScene::Init() {
 	/// UI -----
 	miniMap_->Init(stations_[FactionType::Ally].get(), stations_[FactionType::Enemy].get());
 	miniMap_->RegisterPlayer(player_.get());
+	uis_->Init();
+	
 
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -73,6 +76,7 @@ void GameScene::Init() {
 	//====================================Class Set===================================================
 	player_->SetViewProjection(&viewProjection_);
 	gameCamera_->SetTarget(&player_->GetTransform());
+    gameCamera_->SetPlayer(player_.get());
 
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -89,9 +93,10 @@ void GameScene::Update() {
 	player_->Update();
 	gameCamera_->Update();
 	for (auto& kv : stations_) { kv.second->Update(); }
-	skuBox_->Update();
+	skyDome_->Update();
 
 	miniMap_->Update();
+	uis_->Update(player_.get());
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
@@ -146,13 +151,15 @@ void GameScene::ModelDraw() {
 /// SkyBox描画
 /// ===================================================
 void GameScene::SkyBoxDraw() {
-	skuBox_->Draw(viewProjection_);
 }
 
 /// ======================================================
 /// スプライト描画
 /// ======================================================
 void GameScene::SpriteDraw() {
+	uis_->Draw();
+
+	/// ミニマップ描画
 	miniMap_->DrawMiniMap();
 
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
@@ -160,16 +167,13 @@ void GameScene::SpriteDraw() {
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
 	miniMapIconPipeline->Draw(commandList, miniMap_.get());
-
-
-
 }
 
 /// ======================================================
 /// 影描画
 /// ======================================================
 void GameScene::DrawShadow() {
-	Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
+	//Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
 }
 
 void GameScene::Debug() {

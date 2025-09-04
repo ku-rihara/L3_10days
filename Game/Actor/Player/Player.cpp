@@ -3,8 +3,8 @@
 #include "input/Input.h"
 #include "MathFunction.h"
 // behavior
-#include "Behavior/PlayerBoost.h"
-#include "Behavior/PlayerSpeedDown.h"
+#include "Behavior/PlayerAccelerator.h"
+#include "Behavior/PlayerAcceleUnattended.h"
 #include <imgui.h>
 #include <numbers>
 
@@ -26,19 +26,22 @@ void Player::Init() {
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
 
-    velocity_        = Vector3::ZeroVector();
-    angularVelocity_ = Vector3::ZeroVector();
-    targetRotation_  = Quaternion::Identity();
-
+    // 弾初期化
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
 
-    ChangeSpeedBehavior(std::make_unique<PlayerSpeedDown>(this));
+    // Speed Init
+    SpeedInit();
+
+    ChangeSpeedBehavior(std::make_unique<PlayerAccelUnattended>(this));
 }
 
 void Player::Update() {
     // 入力処理
     HandleInput();
+
+    UpdateSpeedBehavior();
+    speedBehavior_->Update();
 
     // 物理計算
     RotateUpdate();
@@ -56,15 +59,14 @@ void Player::HandleInput() {
     Input* input = Input::GetInstance();
 
     // 入力値をリセット
-    Vector2 stickL = Vector2::ZeroVector();
-    Vector2 stickR = Vector2::ZeroVector();
+    Vector2 stickL      = Vector2::ZeroVector();
+    float pawInputValue = 0.0f;
 
     // ゲームパッドの入力
     stickL = Input::GetPadStick(0, 0);
-    stickR = Input::GetPadStick(0, 1);
-
+   
     // キーボード入力
-    if (stickL.Length() < 0.1f && stickR.Length() < 0.1f) {
+    if (stickL.Length() < 0.1f) {
 
         if (input->PushKey(DIK_W)) {
             stickL.y = 1.0f;
@@ -88,47 +90,40 @@ void Player::HandleInput() {
     }
 
     if (Input::IsPressPad(0, XINPUT_GAMEPAD_LEFT_SHOULDER)) {
-        stickR.x = -1.0f;
+        pawInputValue = -1.0f;
     } else if (Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER)) {
-        stickR.x = 1.0f;
+        pawInputValue = 1.0f;
     }
 
     // deltaTime
     float deltaTime = Frame::DeltaTime();
 
     // ピッチ
-    angleInput_.x = -stickL.y * (pitchSpeed_ * deltaTime);
+    angleInput_.x = -stickL.y * (speedParam_.pitchSpeed * deltaTime);
 
     // ヨー
-    angleInput_.y = stickR.x * (yawSpeed_ * deltaTime);
+    angleInput_.y = pawInputValue * (speedParam_.yawSpeed * deltaTime);
 
     // ロール
-    angleInput_.z = -stickL.x * (rollSpeed_ * deltaTime);
+    float rollInput = -stickL.x;
 
-    // 現在のオイラー角を取得<
-    Vector3 currentEuler = obj3d_->transform_.quaternion_.ToEuler();
-    float currentRoll    = currentEuler.z;
+    // 目標ロール角を更新
+    targetRoll_ += rollInput * speedParam_.rollSpeed * deltaTime;
 
-    // 最大ロール角
-    const float maxRoll = ToRadian(rollRotateLimit_);
+    // 制限
+    if (fabs(rollInput) < 0.001f) {
+        currentMaxRoll_ = 0.0f;
+    } else {
 
-    // 入力値に基づくロール回転
-    float rollInput = -stickL.x * (rollSpeed_ * deltaTime);
-
-    // ロール制限処理
-    if ((currentRoll > maxRoll && rollInput > 0.0f) || (currentRoll < -maxRoll && rollInput < 0.0f)) {
-
-        rollInput = maxRoll;
+        currentMaxRoll_ = ToRadian(rollRotateLimit_);
     }
-
-    // 最終的なロール角速度入力
-    angleInput_.z = rollInput;
+    targetRoll_ = std::clamp(targetRoll_, -currentMaxRoll_, currentMaxRoll_);
 }
 
 void Player::RotateUpdate() {
     float deltaTime = Frame::DeltaTime();
 
-    // ---- 入力から角速度計算 ----//
+    // ---- ピッチ・ヨーは今のまま ---- //
     Vector3 targetAngularVelocity = angleInput_;
     const float damping           = 0.95f;
     if (angleInput_.Length() < 0.001f) {
@@ -136,7 +131,6 @@ void Player::RotateUpdate() {
     }
     angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);
 
-    // ---- ピッチ・ヨーの回転 ----//
     Vector3 localRight = GetRightVector();
     Vector3 localUp    = GetUpVector();
 
@@ -147,40 +141,79 @@ void Player::RotateUpdate() {
     targetRotation_          = deltaRotation * baseTransform_.quaternion_;
     targetRotation_          = targetRotation_.Normalize();
 
-    // baseTransform_ はピッチ・ヨーだけ保持
+    // 補正処理
+    CorrectionHorizon();
+
     baseTransform_.quaternion_ = Quaternion::Slerp(
         baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-     // ---- 逆さ時の補正処理 ----//
-
-
-    // ---- バンクターン処理 ---- //
-    Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
-    float currentRoll    = angularVelocity_.z * deltaTime; 
-
-    float rollToYawRate = 0.7f;
-    float yawFromRoll   = -sin(currentRoll) * rollToYawRate * deltaTime;
-
+    // ---- ロールをスムーズに追従 ---- //
+    currentRoll_ = Lerp(currentRoll_, targetRoll_, speedParam_.rollSpeed * deltaTime);
+    // バンクターン処理
+    float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
     if (fabs(yawFromRoll) > 0.0001f) {
         Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), yawFromRoll);
         baseTransform_.quaternion_     = yawFromRollRotation * baseTransform_.quaternion_;
         baseTransform_.quaternion_     = baseTransform_.quaternion_.Normalize();
     }
 
-    // ---- 見た目のロールを obj3d_->transform に適用 ----
-    Quaternion visualRoll          = Quaternion::MakeRotateAxisAngle(Vector3::ToForward(), currentRoll);
+    // ---- obj3dのTransformのみロール適応 ----
+    Quaternion visualRoll          = Quaternion::MakeRotateAxisAngle(Vector3::ToForward(), currentRoll_);
     obj3d_->transform_.quaternion_ = visualRoll;
     obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
 
     // ---- 移動 ---- //
-    Vector3 forwardVelocity = GetForwardVector() * forwardSpeed_ * deltaTime;
+    Vector3 forwardVelocity = GetForwardVector() * speedParam_.currentForwardSpeed * deltaTime;
     velocity_               = forwardVelocity;
     baseTransform_.translation_ += velocity_;
 }
 
-void Player::SpeedChange() {
+void Player::CorrectionHorizon() {
+    float deltaTime = Frame::DeltaTime();
+
+    // 機体の上方向ベクトルを取得
+    Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
+    Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
+
+    // 機体の上方向とワールドの上方向の内積を計算
+    Vector3 worldUp = Vector3::ToUp();
+    float upDot     = Vector3::Dot(targetUpVector, worldUp);
+
+    // 機体が逆さまかどうかを判定
+    bool isUpsideDown = upDot < reverseDecisionValue_;
+
+    // 補正開始フラグ
+    if (!isAutoRecovering_ && isUpsideDown && angleInput_.Length() < 0.001f) {
+        isAutoRecovering_ = true;
+    }
+
+    // 補正処理
+    if (!isAutoRecovering_) {
+        return;
+    }
+
+    Vector3 currentEuler = targetRotation_.ToEuler();
+    float currentYaw     = currentEuler.y;
+
+    // 水平の状態
+    Quaternion horizontalRotation = Quaternion::EulerToQuaternion(
+        Vector3(0.0f, currentYaw, 0.0f));
+
+    // 補正中の値
+    Quaternion adjustedCurrent = Quaternion::EulerToQuaternion(
+        Vector3(currentEuler.x, currentEuler.y, 0.0f));
+
+    // 補正する
+    targetRotation_ = Quaternion::Slerp(
+        adjustedCurrent, horizontalRotation, 3.5f * deltaTime);
+
+    // --- 補正終了判定 ---
+    if (fabs(currentEuler.x) < 0.01f) {
+        isAutoRecovering_ = false;
+    }
 }
+
 Vector3 Player::GetForwardVector() const {
     Matrix4x4 rotationMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
     return TransformNormal(Vector3::ToForward(), rotationMatrix).Normalize();
@@ -201,18 +234,19 @@ Vector3 Player::GetUpVector() const {
 ///========================================================================
 void Player::BindParams() {
     globalParameter_->Bind(groupName_, "hp", &hp_);
-    globalParameter_->Bind(groupName_, "speed", &speed_);
-    globalParameter_->Bind(groupName_, "forwardSpeed", &forwardSpeed_);
-    globalParameter_->Bind(groupName_, "pitchSpeed", &pitchSpeed_);
-    globalParameter_->Bind(groupName_, "yawSpeed", &yawSpeed_);
-    globalParameter_->Bind(groupName_, "rollSpeed", &rollSpeed_);
+    globalParameter_->Bind(groupName_, "forwardSpeed", &speedParam_.startForwardSpeed);
+    globalParameter_->Bind(groupName_, "pitchSpeed", &speedParam_.pitchSpeed);
+    globalParameter_->Bind(groupName_, "yawSpeed", &speedParam_.yawSpeed);
+    globalParameter_->Bind(groupName_, "rollSpeed", &speedParam_.rollSpeed);
+    globalParameter_->Bind(groupName_, "minForwardSpeed", &speedParam_.minForwardSpeed);
+    globalParameter_->Bind(groupName_, "maxForwardSpeed", &speedParam_.maxForwardSpeed);
     globalParameter_->Bind(groupName_, "rotationSmoothness", &rotationSmoothness_);
     globalParameter_->Bind(groupName_, "rollRotateLimit", &rollRotateLimit_);
     globalParameter_->Bind(groupName_, "pitchBackTime", &pitchBackTime_);
     globalParameter_->Bind(groupName_, "rollBackTime", &rollBackTime_);
     globalParameter_->Bind(groupName_, "pitchReturnThreshold", &pitchReturnThreshold_);
-    globalParameter_->Bind(groupName_, "sideFactor", &sideFactor_);
-    globalParameter_->Bind(groupName_, "downFactor", &downFactor_);
+    globalParameter_->Bind(groupName_, "reverseDecisionValue", &reverseDecisionValue_);
+    globalParameter_->Bind(groupName_, "bankRate", &bankRate_);
 }
 
 ///=========================================================
@@ -224,22 +258,23 @@ void Player::AdjustParam() {
         ImGui::PushID(groupName_.c_str());
 
         ImGui::DragInt("Hp", &hp_);
-        ImGui::DragFloat("speed", &speed_, 0.01f);
 
         // EditParameter
         ImGui::Separator();
         ImGui::Text("Fighter Controls");
-        ImGui::DragFloat("Forward Speed", &forwardSpeed_, 0.01f);
-        ImGui::DragFloat("Pitch Speed", &pitchSpeed_, 0.01f);
-        ImGui::DragFloat("Yaw Speed", &yawSpeed_, 0.01f);
-        ImGui::DragFloat("Roll Speed", &rollSpeed_, 0.01f);
+        ImGui::DragFloat("StartForward Speed", &speedParam_.startForwardSpeed, 0.01f);
+        ImGui::DragFloat("minForward Speed", &speedParam_.minForwardSpeed, 0.01f);
+        ImGui::DragFloat("maxForward Speed", &speedParam_.maxForwardSpeed, 0.01f);
+        ImGui::DragFloat("Pitch Speed", &speedParam_.pitchSpeed, 0.01f);
+        ImGui::DragFloat("Yaw Speed", &speedParam_.yawSpeed, 0.01f);
+        ImGui::DragFloat("Roll Speed", &speedParam_.rollSpeed, 0.01f);
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
-        ImGui::DragFloat("sideFactor", &sideFactor_, 0.01f);
-        ImGui::DragFloat("downFactor", &downFactor_, 0.01f);
+        ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_, 0.01f, -1.0f, 0.0f);
+        ImGui::DragFloat("bankRate", &bankRate_, 0.01f);
 
         // デバッグ
         ImGui::Separator();
@@ -248,10 +283,6 @@ void Player::AdjustParam() {
             baseTransform_.translation_.x,
             baseTransform_.translation_.y,
             baseTransform_.translation_.z);
-        ImGui::Text("Rotation: (%.2f, %.2f, %.2f)",
-            baseTransform_.rotation_.x * 180.0f / std::numbers::pi_v<float>,
-            baseTransform_.rotation_.y * 180.0f / std::numbers::pi_v<float>,
-            baseTransform_.rotation_.z * 180.0f / std::numbers::pi_v<float>);
         ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
 
         // 機体姿勢のデバッグ
@@ -259,9 +290,7 @@ void Player::AdjustParam() {
         ImGui::Text("Aircraft Attitude");
         Vector3 euler = baseTransform_.quaternion_.ToEuler();
         ImGui::Text("Euler (deg): P=%.1f, Y=%.1f, R=%.1f",
-            ToDegree(euler.x),
-            ToDegree(euler.y),
-            ToDegree(euler.z));
+            ToDegree(euler.x), ToDegree(euler.y), ToDegree(euler.z));
 
         // 機体の上方向ベクトル
         Matrix4x4 rotMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
@@ -273,12 +302,13 @@ void Player::AdjustParam() {
         ImGui::Text("Up Dot Product: %.3f", upDot);
 
         // 逆さま判定の表示
-        bool isUpsideDown = upDot < -0.3f;
+        bool isUpsideDown = upDot < reverseDecisionValue_;
         if (isUpsideDown) {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "STATUS: UPSIDE DOWN!");
         } else {
             ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "STATUS: Normal");
         }
+        ImGui::Text("currentSpeed:%.3f", speedParam_.currentForwardSpeed);
 
         // セーブ・ロード
         ImGui::Separator();
@@ -293,32 +323,27 @@ void Player::AdjustParam() {
 #endif // _DEBUG
 }
 
-///==========================================================
-/// 移動
-///==========================================================
-void Player::DirectionToCamera() {
-}
-
 void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior) {
+    if (speedBehavior_) {
+
+        behavior->TransferStateFrom(speedBehavior_.get());
+    }
     speedBehavior_ = std::move(behavior);
 }
-
 void Player::UpdateSpeedBehavior() {
 
-    // LBボタンの状態を取得
-    isLBPressed_ = Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER);
+    auto newBehavior = speedBehavior_->CheckForBehaviorChange();
 
-    // ボタンが押された瞬間の処理
-    if (isLBPressed_ && !wasLBPressed_) {
-        // BoostBehaviorに切り替え
-        ChangeSpeedBehavior(std::make_unique<PlayerBoost>(this));
-    }
-    // ボタンが離された瞬間の処理
-    else if (!isLBPressed_ && wasLBPressed_) {
-        // SpeedDownBehaviorに切り替え
-        ChangeSpeedBehavior(std::make_unique<PlayerSpeedDown>(this));
-    }
+    if (newBehavior) {
 
-    // 前フレームのボタン状態を保存
-    wasLBPressed_ = isLBPressed_;
+        ChangeSpeedBehavior(std::move(newBehavior));
+    }
+}
+
+void Player::SpeedInit() {
+    speedParam_.currentForwardSpeed = speedParam_.startForwardSpeed;
+}
+
+void Player::SpeedUpdate() {
+    speedParam_.currentForwardSpeed = speedBehavior_->GetCurrentSpeed();
 }

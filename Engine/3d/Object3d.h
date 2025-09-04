@@ -21,7 +21,7 @@ public:
     void DebugImgui() override;
     void ShadowDraw(const ViewProjection& viewProjection);
 
-private:
+public:
     void UpdateWVPData(const ViewProjection& viewProjection) override;
     void CreateShadowMap() override;
     void CreateWVPResource() override;

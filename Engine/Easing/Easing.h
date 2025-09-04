@@ -83,6 +83,8 @@ private:
     T baseValue_;
     T* currentValue_;
 
+    bool isNoEnd_;
+
     // タイム
     float maxTime_     = 0.0f;
     float currentTime_ = 0.0f;
@@ -136,7 +138,9 @@ public:
     /// Setter methods
     /// -------------------------------------------------------------------------
     void SetStartValue(const T& value) { startValue_ = value; }
+    void SetIsNoEnd(const bool& is) { isNoEnd_ = is; }
     void SetEndValue(const T& value) { endValue_ = value; }
+    void SetCurrentEaseTime(const float& time) { currentTime_ = time; }
     void SetCurrentValue(const T& value);
     void SetBaseValue(const T& value) { baseValue_ = value; }
     void SetType(const EasingType& type) { type_ = type; }

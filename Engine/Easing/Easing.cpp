@@ -475,9 +475,9 @@ void Easing<T>::CalculateValue() {
 }
 template <typename T>
 void Easing<T>::Easing::FinishBehavior() {
-    currentTime_ = maxTime_;
-    isFinished_  = true;
 
+     currentTime_ = maxTime_;
+    
     switch (finishValueType_) {
     case EasingFinishValueType::Start:
         *currentValue_ = startValue_ + baseValue_;
@@ -487,6 +487,10 @@ void Easing<T>::Easing::FinishBehavior() {
         break;
     default:
         break;
+    }
+
+    if (!isNoEnd_) {
+        isFinished_  = true;
     }
 }
 template <typename T>

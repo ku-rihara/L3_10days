@@ -5,7 +5,17 @@
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <memory>
 
+class Player;
 class GameCamera {
+    struct OffsetParam {
+        Vector3 shakeOffsetPos;
+        Vector3 cameraOffset;
+        Vector3 cameraXYOffset;
+        Vector3 rotationOffset;
+        float cameraZOffsetMin;
+        float cameraZOffsetMax;
+        float offsetInvRange;
+    };
 
 public:
     GameCamera()  = default;
@@ -17,11 +27,10 @@ public:
     void Update();
     void Reset();
     void GetIsCameraMove();
-
     void Debug();
 
-    void RotateAdapt();
-    void TranslateAdapt();
+    void OffsetInvRangeCalc();
+    void CameraOffsetCalc();
 
     Vector3 OffsetCalc(const Vector3& offset) const;
     Vector3 GetWorldPos() const;
@@ -44,6 +53,8 @@ private:
     const std::string groupName_ = "GameCamera";
 
     ViewProjection viewProjection_;
+    Player* pPlayer_;
+    OffsetParam offsetParam_;
 
     /// 演出管理クラス
     std::unique_ptr<CameraRendition> rendition_;
@@ -53,12 +64,8 @@ private:
     Vector3 interTarget_ = {};
     float destinationAngleY_;
     int viewMoveTime_;
-
-    Vector3 shakeOffsetPos_;
+   
     float rotate_;
-
-    Vector3 cameraOffset_;
-    Vector3 rotationOffset_;
     float smoothness_;
   
 public:
@@ -73,9 +80,8 @@ public:
     /// setter
     /// ===================================================
     void SetTarget(const WorldTransform* target);
+    void SetPlayer(Player* player);
     void SetRotate(const float& rotate) { rotate_ = rotate; }
-    void SetShakePos(const Vector3& shake) { shakeOffsetPos_ = shake; }
-    void SetShakePosY(const float& shake) { shakeOffsetPos_.y = shake; }
     void SetDestinationAngleY_(float angle) { destinationAngleY_ = angle; }
     void SetViewProjectionPos(Vector3 pos) { viewProjection_.translation_ = pos; }
 };

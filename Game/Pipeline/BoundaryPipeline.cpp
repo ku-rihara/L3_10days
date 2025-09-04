@@ -78,7 +78,7 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
 	blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 

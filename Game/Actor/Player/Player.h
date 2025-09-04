@@ -1,8 +1,6 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
 #include "Behavior/BasePlayerSpeedBehavior.h"
-#include "Behavior/PlayerBoost.h"
-#include "Behavior/PlayerSpeedDown.h"
 #include "Bullet/PlayerBulletShooter.h"
 #include "Easing/Easing.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
@@ -10,6 +8,17 @@
 #include <memory>
 
 class Player : public BaseObject {
+public:
+    struct SpeedParam {
+        float startForwardSpeed;
+        float minForwardSpeed;
+        float maxForwardSpeed;
+        float currentForwardSpeed;
+        float pitchSpeed;
+        float yawSpeed;
+        float rollSpeed;
+    };
+
 public:
     Player()  = default;
     ~Player() = default;
@@ -19,12 +28,14 @@ public:
     void Update();
 
     // Move
-    void HandleInput(); // 入力処理
-    void RotateUpdate(); // 物理更新
+    void HandleInput();
+    void RotateUpdate();
 
-    void SpeedChange();
+    // speed
+    void SpeedInit();
+    void SpeedUpdate();
 
-    void DirectionToCamera();
+    void CorrectionHorizon();
 
     // editor
     void AdjustParam();
@@ -40,16 +51,12 @@ public:
     void UpdateSpeedBehavior();
 
 private:
-    // viewProjection
+    // other class
     const ViewProjection* viewProjection_ = nullptr;
     std::unique_ptr<PlayerBulletShooter> bulletShooter_;
     std::unique_ptr<BasePlayerSpeedBehavior> speedBehavior_;
 
-    // Behavior instances
-    std::unique_ptr<PlayerBoost> boostBehavior_;
-    std::unique_ptr<PlayerSpeedDown> speedDownBehavior_;
-
-    // Button state tracking
+    // ブースト
     bool isLBPressed_;
     bool wasLBPressed_;
 
@@ -59,36 +66,35 @@ private:
 
     // Parameter
     int32_t hp_;
-    float speed_;
 
-    // スピードパラメータ
-    float forwardSpeed_;
-    float pitchSpeed_;
-    float yawSpeed_;
-    float rollSpeed_;
+    // speed
+    Easing<float> speedEase_;
+    SpeedParam speedParam_;
 
     // 物理パラメータ
-    Vector3 velocity_;
-    Vector3 angularVelocity_;
-    Vector3 angleInput_;
-    Quaternion targetRotation_;
+    Vector3 velocity_          = Vector3::ZeroVector();
+    Vector3 angularVelocity_   = Vector3::ZeroVector();
+    Vector3 angleInput_        = Vector3::ZeroVector();
+    Quaternion targetRotation_ = Quaternion::Identity();
 
-    float rotationSmoothness_;
-    float rollRotateLimit_;
-
-    Vector3 direction_;
-    float objectiveAngle_;
-
+    // ピッチ
     float pitchBackTime_;
-    float rollBackTime_;
     float pitchReturnThreshold_;
 
-    Easing<float> speedChangeEase_;
+    // バンク強さ、逆さ判定の値
+    float bankRate_;
+    float reverseDecisionValue_;
 
-    float sideFactor_;
-    float downFactor_;
+    //  逆さ補正中かのフラグ
+    bool isAutoRecovering_ = false;
 
-     bool isAutoRecovering_ = false;
+    // roll
+    float targetRoll_;
+    float currentRoll_;
+    float rollBackTime_;
+    float rotationSmoothness_;
+    float rollRotateLimit_;
+    float currentMaxRoll_;
 
 public:
     // ゲッター
@@ -98,8 +104,7 @@ public:
     const float& GetSpeed() const { return velocity_.Length(); }
     const Quaternion& GetQuaternion() const { return baseTransform_.quaternion_; }
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
-    const float& GetForwardSpeed() const { return forwardSpeed_; }
+    const SpeedParam& GetSpeedParam() const { return speedParam_; }
 
     void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
-   
 };
