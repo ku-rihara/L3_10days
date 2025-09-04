@@ -2,6 +2,7 @@
 
 #include "Actor/Station/Base/BaseStation.h"
 #include "Actor/Boundary/Boundary.h"
+#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Frame/Frame.h"
 
 #include <cmath>
@@ -59,6 +60,7 @@ void NPC::Init() {
 /// ===================================================
 void NPC::Update() {
 	Move();
+	TryFire();
 	BaseObject::Update();
 }
 
@@ -120,11 +122,23 @@ void NPC::Move() {
 	// 位置反映
 	baseTransform_.translation_ = to;
 
-	// ★ 防衛待機（ターゲット無し）時は、アンカーがあればアンカー中心に旋回
+	// 防衛待機（ターゲット無し）時は、アンカーがあればアンカー中心に旋回
 	if (!target_) {
 		const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
 		StartOrbit(center);
 	}
+}
+
+void NPC::TryFire() {
+	if (!pFireController) return;
+	shootCooldown_ -= Frame::DeltaTime();
+	if (shootCooldown_ > 0.0f) return;
+	if (!target_) return;
+
+	Vector3 dir = Vector3(target_->GetWorldPosition() - GetWorldPosition()).Normalize();
+	// （必要なら拡散処理）
+	pFireController->Spawn(GetWorldPosition(), dir);
+	shootCooldown_ = shootInterval_;
 }
 
 /// ===================================================
@@ -139,6 +153,7 @@ void NPC::StartOrbit(const Vector3& center) { navigator_.StartOrbit(center); }
 void NPC::BindParms() {
 	globalParam_->Bind(groupName_, "maxHP", &maxHP_);
 	globalParam_->Bind(groupName_, "speed", &speed_);
+	globalParam_->Bind(groupName_, "shootInterval", &shootInterval_);
 }
 
 void NPC::LoadData() { globalParam_->LoadFile(groupName_, fileDirectory_); }
@@ -152,6 +167,7 @@ void NPC::SetTarget(const BaseStation* target) { target_ = target; }
 void NPC::SetFaction(FactionType faction) { faction_ = faction; }
 void NPC::Activate() { isActive_ = true; }
 void NPC::Deactivate() { isActive_ = false; }
+
 
 void NPC::SetDefendAnchor(const Vector3& p) {
 	defendAnchor_ = p;

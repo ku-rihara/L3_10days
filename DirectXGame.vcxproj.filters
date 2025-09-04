@@ -664,6 +664,9 @@
     <ClCompile Include="Game\Actor\MiniMap\MiniMap.cpp" />
     <ClCompile Include="Game\AI\Station\StationAI.cpp" />
     <ClCompile Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Bullet\NpcBullet.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1144,6 +1147,9 @@
     <ClInclude Include="Game\Actor\Station\UnitDirector\IUnitDirector.h" />
     <ClInclude Include="Game\AI\Station\StationAI.h" />
     <ClInclude Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.h" />
+    <ClInclude Include="Game\Actor\NPC\Bullet\NpcBullet.h" />
+    <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
+    <ClInclude Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
