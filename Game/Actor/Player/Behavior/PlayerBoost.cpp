@@ -3,7 +3,7 @@
 
 // 初期化
 PlayerBoost::PlayerBoost(Player* player)
-:BasePlayerBehavior("PlayerBoost", player) {
+:BasePlayerSpeedBehavior("PlayerBoost", player) {
 
     /// ===================================================
     /// 変数初期化

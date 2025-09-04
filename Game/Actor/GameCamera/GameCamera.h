@@ -57,16 +57,10 @@ private:
     Vector3 shakeOffsetPos_;
     float rotate_;
 
-    // オフセット
-    Vector3 offset_;
-    float baseRotateOffsetX_;
-
     Vector3 cameraOffset_;
     Vector3 rotationOffset_;
     float smoothness_;
-    float rollFollowFactor_;
-    float rollSmoothness_;
-
+  
 public:
     /// ===================================================
     /// getter
@@ -74,14 +68,12 @@ public:
     const ViewProjection& GetViewProjection() { return viewProjection_; }
     ViewProjection& GetViewProjectionRef() { return viewProjection_; }
     Vector3 GetTargetPos() const;
-    Vector3 GetOffset() const { return offset_; };
-
+   
     /// ===================================================
     /// setter
     /// ===================================================
     void SetTarget(const WorldTransform* target);
     void SetRotate(const float& rotate) { rotate_ = rotate; }
-    void SetOffSet(const Vector3& offset) { offset_ = offset; }
     void SetShakePos(const Vector3& shake) { shakeOffsetPos_ = shake; }
     void SetShakePosY(const float& shake) { shakeOffsetPos_.y = shake; }
     void SetDestinationAngleY_(float angle) { destinationAngleY_ = angle; }
