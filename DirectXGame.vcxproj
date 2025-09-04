@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
     <ClCompile Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBoost.cpp" />
@@ -149,6 +150,7 @@
     <ClCompile Include="Game\DebugGround\TestGround.cpp" />
     <ClCompile Include="Game\EasingTestObj\EasingTestObj.cpp" />
     <ClCompile Include="Game\Pipeline\Buffer\IndexBuffer.cpp" />
+    <ClCompile Include="Game\Pipeline\MiniMapPipeline.cpp" />
     <ClCompile Include="Game\Scene\BaseScene.cpp" />
     <ClCompile Include="Game\Scene\EditorScene.cpp" />
     <ClCompile Include="Game\Scene\Factory\SceneFactory.cpp" />
@@ -177,8 +179,11 @@
     <ClCompile Include="Game\Pipeline\MiniMapIconPipeline.cpp" />
     <ClCompile Include="Game\Actor\MiniMap\MiniMap.cpp" />
     <ClCompile Include="Game\AI\Station\StationAI.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Bullet\NpcBullet.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
     <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
     <ClInclude Include="Game\Actor\Boundary\RectXZ.h" />
     <ClInclude Include="Game\Actor\NPC\EnemyNPC.h" />
@@ -337,6 +342,7 @@
     <ClInclude Include="Game\Pipeline\Buffer\IndexBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\StructuredBuffer.h" />
     <ClInclude Include="Game\Pipeline\Buffer\VertexBuffer.h" />
+    <ClInclude Include="Game\Pipeline\MiniMapPipeline.h" />
     <ClInclude Include="Game\Scene\BaseScene.h" />
     <ClInclude Include="Game\Scene\EditorScene.h" />
     <ClInclude Include="Game\Scene\Factory\AbstractSceneFactory.h" />
@@ -366,6 +372,8 @@
     <ClInclude Include="Game\Pipeline\MiniMapIconPipeline.h" />
     <ClInclude Include="Game\Actor\MiniMap\MiniMap.h" />
     <ClInclude Include="Game\AI\Station\StationAI.h" />
+    <ClInclude Include="Game\Actor\NPC\Bullet\NpcBullet.h" />
+    <ClInclude Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -537,7 +545,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{18750579-e839-444c-a284-141a94dc7efb}</ProjectGuid>
     <RootNamespace>DirectXGame</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

@@ -1,4 +1,5 @@
 #include "Actor/Station/Base/BaseStation.h"
+#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Frame/Frame.h"
 #include "Actor/NPC/NPC.h"
 #include <algorithm>
@@ -27,11 +28,15 @@ void BaseStation::Init() {
 	// === AI 初期化 ===
 	ai_.Initialize(this, unitDirector_);
 	ai_.SetConfig(aiCfg_);
+
+	//npcの弾制御
+	fireController_ = std::make_unique< NpcFireController>();
+	fireController_->Init();
 }
 
 void BaseStation::Update() {
 	BaseObject::Update();
-
+	fireController_->Tick();
 	// === AI 更新 ===
 	const float dt = Frame::DeltaTime(); 
 	ai_.SetRivalCached(pRivalStation_);
@@ -56,7 +61,6 @@ void BaseStation::ShowGui() {
 			ImGui::DragFloat3("Scale", &baseTransform_.scale_.x, 0.01f);
 			ImGui::DragFloat3("Rotate", &baseTransform_.rotation_.x, 0.01f);
 			if (ImGui::DragFloat3("Translate", &baseTransform_.translation_.x, 0.01f)) {
-				// プロジェクトに GetWorldPos() があるならそちらでも可
 				initialPosition_ = baseTransform_.GetWorldPos();
 			}
 			ImGui::TreePop();

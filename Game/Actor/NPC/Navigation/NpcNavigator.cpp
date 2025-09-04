@@ -17,7 +17,7 @@ static inline Vector3 Normalize3(const Vector3& v, const Vector3& fb = { 0,0,-1 
 static inline bool GetBoundaryPlane(Vector3& P, Vector3& N) {
 	const auto* bd = Boundary::GetInstance();
 	if (!bd) return false;
-	bd->GetDividePlane(P, N);      // ← ここを使う
+	bd->GetDividePlane(P, N);
 	N = Normalize3(N, { 0,1,0 });  // 念のため正規化
 	return true;
 }
@@ -27,7 +27,6 @@ static inline bool ShouldCrossBoundary(const Vector3& npcPos, const Vector3& tgt
 	if (!GetBoundaryPlane(P, N)) return false; // 境界が無ければ不要
 	const float sNpc = Dot(N, npcPos - P);
 	const float sTgt = Dot(N, tgtPos - P);
-	// 片側が+、片側が- なら境界を跨ぐ必要あり
 	return (sNpc * sTgt) < 0.0f;
 }
 
@@ -40,7 +39,6 @@ static inline Vector3 RotateToward(const Vector3& cur, const Vector3& des, float
 	float t = maxAngleRad / (theta + 1e-8f);
 	return Normalize3(a * (1.0f - t) + b * t, b);
 }
-
 
 
 // 線分 AB が平面(P,N)と交差するなら t∈[0,1] と交点 Q を返す
@@ -163,7 +161,7 @@ Vector3 NpcNavigator::Tick(float dt,
 						   const Vector3& npcPos,
 						   const Vector3& tgtPos,
 						   const std::vector<Hole>& holes) {
-	// ★ ここを追加：穴が無い間は常にロイター
+	//ここを追加：穴が無い間は常にロイター
 	if (holes.empty()) {
 		if (state_ != State::Orbit) {
 			StartOrbit(npcPos);                 // その場旋回開始
@@ -189,7 +187,7 @@ Vector3 NpcNavigator::Tick(float dt,
 				heading_ = tangent;
 			}
 		}
-		return delta; // ★ 早期リターン
+		return delta;
 	}
 
 	// ===== 以降は穴がある場合のみ =====

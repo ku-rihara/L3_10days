@@ -112,6 +112,10 @@ ConstantBuffer<ShadowTransformData>& Boundary::GetShadowTransformBufferRef() {
 	return shadowTransformBuffer_;
 }
 
+ConstantBuffer<float>& Boundary::GetTimeBufferRef() {
+	return timeBuffer_;
+}
+
 void Boundary::AddCrack(const Vector3& _pos, float _damage) {
 	boundaryShard_->AddBreakable(_pos, _damage);
 }

@@ -26,6 +26,7 @@ void Player::Init() {
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
 
+
     // 弾初期化
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
@@ -113,6 +114,7 @@ void Player::HandleInput() {
         currentMaxRoll_ = ToRadian(rollRotateLimit_);
     }
     targetRoll_ = std::clamp(targetRoll_, -currentMaxRoll_, currentMaxRoll_);
+
 }
 
 void Player::RotateUpdate() {
@@ -144,8 +146,8 @@ void Player::RotateUpdate() {
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
     // ---- ロールをスムーズに追従 ---- //
-    currentRoll_ = Lerp(currentRoll_, targetRoll_, rollSpeed_ * deltaTime);
 
+    currentRoll_ = Lerp(currentRoll_, targetRoll_, rollSpeed_ * deltaTime);
     // バンクターン処理
     float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
     if (fabs(yawFromRoll) > 0.0001f) {
@@ -164,6 +166,7 @@ void Player::RotateUpdate() {
     velocity_               = forwardVelocity;
     baseTransform_.translation_ += velocity_;
 }
+
 
 // 水平への補正
 void Player::CorrectionHorizon() {
@@ -210,6 +213,7 @@ void Player::CorrectionHorizon() {
         isAutoRecovering_ = false;
     }
 }
+
 
 void Player::SpeedChange() {
 }
@@ -270,8 +274,10 @@ void Player::AdjustParam() {
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
+
         ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_, 0.01f, -1.0f, 0.0f);
         ImGui::DragFloat("bankRate", &bankRate_, 0.01f);
+
 
         // デバッグ
         ImGui::Separator();

@@ -13,22 +13,18 @@
 #include "Pipeline/Buffer/VertexBuffer.h"
 #include "Pipeline/Buffer/IndexBuffer.h"
 
-struct IconVertex {
-	Vector4 position; // xyz座標
-	Vector2 uv;       // uv座標
-};
 
 /// ///////////////////////////////////////////////////////
 /// ミニマップ描画パイプライン
 /// ///////////////////////////////////////////////////////
-class MiniMapIconPipeline {
-	MiniMapIconPipeline() = default;
-	~MiniMapIconPipeline() = default;
+class MiniMapPipeline {
+	MiniMapPipeline() = default;
+	~MiniMapPipeline() = default;
 
 	enum ROOT_PARAM {
-		ROOT_PARAM_ICON,
 		ROOT_PARAM_MINI_MAP_SIZE,
-		ROOT_PARAM_TEXTURE,
+		ROOT_PARAM_TIME,
+		ROOT_PARAM_PLAYER_DATA,
 	};
 
 public:
@@ -37,7 +33,7 @@ public:
 	/// ========================================================
 
 	/// @brief シングルトン化
-	static MiniMapIconPipeline* GetInstance();
+	static MiniMapPipeline* GetInstance();
 
 	void Init(DirectXCommon* _dxCommon);
 	void PreDraw(ID3D12GraphicsCommandList* _cmdList);
@@ -68,8 +64,9 @@ private:
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc_;
 
 
-	VertexBuffer<IconVertex> vertexBuffer_;
+	//VertexBuffer<IconVertex> vertexBuffer_;
 	IndexBuffer indexBuffer_;
 
 };
+
 

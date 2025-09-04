@@ -67,6 +67,10 @@ public:
 	/// 設置できる穴の最大数を設定(罅の最大数でもある)
 	size_t GetMaxHoleCount() const;
 
+	RectXZ GetRectXZLocal() const { return localRectXZ_; }
+	RectXZ GetRectXZWorld() const;
+	void   GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const;
+
 
 	/// ----- おそらく大野(Boundary内部で)しか使わないであろう関数 ----- ///
 
@@ -74,10 +78,7 @@ public:
 	void AddHole(const Vector3& pos, float radius);
 
 	ConstantBuffer<ShadowTransformData>& GetShadowTransformBufferRef();
-
-	RectXZ GetRectXZLocal() const { return localRectXZ_; }
-	RectXZ GetRectXZWorld() const;
-	void   GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const;
+	ConstantBuffer<float>& GetTimeBufferRef();
 
 private:
 	/// ===================================================

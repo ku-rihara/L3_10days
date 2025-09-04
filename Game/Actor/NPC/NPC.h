@@ -11,6 +11,7 @@
 
 class BaseStation;
 class Boundary;
+class NpcFireController;
 struct Hole;
 
 class NPC : public BaseObject {
@@ -28,11 +29,13 @@ public:
 	void SetTarget(const BaseStation* target);
 	void SetFaction(FactionType faction);
 	bool GetIsAlive() const { return isActive_; }
+	void SetFireControl(NpcFireController* fc) { pFireController = fc; }
 
 	void Activate();
 	void Deactivate();
+	void TryFire();
 
-	// ★ 防衛アンカー（防衛時の旋回中心）を指定/解除
+	// 防衛アンカー（防衛時の旋回中心）を指定/解除
 	void SetDefendAnchor(const Vector3& p);
 	void ClearDefendAnchor();
 
@@ -50,7 +53,7 @@ protected:
 	/// ===================================================
 	///  protected-like variable
 	/// ===================================================
-
+	NpcFireController* pFireController = nullptr;
 	// ---- param ----
 	GlobalParameter* globalParam_ = nullptr;   //< 調整項目用
 	std::string groupName_;                    //< 調整項目グループ名
@@ -58,8 +61,9 @@ protected:
 
 	// パラメータ
 	float maxHP_ = 10.0f;      //< 最大hp
-	float speed_ = 5.0f;       //< 基本移動速度（Navigator に渡す）
-
+	float speed_ = 5.0f;       //< 基本移動速度（Navigator に渡す
+	float shootInterval_ = 1.0f;
+	float shootCooldown_ = 1.0f;
 	// ---- game ----
 	const BaseStation* target_ = nullptr;
 	FactionType faction_{};
@@ -67,7 +71,7 @@ protected:
 	bool isActive_ = true;
 	bool isInitialized_ = false;
 
-	// ★ 防衛アンカー
+	// 防衛アンカー
 	bool    hasDefendAnchor_ = false;
 	Vector3 defendAnchor_{};
 
