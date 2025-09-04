@@ -128,7 +128,7 @@ void Player::HandleInput() {
 void Player::RotateUpdate() {
     float deltaTime = Frame::DeltaTime();
 
-    // ---- 入力から角速度計算（そのまま） ----
+    // ---- 入力から角速度計算 ----//
     Vector3 targetAngularVelocity = angleInput_;
     const float damping           = 0.95f;
     if (angleInput_.Length() < 0.001f) {
@@ -136,7 +136,7 @@ void Player::RotateUpdate() {
     }
     angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);
 
-    // ---- ピッチ・ヨーの回転 ----
+    // ---- ピッチ・ヨーの回転 ----//
     Vector3 localRight = GetRightVector();
     Vector3 localUp    = GetUpVector();
 
@@ -151,6 +151,9 @@ void Player::RotateUpdate() {
     baseTransform_.quaternion_ = Quaternion::Slerp(
         baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
+
+     // ---- 逆さ時の補正処理 ----//
+
 
     // ---- バンクターン処理 ---- //
     Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
