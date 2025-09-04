@@ -8,18 +8,24 @@
 #include "Details/Faction.h"
 #include "Actor/NPC/Pool/NpcPool.h"
 
-class BaseStation
-	:public BaseObject{
-public:
-	/// ===================================================
-	///  public func
-	/// ===================================================
-	BaseStation(const std::string& name = "UnnamedStation");
-	virtual ~BaseStation()override;
+// AI
+#include "Actor/Station/UnitDirector/IUnitDirector.h"
+#include "AI/Station/StationAI.h"
 
-	virtual void Init()override;
-	virtual void Update()override;
-	virtual  void ShowGui();
+// std
+#include <string>
+#include <vector>
+
+class NPC;
+
+class BaseStation : public BaseObject {
+public:
+	BaseStation(const std::string& name = "UnnamedStation");
+	virtual ~BaseStation() override;
+
+	virtual void Init() override;
+	virtual void Update() override;
+	virtual void ShowGui();
 
 	// ---- 調整項目 ----
 	virtual void BindParms();
@@ -28,10 +34,17 @@ public:
 
 	// ---- accessor ----
 	void SetRivalStation(BaseStation* rival);
-	BaseStation* GetRivalStation()const;
+	BaseStation* GetRivalStation() const;
 	void SetFaction(FactionType type);
-	FactionType GetFactionType()const;
+	FactionType GetFactionType() const;
 
+	// AI用アクセサ
+	void    SetUnitDirector(IUnitDirector* d) { unitDirector_ = d; }
+	float   GetHp()       const { return hp_; }
+	float   GetMaxHp()    const { return maxLife_; }
+	Vector3 GetPosition() const { return baseTransform_.translation_; } // 必要なら GetWorldPos() に変更
+
+	// NPC 管理
 	std::vector<NPC*> GetLiveNpcs() const;
 
 	template<class Fn>
@@ -40,32 +53,32 @@ public:
 	}
 
 protected:
-	virtual void SpawnNPC() = 0;		//< npcをスポーン
-	void CleanupSpawnedList();			//< リストの掃除
-
-private:
+	virtual void SpawnNPC() = 0;   //< npcをスポーン
+	void CleanupSpawnedList();     //< リストの掃除
 
 protected:
-	/// ===================================================
-	///  protected variable
-	/// ===================================================
-	//調整用
-	GlobalParameter* globalParam_;		//< 調整項目用
-	const std::string name_;			//< 調整項目グループ名
-	const std::string fileDirectory_ = "GameActor/Station";
-	
+	// 調整用
+	GlobalParameter* globalParam_{};			//< 調整項目用（Initで取得）
+	const std::string  name_;					//< 調整項目グループ名
+	const std::string  fileDirectory_ = "GameActor/Station";
+
 	// パラメータ
-	Vector3 initialPosition_;			//< 初期座
-	float maxLife_ = 100;				//< 最大hp
-	float spawnInterbal_ = 5.0f;		//< スポーン間隔(5秒間隔
-	int maxConcurrentUnits_ = 10;		//< 最大スポーン数(10体
+	Vector3 initialPosition_{};
+	float   maxLife_ = 100.0f;
+	float   spawnInterbal_ = 5.0f;
+	int     maxConcurrentUnits_ = 10;
 
-protected:
-	 // ---- game ----
-	FactionType faction_;
-	float hp_;
-	float currentTime_ = 0;
+	// ---- game ----
+	FactionType faction_{};
+	float   hp_ = 100.0f;
+	float   currentTime_ = 0.0f;
 
 	std::vector<NpcHandle> spawned_;
 	BaseStation* pRivalStation_ = nullptr; //< ライバル拠点
+
+	// === AI関連 ===
+	IUnitDirector* unitDirector_ = nullptr;
+	StationAI       ai_;
+	StationAiConfig aiCfg_;
+	float           homeThreatDebug_ = 0.0f; // 0..1 自陣圧デバッグ入力
 };

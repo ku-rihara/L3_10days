@@ -36,7 +36,13 @@ void GameScene::Init() {
 	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
 	gameCamera_ = std::make_unique<GameCamera>();
-	//testGround_ = std::make_unique<TestGround>();
+	
+	
+	UnitDirectorConfig cfg;
+	cfg.squadSize = 4;    // 攻撃小隊の目安
+	cfg.preferSticky = true; // 既存ロール優先で揺れを減らす
+	cfg.defendHoldRadius = 8.0f; // この距離以内なら防衛はその場オービット
+	director_ = std::make_unique<QuotaUnitDirector>(cfg);
 
 	/// UI -----
 	miniMap_ = std::make_unique<MiniMap>();
@@ -45,7 +51,9 @@ void GameScene::Init() {
 	//====================================初期化===================================================
 	skuBox_->Init();
 	player_->Init();
-	Installer::InstallStations(stations_[FactionType::Ally], stations_[FactionType::Enemy]);
+	Installer::InstallStations(stations_[FactionType::Ally].get(),
+							   stations_[FactionType::Enemy].get(),
+							   director_.get());
 	gameCamera_->Init();
 	//testGround_->Init();
 

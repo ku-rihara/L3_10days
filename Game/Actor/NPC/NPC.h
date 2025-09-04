@@ -32,6 +32,10 @@ public:
 	void Activate();
 	void Deactivate();
 
+	// ★ 防衛アンカー（防衛時の旋回中心）を指定/解除
+	void SetDefendAnchor(const Vector3& p);
+	void ClearDefendAnchor();
+
 	// ---- 調整項目 ----
 	virtual void BindParms();
 	virtual void LoadData();
@@ -62,6 +66,10 @@ protected:
 
 	bool isActive_ = true;
 	bool isInitialized_ = false;
+
+	// ★ 防衛アンカー
+	bool    hasDefendAnchor_ = false;
+	Vector3 defendAnchor_{};
 
 	// ---- 航法（純ロジック）----
 	NpcNavConfig navConfig_{

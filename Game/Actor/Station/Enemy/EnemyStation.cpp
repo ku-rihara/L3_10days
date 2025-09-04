@@ -3,6 +3,7 @@
 #include "Actor/NPC/EnemyNPC.h"
 #include "Actor/NPC/Pool/NpcPool.h"
 #include "Frame/Frame.h"
+#include "Actor/Boundary/Boundary.h"
 
 #include "imgui.h"
 
@@ -50,12 +51,11 @@ void EnemyStation::Update() {
 /// npcのスポーン
 
 void EnemyStation::SpawnNPC() {
-
 	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_) return;
 
 	auto npc = pool_.Acquire();
 	npc->Init();
-	npc->SetFaction(FactionType::Enemy);
+	npc->SetFaction(FactionType::Ally);
 
 	Vector3 spawnOffset = { 1.0f,1.0f,1.0f };
 	const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;
