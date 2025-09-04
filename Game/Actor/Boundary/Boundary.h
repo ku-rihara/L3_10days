@@ -80,14 +80,14 @@ public:
 
 	/// ----- おそらく大野(Boundary内部で)しか使わないであろう関数 ----- ///
 
+	RectXZ GetRectXZWorld()const;
+	void GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const;
+
 	/// 穴の追加、罅を追加していったら穴が追加される
 	void AddHole(const Vector3& pos, float radius);
 
 	ConstantBuffer<ShadowTransformData>& GetShadowTransformBufferRef();
-
-	RectXZ GetRectXZLocal() const { return localRectXZ_; }
-	RectXZ GetRectXZWorld() const;
-	void   GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const;
+	ConstantBuffer<float>& GetTimeBufferRef();
 
 private:
 	/// ===================================================

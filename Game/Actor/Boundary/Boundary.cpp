@@ -5,6 +5,7 @@
 #include "Frame/Frame.h"
 #include "input/Input.h"
 #include "3d/ModelManager.h"
+#include "Actor/Boundary/Boundary.h"
 
 Boundary* Boundary::GetInstance() {
 	static Boundary instance;
@@ -110,6 +111,10 @@ void Boundary::AddHole(const Vector3& pos, float radius) {
 
 ConstantBuffer<ShadowTransformData>& Boundary::GetShadowTransformBufferRef() {
 	return shadowTransformBuffer_;
+}
+
+ConstantBuffer<float>& Boundary::GetTimeBufferRef() {
+	return timeBuffer_;
 }
 
 void Boundary::AddCrack(const Vector3& _pos, float _damage) {

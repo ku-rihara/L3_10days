@@ -33,6 +33,7 @@
 #include "Pipeline/BoundaryEdgePipeline.h"
 #include "Pipeline/BoundaryShardPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
+#include "Pipeline/MiniMapPipeline.h"
 
 ///=======================================================================
 /// 初期化
@@ -77,6 +78,7 @@ void EngineCore::Initialize(const char* title, int width, int height) {
 	BoundaryEdgePipeline::GetInstance()->Init(directXCommon_);
     BoundaryShardPipeline::GetInstance()->Init(directXCommon_);
     MiniMapIconPipeline::GetInstance()->Init(directXCommon_);
+    MiniMapPipeline::GetInstance()->Init(directXCommon_);
 
     skinningObject3DPipeline_ = SkinningObject3DPipeline::GetInstance();
     skinningObject3DPipeline_->Init(directXCommon_);
