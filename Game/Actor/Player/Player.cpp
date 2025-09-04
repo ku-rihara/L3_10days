@@ -59,15 +59,14 @@ void Player::HandleInput() {
     Input* input = Input::GetInstance();
 
     // 入力値をリセット
-    Vector2 stickL = Vector2::ZeroVector();
-    Vector2 stickR = Vector2::ZeroVector();
+    Vector2 stickL      = Vector2::ZeroVector();
+    float pawInputValue = 0.0f;
 
     // ゲームパッドの入力
     stickL = Input::GetPadStick(0, 0);
-    stickR = Input::GetPadStick(0, 1);
-
+   
     // キーボード入力
-    if (stickL.Length() < 0.1f && stickR.Length() < 0.1f) {
+    if (stickL.Length() < 0.1f) {
 
         if (input->PushKey(DIK_W)) {
             stickL.y = 1.0f;
@@ -91,9 +90,9 @@ void Player::HandleInput() {
     }
 
     if (Input::IsPressPad(0, XINPUT_GAMEPAD_LEFT_SHOULDER)) {
-        stickR.x = -1.0f;
+        pawInputValue = -1.0f;
     } else if (Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER)) {
-        stickR.x = 1.0f;
+        pawInputValue = 1.0f;
     }
 
     // deltaTime
@@ -103,7 +102,7 @@ void Player::HandleInput() {
     angleInput_.x = -stickL.y * (speedParam_.pitchSpeed * deltaTime);
 
     // ヨー
-    angleInput_.y = stickR.x * (speedParam_.yawSpeed * deltaTime);
+    angleInput_.y = pawInputValue * (speedParam_.yawSpeed * deltaTime);
 
     // ロール
     float rollInput = -stickL.x;
@@ -309,8 +308,8 @@ void Player::AdjustParam() {
         } else {
             ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "STATUS: Normal");
         }
-        ImGui::Text("currentSpeed:%.3f",speedParam_.currentForwardSpeed);
-      
+        ImGui::Text("currentSpeed:%.3f", speedParam_.currentForwardSpeed);
+
         // セーブ・ロード
         ImGui::Separator();
         globalParameter_->ParamSaveForImGui(groupName_);
@@ -326,17 +325,17 @@ void Player::AdjustParam() {
 
 void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior) {
     if (speedBehavior_) {
-       
+
         behavior->TransferStateFrom(speedBehavior_.get());
     }
     speedBehavior_ = std::move(behavior);
 }
 void Player::UpdateSpeedBehavior() {
-   
+
     auto newBehavior = speedBehavior_->CheckForBehaviorChange();
 
     if (newBehavior) {
-    
+
         ChangeSpeedBehavior(std::move(newBehavior));
     }
 }
