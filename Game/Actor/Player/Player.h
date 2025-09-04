@@ -46,6 +46,7 @@ public:
     Vector3 GetForwardVector() const;
     Vector3 GetRightVector() const;
     Vector3 GetUpVector() const;
+    float GetRollDegree() const;
 
     // Behavior management
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
@@ -100,12 +101,10 @@ private:
 public:
     // ゲッター
     const Vector3& GetPosition() const { return baseTransform_.translation_; }
-    const Vector3& GetRotation() const { return baseTransform_.rotation_; }
-    const Vector3& GetVelocity() const { return velocity_; }
-    const float& GetSpeed() const { return velocity_.Length(); }
-    const Quaternion& GetQuaternion() const { return baseTransform_.quaternion_; }
+    const Quaternion& GetBaseTQuaternion() const { return baseTransform_.quaternion_; }
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
     const SpeedParam& GetSpeedParam() const { return speedParam_; }
+    const float& GetRollRotateLimit() const { return rollRotateLimit_; }
 
     void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
 };

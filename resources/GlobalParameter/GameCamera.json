@@ -1,6 +1,11 @@
 {
     "GameCamera": {
         "RotateOffsetX": 0.0,
+        "baseCameraOffset": [
+            0.0,
+            4.260000228881836,
+            0.0
+        ],
         "cameraDistance": 20.0,
         "cameraHeight": 4.5,
         "cameraOffset": [
@@ -8,6 +13,8 @@
             3.700000047683716,
             -14.100000381469727
         ],
+        "cameraXOffsetMax": 6.0,
+        "cameraXOffsetMin": -6.0,
         "cameraXYOffset": [
             0.0,
             3.890000104904175,

@@ -119,7 +119,7 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
 
     Vector3 playerPos    = player->GetPosition();
     Vector3 forwardDir   = player->GetForwardVector();
-    Quaternion playerRot = player->GetQuaternion();
+    Quaternion playerRot = player->GetBaseTQuaternion();
 
     for (int32_t i = 0; i < shotNum; ++i) {
         // 新しい弾丸を動的に生成
