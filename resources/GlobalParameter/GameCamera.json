@@ -5,8 +5,8 @@
         "cameraHeight": 4.5,
         "cameraOffset": [
             0.0,
-            2.5,
-            -10.0
+            3.700000047683716,
+            -14.100000381469727
         ],
         "followDistance": 10.0,
         "followHeight": 2.0,

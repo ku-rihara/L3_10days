@@ -156,7 +156,7 @@ void Player::RotateUpdate() {
         baseTransform_.quaternion_     = baseTransform_.quaternion_.Normalize();
     }
 
-    // ---- obj3d は見た目のロールだけ ----
+    // ---- obj3dのTransformのみロール適応 ----
     Quaternion visualRoll          = Quaternion::MakeRotateAxisAngle(Vector3::ToForward(), currentRoll_);
     obj3d_->transform_.quaternion_ = visualRoll;
     obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
