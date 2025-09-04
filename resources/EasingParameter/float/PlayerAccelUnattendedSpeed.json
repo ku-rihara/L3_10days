@@ -7,10 +7,10 @@
         "endValue": 100.0,
         "finishOffsetTime": 0.0,
         "finishType": 1,
-        "maxTime": 6.0,
+        "maxTime": 7.0,
         "period": 0.0,
         "startValue": 0.0,
-        "type": 11,
+        "type": 13,
         "waitTime": 0.0
     }
 }

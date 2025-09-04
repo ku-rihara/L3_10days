@@ -28,7 +28,13 @@ void GameCamera::Update() {
     rendition_->Update();
     offsetParam_.shakeOffsetPos = rendition_->GetShakeOffset();
 
+    // カメラオフセット計算
+    CameraOffsetCalc();
+
     if (target_) {
+
+          viewProjection_.translation_ = offsetParam_.cameraOffset;
+        viewProjection_.rotation_    = offsetParam_.rotationOffset;
 
         // 目標のローカルオフセット位置
         Vector3 targetLocalPos = offsetParam_.cameraOffset + offsetParam_.shakeOffsetPos;
@@ -63,7 +69,9 @@ Vector3 GameCamera::OffsetCalc(const Vector3& offset) const {
 
 void GameCamera::BindParams() {
     globalParameter_->Bind(groupName_, "rotationOffset", &offsetParam_.rotationOffset);
-    globalParameter_->Bind(groupName_, "cameraOffset", &offsetParam_.cameraOffset);
+    globalParameter_->Bind(groupName_, "cameraXYOffset", &offsetParam_.cameraXYOffset);
+    globalParameter_->Bind(groupName_, "cameraZOffsetMin", &offsetParam_.cameraZOffsetMin);
+    globalParameter_->Bind(groupName_, "cameraZOffsetMax", &offsetParam_.cameraZOffsetMax);
 }
 
 void GameCamera::SetTarget(const WorldTransform* target) {
@@ -86,14 +94,11 @@ void GameCamera::AdjustParam() {
 
         ImGui::Separator();
         ImGui::Text("Parent Camera Settings");
-        ImGui::DragFloat3("Camera Offset", &offsetParam_.cameraOffset.x, 0.1f);
+        ImGui::DragFloat2("Camera OffsetXY", &offsetParam_.cameraXYOffset.x, 0.01f);
+        ImGui::DragFloat("Camera OffsetZMin", &offsetParam_.cameraZOffsetMin, 0.01f);
+        ImGui::DragFloat("Camera OffsetZMax", &offsetParam_.cameraZOffsetMax, 0.01f);
         ImGui::DragFloat3("Rotation Offset", &offsetParam_.rotationOffset.x, 0.01f);
         ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
-
-        if (target_) {
-            viewProjection_.translation_ = offsetParam_.cameraOffset;
-            viewProjection_.rotation_    = offsetParam_.rotationOffset;
-        }
 
         globalParameter_->ParamSaveForImGui(groupName_);
         globalParameter_->ParamLoadForImGui(groupName_);
@@ -103,7 +108,18 @@ void GameCamera::AdjustParam() {
 #endif
 }
 
-void GameCamera::CalcCameraOffset() {
+// ================================= カメラオフセット計算 ================================= //
+
+void GameCamera::OffsetInvRangeCalc() {
+    offsetParam_.offsetInvRange = 1.0f / (pPlayer_->GetSpeedParam().maxForwardSpeed - pPlayer_->GetSpeedParam().minForwardSpeed);
+}
+
+void GameCamera::CameraOffsetCalc() {
+    float t = (pPlayer_->GetSpeedParam().currentForwardSpeed - pPlayer_->GetSpeedParam().minForwardSpeed) * offsetParam_.offsetInvRange;
+
+    offsetParam_.cameraOffset.x = offsetParam_.cameraXYOffset.x;
+    offsetParam_.cameraOffset.y = offsetParam_.cameraXYOffset.y;
+    offsetParam_.cameraOffset.z = offsetParam_.cameraZOffsetMin + t * (offsetParam_.cameraZOffsetMax - offsetParam_.cameraZOffsetMin);
 }
 
 // ================================= その他のメソッド ================================= //
@@ -135,4 +151,5 @@ void GameCamera::PlayShake(const std::string& filename) {
 
 void GameCamera::SetPlayer(Player* player) {
     pPlayer_ = player;
+    OffsetInvRangeCalc();
 }

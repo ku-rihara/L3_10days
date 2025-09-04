@@ -10,9 +10,11 @@ class GameCamera {
     struct OffsetParam {
         Vector3 shakeOffsetPos;
         Vector3 cameraOffset;
+        Vector3 cameraXYOffset;
         Vector3 rotationOffset;
         float cameraZOffsetMin;
         float cameraZOffsetMax;
+        float offsetInvRange;
     };
 
 public:
@@ -27,7 +29,8 @@ public:
     void GetIsCameraMove();
     void Debug();
 
-    void CalcCameraOffset();
+    void OffsetInvRangeCalc();
+    void CameraOffsetCalc();
 
     Vector3 OffsetCalc(const Vector3& offset) const;
     Vector3 GetWorldPos() const;

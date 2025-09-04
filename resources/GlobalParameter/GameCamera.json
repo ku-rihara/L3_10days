@@ -8,6 +8,13 @@
             3.700000047683716,
             -14.100000381469727
         ],
+        "cameraXYOffset": [
+            0.0,
+            3.890000104904175,
+            0.0
+        ],
+        "cameraZOffsetMax": -23.889999389648438,
+        "cameraZOffsetMin": -14.779999732971191,
         "followDistance": 10.0,
         "followHeight": 2.0,
         "followPitch": true,
