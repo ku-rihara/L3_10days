@@ -44,7 +44,7 @@ private:
 	const std::string fileDirectory_ = "GameActor/NpcBullet";
 
 	float speed_ = 40.0f;  // m/s
-	float maxLifeTime_ = 2.0f;   // s
+	float maxLifeTime_ = 8.0f;   // s
 
 	// Runtime
 	Vector3 dir_{ 0,0,1 };
