@@ -12,7 +12,7 @@
         "rollBackTime": 5.0,
         "rollRotateLimit": 40.0,
         "rollSmoothness": 1.2000000476837158,
-        "rollSpeed": 60.0,
+        "rollSpeed": 4.0,
         "rotationSmoothness": 0.33500000834465027,
         "sideFactor": 4.079999923706055,
         "speed": 50.0,

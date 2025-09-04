@@ -25,10 +25,8 @@ void Player::Init() {
     baseTransform_.rotateOder_ = RotateOder::Quaternion;
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
-    velocity_        = Vector3::ZeroVector();
-    angularVelocity_ = Vector3::ZeroVector();
-    targetRotation_  = Quaternion::Identity();
 
+    // 弾初期化
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
 
@@ -101,15 +99,20 @@ void Player::HandleInput() {
     // ヨー
     angleInput_.y = stickR.x * (yawSpeed_ * deltaTime);
 
- 
-    float rollInput = -stickL.x; 
+    // ロール
+    float rollInput = -stickL.x;
 
     // 目標ロール角を更新
     targetRoll_ += rollInput * rollSpeed_ * deltaTime;
 
     // 制限
-    const float maxRoll = ToRadian(rollRotateLimit_);
-    targetRoll_         = std::clamp(targetRoll_, -maxRoll, maxRoll);
+    if (fabs(rollInput) < 0.001f) {
+        currentMaxRoll_ = 0.0f;
+    } else {
+
+        currentMaxRoll_ = ToRadian(rollRotateLimit_);
+    }
+    targetRoll_ = std::clamp(targetRoll_, -currentMaxRoll_, currentMaxRoll_);
 }
 
 void Player::RotateUpdate() {
@@ -133,13 +136,15 @@ void Player::RotateUpdate() {
     targetRotation_          = deltaRotation * baseTransform_.quaternion_;
     targetRotation_          = targetRotation_.Normalize();
 
+    // 補正処理
+    CorrectionHorizon();
+
     baseTransform_.quaternion_ = Quaternion::Slerp(
         baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
     // ---- ロールをスムーズに追従 ---- //
-    const float rollLerpSpeed = 5.0f; // ← ここ調整で滑らかさ変わる
-    currentRoll_              = Lerp(currentRoll_, targetRoll_, rollLerpSpeed * deltaTime);
+    currentRoll_ = Lerp(currentRoll_, targetRoll_, rollSpeed_ * deltaTime);
 
     // バンクターン処理
     float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
@@ -160,6 +165,51 @@ void Player::RotateUpdate() {
     baseTransform_.translation_ += velocity_;
 }
 
+// 水平への補正
+void Player::CorrectionHorizon() {
+    float deltaTime = Frame::DeltaTime();
+
+    // 機体の上方向ベクトルを取得
+    Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
+    Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
+
+    // 機体の上方向とワールドの上方向の内積を計算
+    Vector3 worldUp = Vector3::ToUp();
+    float upDot     = Vector3::Dot(targetUpVector, worldUp);
+
+    // 機体が逆さまかどうかを判定
+    bool isUpsideDown = upDot < reverseDecisionValue_;
+
+    // 補正開始フラグ
+    if (!isAutoRecovering_ && isUpsideDown && angleInput_.Length() < 0.001f) {
+        isAutoRecovering_ = true;
+    }
+
+    // 補正処理
+    if (!isAutoRecovering_) {
+        return;
+    }
+
+    Vector3 currentEuler = targetRotation_.ToEuler();
+    float currentYaw     = currentEuler.y;
+
+    // 水平の状態
+    Quaternion horizontalRotation = Quaternion::EulerToQuaternion(
+        Vector3(0.0f, currentYaw, 0.0f));
+
+    // 補正中の値
+    Quaternion adjustedCurrent = Quaternion::EulerToQuaternion(
+        Vector3(currentEuler.x, currentEuler.y, 0.0f));
+
+    // 補正する
+    targetRotation_ = Quaternion::Slerp(
+        adjustedCurrent, horizontalRotation, 3.5f * deltaTime);
+
+    // --- 補正終了判定 ---
+    if (fabs(currentEuler.x) < 0.01f) {
+        isAutoRecovering_ = false;
+    }
+}
 
 void Player::SpeedChange() {
 }
@@ -220,8 +270,8 @@ void Player::AdjustParam() {
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
-        ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_,0.01f,-1.0f,0.0f);
-        ImGui::DragFloat("bankRate", &bankRate_,0.01f);
+        ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_, 0.01f, -1.0f, 0.0f);
+        ImGui::DragFloat("bankRate", &bankRate_, 0.01f);
 
         // デバッグ
         ImGui::Separator();
@@ -237,7 +287,7 @@ void Player::AdjustParam() {
         ImGui::Text("Aircraft Attitude");
         Vector3 euler = baseTransform_.quaternion_.ToEuler();
         ImGui::Text("Euler (deg): P=%.1f, Y=%.1f, R=%.1f",
-            ToDegree(euler.x),ToDegree(euler.y),ToDegree(euler.z));
+            ToDegree(euler.x), ToDegree(euler.y), ToDegree(euler.z));
 
         // 機体の上方向ベクトル
         Matrix4x4 rotMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
@@ -267,12 +317,6 @@ void Player::AdjustParam() {
         bulletShooter_->AdjustParam();
     }
 #endif // _DEBUG
-}
-
-///==========================================================
-/// 移動
-///==========================================================
-void Player::DirectionToCamera() {
 }
 
 void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior) {
