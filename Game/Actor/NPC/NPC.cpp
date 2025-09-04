@@ -4,6 +4,7 @@
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Frame/Frame.h"
+#include "random.h"
 
 #include <cmath>
 #include <numbers>
@@ -53,6 +54,8 @@ void NPC::Init() {
 	moveConstraint_ = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, rect, 0.01f);
 
 	isInitialized_ = true;
+
+	shootCooldown_ = Random::Range(0.0f, shootInterval_);
 }
 
 /// ===================================================

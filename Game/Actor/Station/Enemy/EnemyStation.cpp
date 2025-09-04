@@ -37,7 +37,7 @@ void EnemyStation::Update() {
 	//スポーン
 	currentTime_ += dt;
 	if (currentTime_ >= spawnInterbal_) {
-		SpawnNPC();
+		SpawnNPC(GetWorldPosition());
 	}
 
 	for (auto& enemy:spawned_) {
@@ -50,16 +50,14 @@ void EnemyStation::Update() {
 /// ===================================================
 /// npcのスポーン
 
-void EnemyStation::SpawnNPC() {
+void EnemyStation::SpawnNPC(const Vector3& pos) {
 	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_) return;
 
 	auto npc = pool_.Acquire();
 	npc->Init();
-	npc->SetFaction(FactionType::Ally);
+	npc->SetFaction(FactionType::Enemy);
 
-	Vector3 spawnOffset = { 1.0f,1.0f,1.0f };
-	const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;
-	npc->SetWorldPosition(worldSpawn);
+	npc->SetWorldPosition(pos);
 	npc->SetTarget(GetRivalStation());
 	npc->SetFireControl(fireController_.get());
 
