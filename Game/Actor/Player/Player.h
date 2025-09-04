@@ -90,9 +90,6 @@ private:
     float rollRotateLimit_;
     float currentMaxRoll_;
 
-
-     float targetRoll_  = 0.0f; // 目標のロール角
-    float currentRoll_ = 0.0f; // 実際のロール角
 public:
     // ゲッター
     const Vector3& GetPosition() const { return baseTransform_.translation_; }
