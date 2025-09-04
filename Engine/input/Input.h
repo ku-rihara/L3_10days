@@ -104,6 +104,7 @@ public:
     static bool IsPressPad(int32_t padNumber, int32_t buttonNumber);
 
     static bool IsPressRightTrigger(int32_t padNumber, uint8_t threshold);
+    static bool IsPressLeftTrigger(int32_t padNumber, uint8_t threshold);
 
     /// <summary>
     /// ゲームパッドのトリガーをチェック

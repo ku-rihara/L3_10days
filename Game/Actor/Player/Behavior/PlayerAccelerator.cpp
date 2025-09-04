@@ -2,19 +2,19 @@
 #include "Actor/Player/Player.h"
 #include "Frame/Frame.h"
 #include "PlayerAcceleUnattended.h"
+#include "PlayerBrake.h"
 
 PlayerAccelerator::PlayerAccelerator(Player* player)
     : BasePlayerSpeedBehavior("PlayerAccelerator", player) {
-    InitializeEasing();
+    InitEasing();
 }
 
 PlayerAccelerator::~PlayerAccelerator() {
 }
 
-void PlayerAccelerator::InitializeEasing() {
+void PlayerAccelerator::InitEasing() {
     // 加速用のイージングパラメータ設定
     speedEase_.SetEndValue(pPlayer_->GetSpeedParam().maxForwardSpeed);
-    // speedEase_.SetMaxTime(2.0f);
 }
 
 void PlayerAccelerator::ResetEasing() {
@@ -39,9 +39,16 @@ void PlayerAccelerator::HandleInput() {
 std::unique_ptr<BasePlayerSpeedBehavior> PlayerAccelerator::CheckForBehaviorChange() {
     UpdateInputState();
 
-    // ボタンが離された場合、PlayerAccelUnattendedに切り替え
-    if (!isLBPressed_ && wasLBPressed_) {
+    // PlayerAccelUnattendedに切り替え
+    if (!isRTPressed_ && wasRTPressed_) {
         auto newBehavior = std::make_unique<PlayerAccelUnattended>(pPlayer_);
+        newBehavior->TransferStateFrom(this);
+        return newBehavior;
+    }
+
+    if (isLTPressed_ && !wasLTPressed_) {
+        // ブレーキに切り替え
+        auto newBehavior = std::make_unique<PlayerBrake>(pPlayer_);
         newBehavior->TransferStateFrom(this);
         return newBehavior;
     }

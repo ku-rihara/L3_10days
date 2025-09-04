@@ -35,8 +35,11 @@ protected:
     Player* pPlayer_ = nullptr;
 
     // 入力状態
-    bool isLBPressed_  = false;
-    bool wasLBPressed_ = false;
+    bool isRTPressed_  = false;
+    bool wasRTPressed_ = false;
+
+    bool isLTPressed_  = false;
+    bool wasLTPressed_ = false;
 
     // 各Behaviorで独自のEasingを持つ
     Easing<float> speedEase_;

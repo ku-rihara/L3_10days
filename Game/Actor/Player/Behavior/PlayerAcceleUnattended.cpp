@@ -1,7 +1,8 @@
+#include "PlayerAcceleUnattended.h"
 #include "Actor/Player/Player.h"
 #include "Frame/Frame.h"
 #include "PlayerAccelerator.h"
-#include "PlayerAcceleUnattended.h"
+#include "PlayerBrake.h"
 
 PlayerAccelUnattended::PlayerAccelUnattended(Player* player)
     : BasePlayerSpeedBehavior("PlayerAccelUnattended", player) {
@@ -14,7 +15,6 @@ PlayerAccelUnattended::~PlayerAccelUnattended() {
 void PlayerAccelUnattended::InitializeEasing() {
     // 減速用のイージングパラメータ設定
     speedEase_.SetEndValue(pPlayer_->GetSpeedParam().minForwardSpeed);
-    /*speedEase_.SetMaxTime(3.0f); */
 }
 
 void PlayerAccelUnattended::ResetEasing() {
@@ -39,9 +39,16 @@ void PlayerAccelUnattended::HandleInput() {
 std::unique_ptr<BasePlayerSpeedBehavior> PlayerAccelUnattended::CheckForBehaviorChange() {
     UpdateInputState();
 
-    // ボタンが押された場合、PlayerAcceleratorに切り替え
-    if (isLBPressed_ && !wasLBPressed_) {
+    // PlayerAcceleratorに切り替え
+    if (isRTPressed_ && !wasRTPressed_) {
         auto newBehavior = std::make_unique<PlayerAccelerator>(pPlayer_);
+        newBehavior->TransferStateFrom(this);
+        return newBehavior;
+    }
+
+      // ブレーキに切り替え
+    if (isLTPressed_ && !wasLTPressed_) {
+        auto newBehavior = std::make_unique<PlayerBrake>(pPlayer_);
         newBehavior->TransferStateFrom(this);
         return newBehavior;
     }
