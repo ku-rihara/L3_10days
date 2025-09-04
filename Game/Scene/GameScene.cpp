@@ -33,7 +33,7 @@ void GameScene::Init() {
 
 	// 生成
 	//====================================生成===================================================
-	skuBox_ = std::make_unique<SkyBox>();
+	skyDome_ = std::make_unique<SkyDome>();
 	player_ = std::make_unique<Player>();
 	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
@@ -51,7 +51,7 @@ void GameScene::Init() {
 
 
 	//====================================初期化===================================================
-	skuBox_->Init();
+	skyDome_->Init();
 	player_->Init();
 	Installer::InstallStations(stations_[FactionType::Ally].get(),
 							   stations_[FactionType::Enemy].get(),
@@ -89,7 +89,7 @@ void GameScene::Update() {
 	player_->Update();
 	gameCamera_->Update();
 	for (auto& kv : stations_) { kv.second->Update(); }
-	skuBox_->Update();
+	skyDome_->Update();
 
 	miniMap_->Update();
 
@@ -146,7 +146,6 @@ void GameScene::ModelDraw() {
 /// SkyBox描画
 /// ===================================================
 void GameScene::SkyBoxDraw() {
-	skuBox_->Draw(viewProjection_);
 }
 
 /// ======================================================
@@ -169,7 +168,7 @@ void GameScene::SpriteDraw() {
 /// 影描画
 /// ======================================================
 void GameScene::DrawShadow() {
-	Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
+	//Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
 }
 
 void GameScene::Debug() {

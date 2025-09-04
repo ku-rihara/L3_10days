@@ -63,7 +63,7 @@ public:
     float fovAngleY_   = 45.0f;
     float aspectRatio_ = (float)16 / 9;
     float nearZ_       = 0.1f;
-    float farZ_        = 1000.0f;
+    float farZ_        = 2000.0f;
 
     ProjectionType projectionType_ = ProjectionType::PERSPECTIVE;
    

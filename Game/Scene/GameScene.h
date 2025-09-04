@@ -11,6 +11,7 @@
 #include"DebugGround/TestGround.h"
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/MiniMap/MiniMap.h"
+#include "Actor/SkyDome/SkyDome.h"
 #include "Actor/Station/UnitDirector/QuotaUnitDirector.h"
 
 #include<map>
@@ -21,7 +22,7 @@ private:
 	/// Private variants
 	///========================================================
 
-	std::unique_ptr<SkyBox> skuBox_ = nullptr;
+	std::unique_ptr<SkyDome> skyDome_ = nullptr;
 	std::unique_ptr<Player> player_ = nullptr;
 	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
 	 std::unique_ptr<TestGround> testGround_     = nullptr;

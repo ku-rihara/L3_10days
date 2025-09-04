@@ -78,7 +78,7 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
 	blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
@@ -95,7 +95,7 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	// 書き込みする
 	depthStencilDesc_.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	// 比較関数はLessEqual。つまり、近ければ描画される
-	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
 	// Shaderをコンパイルする
 	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Boundary.vs.hlsl", L"vs_6_0");
