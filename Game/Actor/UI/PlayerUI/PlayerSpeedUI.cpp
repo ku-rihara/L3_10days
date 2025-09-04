@@ -2,6 +2,7 @@
 
 /// engine
 #include "base/TextureManager.h"
+#include "Actor/Player/Player.h"
 
 void PlayerSpeedUI::Init() {
 	speedUISprite_ = std::make_unique<Sprite>();
@@ -14,11 +15,24 @@ void PlayerSpeedUI::Init() {
 	Vector2 size = { 64, 64 };
 	Vector2 texSize = speedUISprite_->GetTextureSize();
 	speedUISprite_->SetScale({ size.x / texSize.x, size.y / texSize.y });
+
+
+	speedNumDraw_ = std::make_unique<NumDraw>();
+	speedNumDraw_->Init(4);
+	speedNumDraw_->SetBasePosition({ position.x, position.y + 2.0f });
+	speedNumDraw_->SetDigitSpacing(10.0f);
+	speedNumDraw_->SetNumber(1964);
+
 }
 
-void PlayerSpeedUI::Update() {
+void PlayerSpeedUI::Update(Player* _player) {
+	/// playerの速度に応じてUIを変化させる
+	float speed = _player->GetSpeedParam().currentForwardSpeed;
+	speedNumDraw_->SetNumber(static_cast<int32_t>(speed));
+	speedNumDraw_->Update();
 }
 
 void PlayerSpeedUI::Draw() {
 	speedUISprite_->Draw();
+	speedNumDraw_->Draw();
 }

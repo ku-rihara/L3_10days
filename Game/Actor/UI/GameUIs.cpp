@@ -10,7 +10,7 @@ void GameUIs::Init() {
 }
 
 void GameUIs::Update(Player* _player) {
-	playerSpeedUI_->Update();
+	playerSpeedUI_->Update(_player);
 	playerAltUI_->Update(_player);
 }
 
