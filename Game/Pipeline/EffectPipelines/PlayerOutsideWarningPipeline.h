@@ -12,6 +12,9 @@
 #include "struct/TransformationMatrix.h"
 #include "3d/Model.h"
 
+/// 描画対象
+#include "Actor/Effects/PlayerOutsideWarning/PlayerOutsideWarning.h"
+
 class PlayerOutsideWarningPipeline {
 
 public:
@@ -27,7 +30,10 @@ public:
 
 	void Init(DirectXCommon* dxCommon);
 	void PreDraw(ID3D12GraphicsCommandList* commandList);
-	void Draw(ID3D12GraphicsCommandList* commandList, const ViewProjection& _viewProjection);
+	void Draw(
+		ID3D12GraphicsCommandList* commandList,
+		PlayerOutsideWarning* _playerOutsideWarning
+	);
 
 private:
 	/// ========================================================

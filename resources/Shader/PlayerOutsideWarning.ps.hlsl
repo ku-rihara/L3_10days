@@ -2,7 +2,7 @@
 
 /// vignetteとrandom noiseで画面端に向かって点滅する警告を表示
 
-ConstantBuffer<Time> gTime : register(b1);
+ConstantBuffer<Time> gTime : register(b0);
 
 static const float3 gBaseColor = float3(1.0, 0.2, 0.2); // #ff3333
 

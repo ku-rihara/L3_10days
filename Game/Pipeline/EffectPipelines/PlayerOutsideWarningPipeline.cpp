@@ -55,27 +55,6 @@ void PlayerOutsideWarningPipeline::CreateGraphicsPipeline() {
 
 	CreateRootSignature();
 
-	// InputLayoutの設定を行う
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	inputElementDescs[1].SemanticName = "TEXCOORD";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	inputElementDescs[2].SemanticName = "NORMAL";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementDescs);
-
 	// BlendMode None
 	D3D12_BLEND_DESC blendDescNormal = {};
 	blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
@@ -103,14 +82,14 @@ void PlayerOutsideWarningPipeline::CreateGraphicsPipeline() {
 	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	// Shaderをコンパイルする
-	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/BoundaryEdge.vs.hlsl", L"vs_6_0");
-	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/BoundaryEdge.ps.hlsl", L"ps_6_0");
+	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/PlayerOutsideWarning.vs.hlsl", L"vs_6_0");
+	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/PlayerOutsideWarning.ps.hlsl", L"ps_6_0");
 
 	// PSO作成用関数
 	auto CreatePSO = [&](D3D12_BLEND_DESC& blendDesc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc = {};
 		graphicsPipelineStateDesc.pRootSignature = rootSignature_.Get();
-		graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
+		//graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
 		graphicsPipelineStateDesc.VS = { vertexShaderBlob_->GetBufferPointer(), vertexShaderBlob_->GetBufferSize() };
 		graphicsPipelineStateDesc.PS = { pixelShaderBlob_->GetBufferPointer(), pixelShaderBlob_->GetBufferSize() };
 		graphicsPipelineStateDesc.BlendState = blendDesc;
@@ -139,59 +118,52 @@ void PlayerOutsideWarningPipeline::CreateRootSignature() {
 	descriptionRootSignature.pStaticSamplers = staticSamplers_;
 	descriptionRootSignature.NumStaticSamplers = 2; // 通常サンプラーとシャドウサンプラーの2個
 
-	// DescriptorRangeの設定
-	D3D12_DESCRIPTOR_RANGE descriptorRange[6] = {};
+	//// DescriptorRangeの設定
+	//D3D12_DESCRIPTOR_RANGE descriptorRange[6] = {};
 
-	// transformations (t0)
-	descriptorRange[0].BaseShaderRegister = 0;
-	descriptorRange[0].NumDescriptors = 1;
-	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	//// transformations (t0)
+	//descriptorRange[0].BaseShaderRegister = 0;
+	//descriptorRange[0].NumDescriptors = 1;
+	//descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// 環境テクスチャ (t1)
-	descriptorRange[1].BaseShaderRegister = 1;
-	descriptorRange[1].NumDescriptors = 1;
-	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	//// 環境テクスチャ (t1)
+	//descriptorRange[1].BaseShaderRegister = 1;
+	//descriptorRange[1].NumDescriptors = 1;
+	//descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// ポイントライト (t2)
-	descriptorRange[2].BaseShaderRegister = 2;
-	descriptorRange[2].NumDescriptors = 1;
-	descriptorRange[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	//// ポイントライト (t2)
+	//descriptorRange[2].BaseShaderRegister = 2;
+	//descriptorRange[2].NumDescriptors = 1;
+	//descriptorRange[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//descriptorRange[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// スポットライト (t3)
-	descriptorRange[3].BaseShaderRegister = 3;
-	descriptorRange[3].NumDescriptors = 1;
-	descriptorRange[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[3].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	//// スポットライト (t3)
+	//descriptorRange[3].BaseShaderRegister = 3;
+	//descriptorRange[3].NumDescriptors = 1;
+	//descriptorRange[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//descriptorRange[3].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// シャドウマップ (t4)
-	descriptorRange[4].BaseShaderRegister = 4;
-	descriptorRange[4].NumDescriptors = 1;
-	descriptorRange[4].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[4].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	//// シャドウマップ (t4)
+	//descriptorRange[4].BaseShaderRegister = 4;
+	//descriptorRange[4].NumDescriptors = 1;
+	//descriptorRange[4].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//descriptorRange[4].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// dissolve (t5)
-	descriptorRange[5].BaseShaderRegister = 5;
-	descriptorRange[5].NumDescriptors = 1;
-	descriptorRange[5].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	//// dissolve (t5)
+	//descriptorRange[5].BaseShaderRegister = 5;
+	//descriptorRange[5].NumDescriptors = 1;
+	//descriptorRange[5].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//descriptorRange[5].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	D3D12_ROOT_PARAMETER rootParameters[1] = {};
 
-	// 0: TransformationMatrix
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderを使う
-	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
-	rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
-	rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
-
-	// 1: ShadowMap
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 0;
+	// 0: Time
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[0].Descriptor.ShaderRegister = 0;
 
 	//// 2: Hole
 	//rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
@@ -232,6 +204,11 @@ void PlayerOutsideWarningPipeline::PreDraw(ID3D12GraphicsCommandList* commandLis
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void PlayerOutsideWarningPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, const ViewProjection& _viewProjection) {
-	
+void PlayerOutsideWarningPipeline::Draw(ID3D12GraphicsCommandList* commandList, PlayerOutsideWarning* _playerOutsideWarning) {
+	if (!_playerOutsideWarning) {
+		return;
+	}
+
+
+	commandList;
 }
