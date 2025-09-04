@@ -2,6 +2,7 @@
 #include "Actor/Player/Player.h"
 #include "Frame/Frame.h"
 #include "PlayerAccelerator.h"
+#include "PlayerAcceleUnattended.h"
 
 PlayerBrake::PlayerBrake(Player* player)
     : BasePlayerSpeedBehavior("PlayerBrake", player) {
@@ -44,6 +45,13 @@ std::unique_ptr<BasePlayerSpeedBehavior> PlayerBrake::CheckForBehaviorChange() {
     // 加速する
     if (isRTPressed_ && !wasRTPressed_) {
         auto newBehavior = std::make_unique<PlayerAccelerator>(pPlayer_);
+        newBehavior->TransferStateFrom(this);
+        return newBehavior;
+    }
+
+     // 通常に戻す
+    if (!isLTPressed_ && wasLTPressed_) {
+        auto newBehavior = std::make_unique<PlayerAccelUnattended>(pPlayer_);
         newBehavior->TransferStateFrom(this);
         return newBehavior;
     }

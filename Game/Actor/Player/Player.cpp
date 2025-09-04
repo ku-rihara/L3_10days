@@ -63,7 +63,7 @@ void Player::HandleInput() {
 
     // ゲームパッドの入力
     stickL = Input::GetPadStick(0, 0);
-   
+
     // キーボード入力
     if (stickL.Length() < 0.1f) {
 
@@ -228,6 +228,36 @@ Vector3 Player::GetUpVector() const {
     return TransformNormal(Vector3::ToUp(), rotationMatrix).Normalize();
 }
 
+void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior) {
+    if (speedBehavior_) {
+
+        behavior->TransferStateFrom(speedBehavior_.get());
+    }
+    speedBehavior_ = std::move(behavior);
+}
+void Player::UpdateSpeedBehavior() {
+
+    auto newBehavior = speedBehavior_->CheckForBehaviorChange();
+
+    if (newBehavior) {
+
+        ChangeSpeedBehavior(std::move(newBehavior));
+    }
+}
+
+void Player::SpeedInit() {
+    speedParam_.currentForwardSpeed = speedParam_.startForwardSpeed;
+}
+
+void Player::SpeedUpdate() {
+    speedParam_.currentForwardSpeed = speedBehavior_->GetCurrentSpeed();
+}
+
+ float Player::GetRollDegree() const {
+    Vector3 currentEuler = obj3d_->transform_.quaternion_.ToEuler();
+    return ToDegree(currentEuler.z);
+}
+
 ///========================================================================
 /// バインド
 ///========================================================================
@@ -322,29 +352,4 @@ void Player::AdjustParam() {
         bulletShooter_->AdjustParam();
     }
 #endif // _DEBUG
-}
-
-void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior) {
-    if (speedBehavior_) {
-
-        behavior->TransferStateFrom(speedBehavior_.get());
-    }
-    speedBehavior_ = std::move(behavior);
-}
-void Player::UpdateSpeedBehavior() {
-
-    auto newBehavior = speedBehavior_->CheckForBehaviorChange();
-
-    if (newBehavior) {
-
-        ChangeSpeedBehavior(std::move(newBehavior));
-    }
-}
-
-void Player::SpeedInit() {
-    speedParam_.currentForwardSpeed = speedParam_.startForwardSpeed;
-}
-
-void Player::SpeedUpdate() {
-    speedParam_.currentForwardSpeed = speedBehavior_->GetCurrentSpeed();
 }

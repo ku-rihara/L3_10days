@@ -2,6 +2,7 @@
 // Function
 #include "Actor/Player/Player.h"
 #include "MathFunction.h"
+#include"Easing/EasingFunction.h"
 // math
 #include "Matrix4x4.h"
 // input
@@ -33,7 +34,7 @@ void GameCamera::Update() {
 
     if (target_) {
 
-          viewProjection_.translation_ = offsetParam_.cameraOffset;
+        viewProjection_.translation_ = offsetParam_.cameraOffset;
         viewProjection_.rotation_    = offsetParam_.rotationOffset;
 
         // 目標のローカルオフセット位置
@@ -69,9 +70,13 @@ Vector3 GameCamera::OffsetCalc(const Vector3& offset) const {
 
 void GameCamera::BindParams() {
     globalParameter_->Bind(groupName_, "rotationOffset", &offsetParam_.rotationOffset);
-    globalParameter_->Bind(groupName_, "cameraXYOffset", &offsetParam_.cameraXYOffset);
+    globalParameter_->Bind(groupName_, "baseCameraOffset", &offsetParam_.baseOffset);
     globalParameter_->Bind(groupName_, "cameraZOffsetMin", &offsetParam_.cameraZOffsetMin);
     globalParameter_->Bind(groupName_, "cameraZOffsetMax", &offsetParam_.cameraZOffsetMax);
+    globalParameter_->Bind(groupName_, "cameraZOffsetMin", &offsetParam_.cameraZOffsetMin);
+    globalParameter_->Bind(groupName_, "cameraZOffsetMax", &offsetParam_.cameraZOffsetMax);
+    globalParameter_->Bind(groupName_, "cameraXOffsetMin", &offsetParam_.cameraXOffsetMin);
+    globalParameter_->Bind(groupName_, "cameraXOffsetMax", &offsetParam_.cameraXOffsetMax);
 }
 
 void GameCamera::SetTarget(const WorldTransform* target) {
@@ -94,9 +99,11 @@ void GameCamera::AdjustParam() {
 
         ImGui::Separator();
         ImGui::Text("Parent Camera Settings");
-        ImGui::DragFloat2("Camera OffsetXY", &offsetParam_.cameraXYOffset.x, 0.01f);
+        ImGui::DragFloat3("Camera BaseOffset", &offsetParam_.baseOffset.x, 0.01f);
         ImGui::DragFloat("Camera OffsetZMin", &offsetParam_.cameraZOffsetMin, 0.01f);
         ImGui::DragFloat("Camera OffsetZMax", &offsetParam_.cameraZOffsetMax, 0.01f);
+        ImGui::DragFloat("Camera OffsetXMin", &offsetParam_.cameraXOffsetMin, 0.01f);
+        ImGui::DragFloat("Camera OffsetXMax", &offsetParam_.cameraXOffsetMax, 0.01f);
         ImGui::DragFloat3("Rotation Offset", &offsetParam_.rotationOffset.x, 0.01f);
         ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
 
@@ -111,15 +118,33 @@ void GameCamera::AdjustParam() {
 // ================================= カメラオフセット計算 ================================= //
 
 void GameCamera::OffsetInvRangeCalc() {
-    offsetParam_.offsetInvRange = 1.0f / (pPlayer_->GetSpeedParam().maxForwardSpeed - pPlayer_->GetSpeedParam().minForwardSpeed);
+
+    float zMax = pPlayer_->GetSpeedParam().maxForwardSpeed;
+    float zMin = pPlayer_->GetSpeedParam().minForwardSpeed;
+
+    float xMax = pPlayer_->GetRollRotateLimit();
+    float xMin = -pPlayer_->GetRollRotateLimit();
+
+    offsetParam_.offsetZInvRange = 1.0f / (zMax - zMin);
+    offsetParam_.offsetXInvRange = 1.0f / (xMax - xMin);
 }
 
 void GameCamera::CameraOffsetCalc() {
-    float t = (pPlayer_->GetSpeedParam().currentForwardSpeed - pPlayer_->GetSpeedParam().minForwardSpeed) * offsetParam_.offsetInvRange;
 
-    offsetParam_.cameraOffset.x = offsetParam_.cameraXYOffset.x;
-    offsetParam_.cameraOffset.y = offsetParam_.cameraXYOffset.y;
-    offsetParam_.cameraOffset.z = offsetParam_.cameraZOffsetMin + t * (offsetParam_.cameraZOffsetMax - offsetParam_.cameraZOffsetMin);
+    float zMin = pPlayer_->GetSpeedParam().minForwardSpeed;
+    float zOffsetInvRange = offsetParam_.offsetZInvRange;
+
+    float xMin = -pPlayer_->GetRollRotateLimit();
+    float xOffsetInvRange = offsetParam_.offsetXInvRange;
+
+    float currentX = pPlayer_->GetRollDegree();
+
+    float xT = (currentX - xMin) * xOffsetInvRange;
+    float zT = (pPlayer_->GetSpeedParam().currentForwardSpeed - zMin) * zOffsetInvRange;
+
+    offsetParam_.cameraOffset.x = offsetParam_.baseOffset.x - Lerp(offsetParam_.cameraXOffsetMin, offsetParam_.cameraXOffsetMax, xT);
+    offsetParam_.cameraOffset.y = offsetParam_.baseOffset.y;
+    offsetParam_.cameraOffset.z = offsetParam_.baseOffset.z + Lerp(offsetParam_.cameraZOffsetMin, offsetParam_.cameraZOffsetMax, zT);
 }
 
 // ================================= その他のメソッド ================================= //
