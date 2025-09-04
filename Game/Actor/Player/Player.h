@@ -46,7 +46,11 @@ public:
     Vector3 GetForwardVector() const;
     Vector3 GetRightVector() const;
     Vector3 GetUpVector() const;
+
+    // ロール所得
     float GetRollDegree() const;
+
+    bool GetIsUpsideDown()const;
 
     // Behavior management
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);

@@ -122,7 +122,7 @@ void Player::HandleInput() {
 void Player::RotateUpdate() {
     float deltaTime = Frame::DeltaTime();
 
-    // ---- ピッチ・ヨーは今のまま ---- //
+    // ---- ピッチ・ヨー ---- //
     Vector3 targetAngularVelocity = angleInput_;
     const float damping           = 0.95f;
     if (angleInput_.Length() < 0.001f) {
@@ -143,13 +143,14 @@ void Player::RotateUpdate() {
     // 補正処理
     CorrectionHorizon();
 
+    // 適応
     baseTransform_.quaternion_ = Quaternion::Slerp(
         baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-    // ---- ロールをスムーズに追従 ---- //
+    // ---- ロールを補間 ---- //
     currentRoll_ = Lerp(currentRoll_, targetRoll_, speedParam_.rollSpeed * deltaTime);
-    // バンクターン処理
+
     float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
     if (fabs(yawFromRoll) > 0.0001f) {
         Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), yawFromRoll);
@@ -171,19 +172,8 @@ void Player::RotateUpdate() {
 void Player::CorrectionHorizon() {
     float deltaTime = Frame::DeltaTime();
 
-    // 機体の上方向ベクトルを取得
-    Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
-    Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
-
-    // 機体の上方向とワールドの上方向の内積を計算
-    Vector3 worldUp = Vector3::ToUp();
-    float upDot     = Vector3::Dot(targetUpVector, worldUp);
-
-    // 機体が逆さまかどうかを判定
-    bool isUpsideDown = upDot < reverseDecisionValue_;
-
     // 補正開始フラグ
-    if (!isAutoRecovering_ && isUpsideDown && angleInput_.Length() < 0.001f) {
+    if (!isAutoRecovering_ && GetIsUpsideDown() && angleInput_.Length() < 0.001f) {
         isAutoRecovering_ = true;
     }
 
@@ -211,6 +201,21 @@ void Player::CorrectionHorizon() {
     if (fabs(currentEuler.x) < 0.01f) {
         isAutoRecovering_ = false;
     }
+}
+
+bool Player::GetIsUpsideDown() const{
+    // 機体の上方向ベクトルを取得
+    Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
+    Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
+
+    // 機体の上方向とワールドの上方向の内積を計算
+    Vector3 worldUp = Vector3::ToUp();
+    float upDot     = Vector3::Dot(targetUpVector, worldUp);
+
+    // 機体が逆さまかどうかを判定
+    bool isUpsideDown = upDot < reverseDecisionValue_;
+
+    return isUpsideDown;
 }
 
 Vector3 Player::GetForwardVector() const {
@@ -323,18 +328,8 @@ void Player::AdjustParam() {
         ImGui::Text("Euler (deg): P=%.1f, Y=%.1f, R=%.1f",
             ToDegree(euler.x), ToDegree(euler.y), ToDegree(euler.z));
 
-        // 機体の上方向ベクトル
-        Matrix4x4 rotMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
-        Vector3 upVector    = TransformNormal(Vector3::ToUp(), rotMatrix);
-        Vector3 worldUp     = Vector3(0.0f, 1.0f, 0.0f);
-        float upDot         = Vector3::Dot(upVector, worldUp);
-
-        ImGui::Text("Up Vector: (%.2f, %.2f, %.2f)", upVector.x, upVector.y, upVector.z);
-        ImGui::Text("Up Dot Product: %.3f", upDot);
-
-        // 逆さま判定の表示
-        bool isUpsideDown = upDot < reverseDecisionValue_;
-        if (isUpsideDown) {
+    
+        if (GetIsUpsideDown()) {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "STATUS: UPSIDE DOWN!");
         } else {
             ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "STATUS: Normal");
