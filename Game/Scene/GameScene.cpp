@@ -95,7 +95,7 @@ void GameScene::Update() {
 	skyDome_->Update();
 
 	miniMap_->Update();
-	uis_->Update();
+	uis_->Update(player_.get());
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();

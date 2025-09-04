@@ -672,6 +672,7 @@
     <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.cpp" />
     <ClCompile Include="Game\Actor\UI\GameUIs.cpp" />
     <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerAltUI.cpp" />
+    <ClCompile Include="Game\Actor\UI\NumDraw\NumDraw.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\struct\D3DResourceLeakCheck.h">
@@ -1160,6 +1161,7 @@
     <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.h" />
     <ClInclude Include="Game\Actor\UI\GameUIs.h" />
     <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerAltUI.h" />
+    <ClInclude Include="Game\Actor\UI\NumDraw\NumDraw.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

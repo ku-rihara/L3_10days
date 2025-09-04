@@ -9,9 +9,9 @@ void GameUIs::Init() {
 	playerAltUI_->Init();
 }
 
-void GameUIs::Update() {
+void GameUIs::Update(Player* _player) {
 	playerSpeedUI_->Update();
-	playerAltUI_->Update();
+	playerAltUI_->Update(_player);
 }
 
 void GameUIs::Draw() {

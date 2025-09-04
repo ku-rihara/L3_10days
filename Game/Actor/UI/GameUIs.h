@@ -11,7 +11,7 @@ public:
 	GameUIs()  = default;
 	~GameUIs() = default;
 	void Init();
-	void Update();
+	void Update(class Player* _player);
 	void Draw();
 
 private:
