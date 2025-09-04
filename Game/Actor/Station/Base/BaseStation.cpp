@@ -109,8 +109,8 @@ void BaseStation::ShowGui() {
 }
 
 void BaseStation::StartupSpawn() {
-	const int   target = (std::max)(0, std::min(initialSpawnCount_, maxConcurrentUnits_));
-	const float R = (std::max)(0.0f, initialSpawnDistanceFromThis_);
+	const int target = std::clamp(initialSpawnCount_, 0, maxConcurrentUnits_);
+	const float R = initialSpawnDistanceFromThis_;
 	const Vector3 c = GetWorldPosition();
 
 	// ==== Y のレンジを決定 ====

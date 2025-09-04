@@ -70,8 +70,8 @@ protected:
 	float   maxLife_ = 100.0f;
 	float   spawnInterbal_ = 5.0f;
 	int     maxConcurrentUnits_ = 20;
-	int		initialSpawnCount_ = 4;
-	float initialSpawnDistanceFromThis_ = 300.0f;	//< 初期配置用 この距離分までのランダムで初期配置(仮
+	int		initialSpawnCount_ = 20;
+	float initialSpawnDistanceFromThis_ = 1500.0f;	//< 初期配置用 この距離分までのランダムで初期配置(仮
 
 	// ---- game ----
 	FactionType faction_{};
