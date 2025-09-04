@@ -17,7 +17,7 @@ public:
 	void Init() override;
 	void Update() override;
 
-	void SpawnNPC()override;
+	void SpawnNPC(const Vector3& pos)override;
 
 private:
 	/// ===================================================

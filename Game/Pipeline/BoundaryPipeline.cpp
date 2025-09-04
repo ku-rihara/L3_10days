@@ -95,7 +95,7 @@ void BoundaryPipeline::CreateGraphicsPipeline() {
 	// 書き込みする
 	depthStencilDesc_.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	// 比較関数はLessEqual。つまり、近ければ描画される
-	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
 	// Shaderをコンパイルする
 	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Boundary.vs.hlsl", L"vs_6_0");

@@ -2,6 +2,7 @@
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Frame/Frame.h"
 #include "Actor/NPC/NPC.h"
+#include "random.h"
 #include <algorithm>
 #include "imgui.h"
 
@@ -24,6 +25,7 @@ void BaseStation::Init() {
 
 	// 初期座標適用
 	baseTransform_.translation_ = initialPosition_;
+	baseTransform_.UpdateMatrix();
 
 	// === AI 初期化 ===
 	ai_.Initialize(this, unitDirector_);
@@ -32,6 +34,10 @@ void BaseStation::Init() {
 	//npcの弾制御
 	fireController_ = std::make_unique< NpcFireController>();
 	fireController_->Init();
+
+	this->Update();
+
+	StartupSpawn();
 }
 
 void BaseStation::Update() {
@@ -99,6 +105,40 @@ void BaseStation::ShowGui() {
 		}
 
 		ImGui::PopID();
+	}
+}
+
+void BaseStation::StartupSpawn() {
+	const int target = std::clamp(initialSpawnCount_, 0, maxConcurrentUnits_);
+	const float R = initialSpawnDistanceFromThis_;
+	const Vector3 c = GetWorldPosition();
+
+	// ==== Y のレンジを決定 ====
+	constexpr float kBoundaryY = 0.0f;
+	constexpr float kMargin = 40.0f;
+
+	float minY, maxY;
+	if (c.y >= kBoundaryY) {
+		// +Y側陣営
+		minY = kBoundaryY + kMargin; // 40 以上上
+		maxY = c.y;                  // 自陣の高さ
+	} else {
+		// -Y側陣営
+		minY = c.y;                  // 自陣の高さ
+		maxY = kBoundaryY - kMargin; // -40 以下
+	}
+
+	// もし範囲が成立しない（自陣が境界に近すぎるなど）場合は拠点Y固定
+	if (maxY < minY) {
+		minY = maxY = c.y;
+	}
+
+	for (int i = 0; i < target; ++i) {
+		float x = c.x + Random::Range(-R, R);
+		float z = c.z + Random::Range(-R, R);
+		float y = Random::Range(minY, maxY);
+
+		SpawnNPC(Vector3{ x, y, z });
 	}
 }
 

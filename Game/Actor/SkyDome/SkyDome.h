@@ -4,7 +4,6 @@
 #include "BaseObject/BaseObject.h"
 #include "3d/Object3d.h"
 
-
 /// ////////////////////////////////////////////////////////////
 /// 天球
 /// ////////////////////////////////////////////////////////////
@@ -19,6 +18,7 @@ public:
 
 	void Init() override;
 	void Update() override;
+	void Draw(const ViewProjection& _vp);
 
 private:
 };

@@ -26,12 +26,12 @@ void BoundaryShard::Init() {
 	LoadShardModel("./Resources/Model/BoundaryShard/BoundaryShard.obj");
 
 	breakableTransformBuffer_.Create(
-		static_cast<uint32_t>(Boundary::GetInstance()->GetMaxHoleCount()),
+		static_cast<uint32_t>(Boundary::GetInstance()->GetMaxHoleCount() * 60),
 		DirectXCommon::GetInstance()->GetDxDevice()
 	);
 
 	breakableBuffer_.Create(
-		static_cast<uint32_t>(Boundary::GetInstance()->GetMaxHoleCount()),
+		static_cast<uint32_t>(Boundary::GetInstance()->GetMaxHoleCount() * 60),
 		DirectXCommon::GetInstance()->GetDxDevice()
 	);
 
