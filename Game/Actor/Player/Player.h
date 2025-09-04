@@ -46,6 +46,8 @@ public:
     Vector3 GetForwardVector() const;
     Vector3 GetRightVector() const;
     Vector3 GetUpVector() const;
+
+    // ロール所得
     float GetRollDegree() const;
 
     // ロール所得
