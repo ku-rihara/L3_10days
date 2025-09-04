@@ -24,7 +24,7 @@ public:
 
     void SpeedChange();
 
-    void DirectionToCamera();
+    void CorrectionHorizon();
 
     // editor
     void AdjustParam();
@@ -48,6 +48,7 @@ private:
     // ブースト
     bool isLBPressed_;
     bool wasLBPressed_;
+    Easing<float> speedChangeEase_;
 
     // globalParameter
     GlobalParameter* globalParameter_;
@@ -64,27 +65,31 @@ private:
     float rollSpeed_;
 
     // 物理パラメータ
-    Vector3 velocity_;
-    Vector3 angularVelocity_;
-    Vector3 angleInput_;
-    Quaternion targetRotation_;
+    Vector3 velocity_          = Vector3::ZeroVector();
+    Vector3 angularVelocity_   = Vector3::ZeroVector();
+    Vector3 angleInput_        = Vector3::ZeroVector();
+    Quaternion targetRotation_ = Quaternion::Identity();
 
-    float rotationSmoothness_;
-    float rollRotateLimit_;
-
-    Vector3 direction_;
-    float objectiveAngle_;
-
+    // ピッチ
     float pitchBackTime_;
-    float rollBackTime_;
     float pitchReturnThreshold_;
 
-    Easing<float> speedChangeEase_;
-
-    bool isAutoRecovering_ = false;
-
+    // バンク強さ、逆さ判定の値
     float bankRate_;
     float reverseDecisionValue_;
+
+
+    //  逆さ補正中かのフラグ
+    bool isAutoRecovering_ = false;
+
+    // roll
+    float targetRoll_;
+    float currentRoll_;
+    float rollBackTime_;
+    float rotationSmoothness_;
+    float rollRotateLimit_;
+    float currentMaxRoll_;
+
 
      float targetRoll_  = 0.0f; // 目標のロール角
     float currentRoll_ = 0.0f; // 実際のロール角
