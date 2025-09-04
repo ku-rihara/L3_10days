@@ -1,8 +1,6 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
 #include "Behavior/BasePlayerSpeedBehavior.h"
-#include "Behavior/PlayerBoost.h"
-#include "Behavior/PlayerSpeedDown.h"
 #include "Bullet/PlayerBulletShooter.h"
 #include "Easing/Easing.h"
 #include "utility/ParameterEditor/GlobalParameter.h"

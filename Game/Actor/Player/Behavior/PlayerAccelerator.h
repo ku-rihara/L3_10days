@@ -2,7 +2,7 @@
 
 #include "BasePlayerSpeedBehavior.h"
 
-class PlayerBoost : public BasePlayerSpeedBehavior {
+class PlayerAccelerator : public BasePlayerSpeedBehavior {
 private:
     
     /// ===================================================
@@ -12,8 +12,8 @@ private:
 
 public:
     // コンストラクタ
-    PlayerBoost(Player* player);
-    ~PlayerBoost();
+    PlayerAccelerator(Player* player);
+    ~PlayerAccelerator();
 
     void Update() override;
     void Debug() override;

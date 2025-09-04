@@ -30,8 +30,6 @@
     <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
     <ClCompile Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.cpp" />
-    <ClCompile Include="Game\Actor\Player\Behavior\PlayerBoost.cpp" />
-    <ClCompile Include="Game\Actor\Player\Behavior\PlayerSpeedDown.cpp" />
     <ClCompile Include="Game\Physics\SweepAabb.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryShardPipeline.cpp" />
     <ClCompile Include="Game\Actor\Boundary\BoundaryShard.cpp" />
@@ -199,8 +197,8 @@
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcBullet.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.cpp" />
-    <ClCompile Include="Game\Actor\Player\Behavior\PlayerBoost.cpp" />
-    <ClCompile Include="Game\Actor\Player\Behavior\PlayerSpeedDown.cpp" />
+    <ClCompile Include="Game\Actor\Player\Behavior\PlayerAccelerator.cpp" />
+    <ClCompile Include="Game\Actor\Player\Behavior\PlayerAcceleUnattended.cpp" />
     <ClCompile Include="Game\Pipeline\MiniMapPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -211,8 +209,6 @@
     <ClInclude Include="Game\Actor\NPC\Navigation\MoveConstraint.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\NpcNavigator.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.h" />
-    <ClInclude Include="Game\Actor\Player\Behavior\PlayerBoost.h" />
-    <ClInclude Include="Game\Actor\Player\Behavior\PlayerSpeedDown.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\BasePlayerBullet.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\BulletFactory.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerBulletShooter.h" />
@@ -399,8 +395,8 @@
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcBullet.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.h" />
-    <ClInclude Include="Game\Actor\Player\Behavior\PlayerBoost.h" />
-    <ClInclude Include="Game\Actor\Player\Behavior\PlayerSpeedDown.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\PlayerAccelerator.h" />
+    <ClInclude Include="Game\Actor\Player\Behavior\PlayerAcceleUnattended.h" />
     <ClInclude Include="Game\Pipeline\MiniMapPipeline.h" />
   </ItemGroup>
   <ItemGroup>

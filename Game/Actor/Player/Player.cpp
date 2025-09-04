@@ -3,8 +3,8 @@
 #include "input/Input.h"
 #include "MathFunction.h"
 // behavior
-#include "Behavior/PlayerBoost.h"
-#include "Behavior/PlayerSpeedDown.h"
+#include "Behavior/PlayerAccelerator.h"
+#include "Behavior/PlayerAcceleUnattended.h"
 #include <imgui.h>
 #include <numbers>
 
@@ -31,7 +31,7 @@ void Player::Init() {
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
 
-    ChangeSpeedBehavior(std::make_unique<PlayerSpeedDown>(this));
+    ChangeSpeedBehavior(std::make_unique<PlayerAcceleUnattended>(this));
 }
 
 void Player::Update() {
@@ -146,7 +146,6 @@ void Player::RotateUpdate() {
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
     // ---- ロールをスムーズに追従 ---- //
-
     currentRoll_ = Lerp(currentRoll_, targetRoll_, rollSpeed_ * deltaTime);
     // バンクターン処理
     float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
@@ -334,15 +333,13 @@ void Player::UpdateSpeedBehavior() {
     // LBボタンの状態を取得
     isLBPressed_ = Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
-    // ボタンが押された瞬間の処理
+    // ブースト
     if (isLBPressed_ && !wasLBPressed_) {
-        // BoostBehaviorに切り替え
-        ChangeSpeedBehavior(std::make_unique<PlayerBoost>(this));
+        ChangeSpeedBehavior(std::make_unique<PlayerAccelerator>(this));
     }
-    // ボタンが離された瞬間の処理
+    // ブースト解除
     else if (!isLBPressed_ && wasLBPressed_) {
-        // SpeedDownBehaviorに切り替え
-        ChangeSpeedBehavior(std::make_unique<PlayerSpeedDown>(this));
+        ChangeSpeedBehavior(std::make_unique<PlayerAcceleUnattended>(this));
     }
 
     // 前フレームのボタン状態を保存

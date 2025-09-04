@@ -2,7 +2,7 @@
 
 #include "BasePlayerSpeedBehavior.h"
 
-class PlayerSpeedDown : public BasePlayerSpeedBehavior {
+class PlayerAcceleUnattended : public BasePlayerSpeedBehavior {
 private:
     /// ===================================================
     /// private variable
@@ -10,8 +10,8 @@ private:
 
 public:
     // コンストラクタ
-    PlayerSpeedDown(Player* player);
-    ~PlayerSpeedDown();
+    PlayerAcceleUnattended(Player* player);
+    ~PlayerAcceleUnattended();
 
     void Update() override;
     void Debug() override;

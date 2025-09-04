@@ -5,7 +5,6 @@
 #include "Matrix4x4.h"
 // input
 #include "input/Input.h"
-
 /// std
 #include <imgui.h>
 #include <numbers>
@@ -73,7 +72,6 @@ void GameCamera::SetTarget(const WorldTransform* target) {
     viewProjection_.SetParent(target);
 
     // 初期位置をリセット
-    viewProjection_.ignoreParentRoll_ = false;
     viewProjection_.translation_      = cameraOffset_;
     viewProjection_.rotation_         = rotationOffset_;
 

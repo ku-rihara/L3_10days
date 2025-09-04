@@ -20,9 +20,6 @@ public:
 
     void Debug();
 
-    void RotateAdapt();
-    void TranslateAdapt();
-
     Vector3 OffsetCalc(const Vector3& offset) const;
     Vector3 GetWorldPos() const;
 
