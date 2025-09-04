@@ -12,8 +12,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
+    <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
     <ClCompile Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.cpp" />
+    <ClCompile Include="Game\Actor\UI\GameUIs.cpp" />
+    <ClCompile Include="Game\Actor\UI\NumDraw\NumDraw.cpp" />
+    <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerAltUI.cpp" />
+    <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.cpp" />
     <ClCompile Include="Game\Physics\SweepAabb.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerAccelerator.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerAcceleUnattended.cpp" />
@@ -198,8 +203,13 @@
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerBulletShooter.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerMissile.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerNormalBullet.h" />
+    <ClInclude Include="Game\Actor\SkyDome\SkyDome.h" />
     <ClInclude Include="Game\Actor\Station\UnitDirector\IUnitDirector.h" />
     <ClInclude Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.h" />
+    <ClInclude Include="Game\Actor\UI\GameUIs.h" />
+    <ClInclude Include="Game\Actor\UI\NumDraw\NumDraw.h" />
+    <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerAltUI.h" />
+    <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.h" />
     <ClInclude Include="Game\Details\IDamageSurface.h" />
     <ClInclude Include="Game\Physics\Contact.h" />
     <ClInclude Include="Game\Physics\SweepAabb.h" />

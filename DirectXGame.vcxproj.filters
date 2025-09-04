@@ -200,6 +200,11 @@
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerAccelerator.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerAcceleUnattended.cpp" />
     <ClCompile Include="Game\Pipeline\MiniMapPipeline.cpp" />
+    <ClCompile Include="Game\Actor\UI\NumDraw\NumDraw.cpp" />
+    <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerAltUI.cpp" />
+    <ClCompile Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.cpp" />
+    <ClCompile Include="Game\Actor\UI\GameUIs.cpp" />
+    <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -398,6 +403,11 @@
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerAccelerator.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerAcceleUnattended.h" />
     <ClInclude Include="Game\Pipeline\MiniMapPipeline.h" />
+    <ClInclude Include="Game\Actor\UI\NumDraw\NumDraw.h" />
+    <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerAltUI.h" />
+    <ClInclude Include="Game\Actor\UI\PlayerUI\PlayerSpeedUI.h" />
+    <ClInclude Include="Game\Actor\UI\GameUIs.h" />
+    <ClInclude Include="Game\Actor\SkyDome\SkyDome.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

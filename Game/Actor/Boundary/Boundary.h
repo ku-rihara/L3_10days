@@ -94,7 +94,7 @@ private:
 	/// private : objects
 	/// ===================================================
 
-	size_t maxHoleCount_ = 128;
+	size_t maxHoleCount_ = 1024;
 	std::vector<Hole> holes_;
 
 	float holeMaxLifeTime_ = 16.0f;
