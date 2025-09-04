@@ -13,8 +13,8 @@ PlayerAccelUnattended::~PlayerAccelUnattended() {
 
 void PlayerAccelUnattended::InitializeEasing() {
     // 減速用のイージングパラメータ設定
-    speedEase_.SetEndValue(20.0f); // 基本速度
-    speedEase_.SetMaxTime(3.0f);   // 減速時間
+    speedEase_.SetEndValue(pPlayer_->GetSpeedParam().minForwardSpeed);
+    /*speedEase_.SetMaxTime(3.0f); */
 }
 
 void PlayerAccelUnattended::ResetEasing() {

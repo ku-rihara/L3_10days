@@ -13,8 +13,8 @@ PlayerAccelerator::~PlayerAccelerator() {
 
 void PlayerAccelerator::InitializeEasing() {
     // 加速用のイージングパラメータ設定
-    speedEase_.SetEndValue(100.0f); // 最大速度
-    speedEase_.SetMaxTime(2.0f); // 加速時間
+    speedEase_.SetEndValue(pPlayer_->GetSpeedParam().maxForwardSpeed);
+    // speedEase_.SetMaxTime(2.0f);
 }
 
 void PlayerAccelerator::ResetEasing() {
@@ -67,5 +67,4 @@ void PlayerAccelerator::SetCurrentEaseTime(float time) {
 }
 
 void PlayerAccelerator::Debug() {
-    // Debug implementation
 }

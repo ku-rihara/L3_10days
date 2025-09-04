@@ -73,6 +73,7 @@ void GameScene::Init() {
 	//====================================Class Set===================================================
 	player_->SetViewProjection(&viewProjection_);
 	gameCamera_->SetTarget(&player_->GetTransform());
+    gameCamera_->SetPlayer(player_.get());
 
 	// ParticleViewSet
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -160,9 +161,6 @@ void GameScene::SpriteDraw() {
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
 	miniMapIconPipeline->Draw(commandList, miniMap_.get());
-
-
-
 }
 
 /// ======================================================

@@ -239,6 +239,8 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "pitchSpeed", &speedParam_.pitchSpeed);
     globalParameter_->Bind(groupName_, "yawSpeed", &speedParam_.yawSpeed);
     globalParameter_->Bind(groupName_, "rollSpeed", &speedParam_.rollSpeed);
+    globalParameter_->Bind(groupName_, "minForwardSpeed", &speedParam_.minForwardSpeed);
+    globalParameter_->Bind(groupName_, "maxForwardSpeed", &speedParam_.maxForwardSpeed);
     globalParameter_->Bind(groupName_, "rotationSmoothness", &rotationSmoothness_);
     globalParameter_->Bind(groupName_, "rollRotateLimit", &rollRotateLimit_);
     globalParameter_->Bind(groupName_, "pitchBackTime", &pitchBackTime_);
@@ -262,6 +264,8 @@ void Player::AdjustParam() {
         ImGui::Separator();
         ImGui::Text("Fighter Controls");
         ImGui::DragFloat("StartForward Speed", &speedParam_.startForwardSpeed, 0.01f);
+        ImGui::DragFloat("minForward Speed", &speedParam_.minForwardSpeed, 0.01f);
+        ImGui::DragFloat("maxForward Speed", &speedParam_.maxForwardSpeed, 0.01f);
         ImGui::DragFloat("Pitch Speed", &speedParam_.pitchSpeed, 0.01f);
         ImGui::DragFloat("Yaw Speed", &speedParam_.yawSpeed, 0.01f);
         ImGui::DragFloat("Roll Speed", &speedParam_.rollSpeed, 0.01f);
@@ -270,7 +274,6 @@ void Player::AdjustParam() {
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
-
         ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_, 0.01f, -1.0f, 0.0f);
         ImGui::DragFloat("bankRate", &bankRate_, 0.01f);
 
@@ -306,7 +309,7 @@ void Player::AdjustParam() {
         } else {
             ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "STATUS: Normal");
         }
-        ImGui::Text("currentSpeed:%.3f",speedEase_.GetCurrentEaseTime());
+        ImGui::Text("currentSpeed:%.3f",speedParam_.currentForwardSpeed);
       
         // セーブ・ロード
         ImGui::Separator();
@@ -339,7 +342,7 @@ void Player::UpdateSpeedBehavior() {
 }
 
 void Player::SpeedInit() {
- 
+    speedParam_.currentForwardSpeed = speedParam_.startForwardSpeed;
 }
 
 void Player::SpeedUpdate() {

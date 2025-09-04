@@ -11,6 +11,8 @@ class Player : public BaseObject {
 public:
     struct SpeedParam {
         float startForwardSpeed;
+        float minForwardSpeed;
+        float maxForwardSpeed;
         float currentForwardSpeed;
         float pitchSpeed;
         float yawSpeed;
@@ -57,7 +59,7 @@ private:
     // ブースト
     bool isLBPressed_;
     bool wasLBPressed_;
- 
+
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Player";
@@ -65,7 +67,7 @@ private:
     // Parameter
     int32_t hp_;
 
-    //speed 
+    // speed
     Easing<float> speedEase_;
     SpeedParam speedParam_;
 
@@ -102,7 +104,7 @@ public:
     const float& GetSpeed() const { return velocity_.Length(); }
     const Quaternion& GetQuaternion() const { return baseTransform_.quaternion_; }
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
-    const float& GetForwardSpeed() const { return speedParam_.currentForwardSpeed; }
+    const SpeedParam& GetSpeedParam() const { return speedParam_; }
 
     void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
 };

@@ -17,13 +17,13 @@ void BasePlayerSpeedBehavior::TransferStateFrom(BasePlayerSpeedBehavior* previou
     if (previousBehavior) {
         // 前のBehaviorから現在の速度を取得
         float prevSpeed    = previousBehavior->GetCurrentSpeed();
-        float prevEaseTime = previousBehavior->GetCurrentEaseTime();
+       /* float prevEaseTime = previousBehavior->GetCurrentEaseTime();*/
 
         // 現在のBehaviorの開始値を前のBehaviorの現在値に設定
         speedEase_.SetStartValue(prevSpeed);
         currentSpeed_ = prevSpeed;
         speedEase_.SetCurrentValue(prevSpeed);
-        speedEase_.SetCurrentEaseTime(prevEaseTime);
+        speedEase_.SetCurrentEaseTime(0.0f);
 
         // 入力状態も引き継ぐ
         wasLBPressed_ = previousBehavior->wasLBPressed_;

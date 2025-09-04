@@ -1,5 +1,6 @@
 #include "GameCamera.h"
 // Function
+#include "Actor/Player/Player.h"
 #include "MathFunction.h"
 // math
 #include "Matrix4x4.h"
@@ -25,12 +26,12 @@ void GameCamera::Init() {
 
 void GameCamera::Update() {
     rendition_->Update();
-    shakeOffsetPos_ = rendition_->GetShakeOffset();
+    offsetParam_.shakeOffsetPos = rendition_->GetShakeOffset();
 
     if (target_) {
 
         // 目標のローカルオフセット位置
-        Vector3 targetLocalPos = cameraOffset_ + shakeOffsetPos_;
+        Vector3 targetLocalPos = offsetParam_.cameraOffset + offsetParam_.shakeOffsetPos;
         // position補間
         viewProjection_.translation_ = Lerp(viewProjection_.translation_, targetLocalPos, smoothness_);
     }
@@ -49,20 +50,20 @@ void GameCamera::Reset() {
     destinationAngleY_ = viewProjection_.rotation_.y;
 
     // 追従対象からのオフセット
-    Vector3 offset               = OffsetCalc(cameraOffset_);
+    Vector3 offset               = OffsetCalc(offsetParam_.cameraOffset);
     viewProjection_.translation_ = interTarget_ + offset;
 }
 
 Vector3 GameCamera::OffsetCalc(const Vector3& offset) const {
     // カメラの角度から回転行列を計算する
     Matrix4x4 rotateMatrix = MakeRotateYMatrix(viewProjection_.rotation_.y);
-    Vector3 resultOffset   = TransformNormal(offset + shakeOffsetPos_, rotateMatrix);
+    Vector3 resultOffset   = TransformNormal(offset + offsetParam_.shakeOffsetPos, rotateMatrix);
     return resultOffset;
 }
 
 void GameCamera::BindParams() {
-    globalParameter_->Bind(groupName_, "rotationOffset", &rotationOffset_);
-    globalParameter_->Bind(groupName_, "cameraOffset", &cameraOffset_);
+    globalParameter_->Bind(groupName_, "rotationOffset", &offsetParam_.rotationOffset);
+    globalParameter_->Bind(groupName_, "cameraOffset", &offsetParam_.cameraOffset);
 }
 
 void GameCamera::SetTarget(const WorldTransform* target) {
@@ -72,8 +73,8 @@ void GameCamera::SetTarget(const WorldTransform* target) {
     viewProjection_.SetParent(target);
 
     // 初期位置をリセット
-    viewProjection_.translation_      = cameraOffset_;
-    viewProjection_.rotation_         = rotationOffset_;
+    viewProjection_.translation_ = offsetParam_.cameraOffset;
+    viewProjection_.rotation_    = offsetParam_.rotationOffset;
 
     Reset();
 }
@@ -85,13 +86,13 @@ void GameCamera::AdjustParam() {
 
         ImGui::Separator();
         ImGui::Text("Parent Camera Settings");
-        ImGui::DragFloat3("Camera Offset", &cameraOffset_.x, 0.1f);
-        ImGui::DragFloat3("Rotation Offset", &rotationOffset_.x, 0.01f);
+        ImGui::DragFloat3("Camera Offset", &offsetParam_.cameraOffset.x, 0.1f);
+        ImGui::DragFloat3("Rotation Offset", &offsetParam_.rotationOffset.x, 0.01f);
         ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
 
         if (target_) {
-            viewProjection_.translation_ = cameraOffset_;
-            viewProjection_.rotation_    = rotationOffset_;
+            viewProjection_.translation_ = offsetParam_.cameraOffset;
+            viewProjection_.rotation_    = offsetParam_.rotationOffset;
         }
 
         globalParameter_->ParamSaveForImGui(groupName_);
@@ -101,6 +102,10 @@ void GameCamera::AdjustParam() {
     }
 #endif
 }
+
+void GameCamera::CalcCameraOffset() {
+}
+
 // ================================= その他のメソッド ================================= //
 
 void GameCamera::GetIsCameraMove() {
@@ -114,7 +119,7 @@ Vector3 GameCamera::GetWorldPos() const {
 }
 
 Vector3 GameCamera::GetTargetPos() const {
-    return Vector3();
+    return target_->GetWorldPos();
 }
 
 void GameCamera::Debug() {
@@ -126,4 +131,8 @@ void GameCamera::PlayAnimation(const std::string& filename) {
 
 void GameCamera::PlayShake(const std::string& filename) {
     rendition_->ShakePlay(filename);
+}
+
+void GameCamera::SetPlayer(Player* player) {
+    pPlayer_ = player;
 }
