@@ -24,7 +24,7 @@ private:
     std::array<BYTE, 256> keyPre_;
     // マウス
     static std::unique_ptr<Mouse> mouse_;
-    static std::vector<std::unique_ptr<Gamepad>> gamepads_; // Gamepadクラスのベクター
+    static std::vector<std::unique_ptr<Gamepad>> gamepads_;
 
 public:
     // シングルトンインスタンスの取得
@@ -102,6 +102,8 @@ public:
     /// <param name="buttonNumber">ボタン番号</param>
     /// <returns>押されているか</returns>
     static bool IsPressPad(int32_t padNumber, int32_t buttonNumber);
+
+    static bool IsPressRightTrigger(int32_t padNumber, uint8_t threshold);
 
     /// <summary>
     /// ゲームパッドのトリガーをチェック

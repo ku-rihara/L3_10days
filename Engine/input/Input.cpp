@@ -129,6 +129,19 @@ bool Input::IsPressPad(int32_t padNumber, int32_t buttonNumber)
 
 	return gamepads_[padNumber]->IsPressButton(buttonNumber);
 }
+bool Input::IsPressRightTrigger(int32_t padNumber, uint8_t threshold) {
+    if (padNumber < 0 || padNumber >= XUSER_MAX_COUNT) {
+        return false;
+    }
+
+    XINPUT_STATE state;
+    if (XInputGetState(padNumber, &state) != ERROR_SUCCESS) {
+        return false;
+    }
+
+    uint8_t value = state.Gamepad.bRightTrigger;
+    return value > std::max<uint8_t>(threshold, 30);
+}
 
 bool Input::IsTriggerPad(int32_t padNumber, int32_t buttonNumber)
 {

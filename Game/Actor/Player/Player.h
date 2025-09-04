@@ -9,6 +9,15 @@
 
 class Player : public BaseObject {
 public:
+    struct SpeedParam {
+        float startForwardSpeed;
+        float currentForwardSpeed;
+        float pitchSpeed;
+        float yawSpeed;
+        float rollSpeed;
+    };
+
+public:
     Player()  = default;
     ~Player() = default;
 
@@ -17,10 +26,12 @@ public:
     void Update();
 
     // Move
-    void HandleInput(); // 入力処理
-    void RotateUpdate(); // 物理更新
+    void HandleInput();
+    void RotateUpdate();
 
-    void SpeedChange();
+    // speed
+    void SpeedInit();
+    void SpeedUpdate();
 
     void CorrectionHorizon();
 
@@ -46,21 +57,17 @@ private:
     // ブースト
     bool isLBPressed_;
     bool wasLBPressed_;
-    Easing<float> speedChangeEase_;
-
+ 
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Player";
 
     // Parameter
     int32_t hp_;
-    float speed_;
 
-    // スピードパラメータ
-    float forwardSpeed_;
-    float pitchSpeed_;
-    float yawSpeed_;
-    float rollSpeed_;
+    //speed 
+    Easing<float> speedEase_;
+    SpeedParam speedParam_;
 
     // 物理パラメータ
     Vector3 velocity_          = Vector3::ZeroVector();
@@ -75,7 +82,6 @@ private:
     // バンク強さ、逆さ判定の値
     float bankRate_;
     float reverseDecisionValue_;
-
 
     //  逆さ補正中かのフラグ
     bool isAutoRecovering_ = false;
@@ -96,7 +102,7 @@ public:
     const float& GetSpeed() const { return velocity_.Length(); }
     const Quaternion& GetQuaternion() const { return baseTransform_.quaternion_; }
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
-    const float& GetForwardSpeed() const { return forwardSpeed_; }
+    const float& GetForwardSpeed() const { return speedParam_.currentForwardSpeed; }
 
     void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
 };

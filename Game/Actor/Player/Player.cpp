@@ -26,17 +26,22 @@ void Player::Init() {
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
 
-
     // 弾初期化
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
 
-    ChangeSpeedBehavior(std::make_unique<PlayerAcceleUnattended>(this));
+    // Speed Init
+    SpeedInit();
+
+    ChangeSpeedBehavior(std::make_unique<PlayerAccelUnattended>(this));
 }
 
 void Player::Update() {
     // 入力処理
     HandleInput();
+
+    UpdateSpeedBehavior();
+    speedBehavior_->Update();
 
     // 物理計算
     RotateUpdate();
@@ -95,16 +100,16 @@ void Player::HandleInput() {
     float deltaTime = Frame::DeltaTime();
 
     // ピッチ
-    angleInput_.x = -stickL.y * (pitchSpeed_ * deltaTime);
+    angleInput_.x = -stickL.y * (speedParam_.pitchSpeed * deltaTime);
 
     // ヨー
-    angleInput_.y = stickR.x * (yawSpeed_ * deltaTime);
+    angleInput_.y = stickR.x * (speedParam_.yawSpeed * deltaTime);
 
     // ロール
     float rollInput = -stickL.x;
 
     // 目標ロール角を更新
-    targetRoll_ += rollInput * rollSpeed_ * deltaTime;
+    targetRoll_ += rollInput * speedParam_.rollSpeed * deltaTime;
 
     // 制限
     if (fabs(rollInput) < 0.001f) {
@@ -114,7 +119,6 @@ void Player::HandleInput() {
         currentMaxRoll_ = ToRadian(rollRotateLimit_);
     }
     targetRoll_ = std::clamp(targetRoll_, -currentMaxRoll_, currentMaxRoll_);
-
 }
 
 void Player::RotateUpdate() {
@@ -146,7 +150,7 @@ void Player::RotateUpdate() {
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
     // ---- ロールをスムーズに追従 ---- //
-    currentRoll_ = Lerp(currentRoll_, targetRoll_, rollSpeed_ * deltaTime);
+    currentRoll_ = Lerp(currentRoll_, targetRoll_, speedParam_.rollSpeed * deltaTime);
     // バンクターン処理
     float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
     if (fabs(yawFromRoll) > 0.0001f) {
@@ -161,13 +165,11 @@ void Player::RotateUpdate() {
     obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
 
     // ---- 移動 ---- //
-    Vector3 forwardVelocity = GetForwardVector() * forwardSpeed_ * deltaTime;
+    Vector3 forwardVelocity = GetForwardVector() * speedParam_.currentForwardSpeed * deltaTime;
     velocity_               = forwardVelocity;
     baseTransform_.translation_ += velocity_;
 }
 
-
-// 水平への補正
 void Player::CorrectionHorizon() {
     float deltaTime = Frame::DeltaTime();
 
@@ -213,9 +215,6 @@ void Player::CorrectionHorizon() {
     }
 }
 
-
-void Player::SpeedChange() {
-}
 Vector3 Player::GetForwardVector() const {
     Matrix4x4 rotationMatrix = MakeRotateMatrixQuaternion(baseTransform_.quaternion_);
     return TransformNormal(Vector3::ToForward(), rotationMatrix).Normalize();
@@ -236,11 +235,10 @@ Vector3 Player::GetUpVector() const {
 ///========================================================================
 void Player::BindParams() {
     globalParameter_->Bind(groupName_, "hp", &hp_);
-    globalParameter_->Bind(groupName_, "speed", &speed_);
-    globalParameter_->Bind(groupName_, "forwardSpeed", &forwardSpeed_);
-    globalParameter_->Bind(groupName_, "pitchSpeed", &pitchSpeed_);
-    globalParameter_->Bind(groupName_, "yawSpeed", &yawSpeed_);
-    globalParameter_->Bind(groupName_, "rollSpeed", &rollSpeed_);
+    globalParameter_->Bind(groupName_, "forwardSpeed", &speedParam_.startForwardSpeed);
+    globalParameter_->Bind(groupName_, "pitchSpeed", &speedParam_.pitchSpeed);
+    globalParameter_->Bind(groupName_, "yawSpeed", &speedParam_.yawSpeed);
+    globalParameter_->Bind(groupName_, "rollSpeed", &speedParam_.rollSpeed);
     globalParameter_->Bind(groupName_, "rotationSmoothness", &rotationSmoothness_);
     globalParameter_->Bind(groupName_, "rollRotateLimit", &rollRotateLimit_);
     globalParameter_->Bind(groupName_, "pitchBackTime", &pitchBackTime_);
@@ -259,15 +257,14 @@ void Player::AdjustParam() {
         ImGui::PushID(groupName_.c_str());
 
         ImGui::DragInt("Hp", &hp_);
-        ImGui::DragFloat("speed", &speed_, 0.01f);
 
         // EditParameter
         ImGui::Separator();
         ImGui::Text("Fighter Controls");
-        ImGui::DragFloat("Forward Speed", &forwardSpeed_, 0.01f);
-        ImGui::DragFloat("Pitch Speed", &pitchSpeed_, 0.01f);
-        ImGui::DragFloat("Yaw Speed", &yawSpeed_, 0.01f);
-        ImGui::DragFloat("Roll Speed", &rollSpeed_, 0.01f);
+        ImGui::DragFloat("StartForward Speed", &speedParam_.startForwardSpeed, 0.01f);
+        ImGui::DragFloat("Pitch Speed", &speedParam_.pitchSpeed, 0.01f);
+        ImGui::DragFloat("Yaw Speed", &speedParam_.yawSpeed, 0.01f);
+        ImGui::DragFloat("Roll Speed", &speedParam_.rollSpeed, 0.01f);
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
@@ -276,7 +273,6 @@ void Player::AdjustParam() {
 
         ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_, 0.01f, -1.0f, 0.0f);
         ImGui::DragFloat("bankRate", &bankRate_, 0.01f);
-
 
         // デバッグ
         ImGui::Separator();
@@ -310,7 +306,8 @@ void Player::AdjustParam() {
         } else {
             ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "STATUS: Normal");
         }
-
+        ImGui::Text("currentSpeed:%.3f",speedEase_.GetCurrentEaseTime());
+      
         // セーブ・ロード
         ImGui::Separator();
         globalParameter_->ParamSaveForImGui(groupName_);
@@ -325,23 +322,26 @@ void Player::AdjustParam() {
 }
 
 void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior) {
+    if (speedBehavior_) {
+       
+        behavior->TransferStateFrom(speedBehavior_.get());
+    }
     speedBehavior_ = std::move(behavior);
 }
-
 void Player::UpdateSpeedBehavior() {
+   
+    auto newBehavior = speedBehavior_->CheckForBehaviorChange();
 
-    // LBボタンの状態を取得
-    isLBPressed_ = Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER);
-
-    // ブースト
-    if (isLBPressed_ && !wasLBPressed_) {
-        ChangeSpeedBehavior(std::make_unique<PlayerAccelerator>(this));
+    if (newBehavior) {
+    
+        ChangeSpeedBehavior(std::move(newBehavior));
     }
-    // ブースト解除
-    else if (!isLBPressed_ && wasLBPressed_) {
-        ChangeSpeedBehavior(std::make_unique<PlayerAcceleUnattended>(this));
-    }
+}
 
-    // 前フレームのボタン状態を保存
-    wasLBPressed_ = isLBPressed_;
+void Player::SpeedInit() {
+ 
+}
+
+void Player::SpeedUpdate() {
+    speedParam_.currentForwardSpeed = speedBehavior_->GetCurrentSpeed();
 }
