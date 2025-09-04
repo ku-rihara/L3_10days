@@ -61,6 +61,7 @@ void EnemyStation::SpawnNPC() {
 	const Vector3 worldSpawn = baseTransform_.translation_ + spawnOffset;
 	npc->SetWorldPosition(worldSpawn);
 	npc->SetTarget(GetRivalStation());
+	npc->SetFireControl(fireController_.get());
 
 	spawned_.push_back(std::move(npc));
 	currentTime_ = 0.0f;

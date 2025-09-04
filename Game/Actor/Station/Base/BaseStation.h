@@ -17,6 +17,7 @@
 #include <vector>
 
 class NPC;
+class NpcFireController;
 
 class BaseStation : public BaseObject {
 public:
@@ -73,6 +74,7 @@ protected:
 	float   hp_ = 100.0f;
 	float   currentTime_ = 0.0f;
 
+	std::unique_ptr< NpcFireController> fireController_ = nullptr;
 	std::vector<NpcHandle> spawned_;
 	BaseStation* pRivalStation_ = nullptr; //< ライバル拠点
 
