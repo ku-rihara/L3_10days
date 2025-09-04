@@ -160,3 +160,29 @@ BoundaryShard* Boundary::GetBoundaryShard() {
 size_t Boundary::GetMaxHoleCount() const {
 	return maxHoleCount_;
 }
+
+AABB Boundary::GetWorldAabb(float halfThicknessY) const {
+	RectXZ r = GetRectXZWorld();
+	Vector3 origin, n;
+	GetDividePlane(origin, n); 
+	AABB box;
+	box.min = { r.minX, origin.y - halfThicknessY, r.minZ };
+	box.max = { r.maxX, origin.y + halfThicknessY, r.maxZ };
+	return box;
+}
+
+bool Boundary::IsInHoleXZ(const Vector3& p, float radius) const {
+	const auto& holes = GetHoles(); 
+	for (const auto& h : holes) {
+		Vector3 d{ p.x - h.position.x, 0.0f, p.z - h.position.z };
+		float rr = h.radius + radius;
+		if ((d.x * d.x + d.z * d.z) <= rr * rr) return true;
+	}
+	return false;
+}
+
+void Boundary::OnBulletImpact(const Contact& c, float damage) {
+	// 穴内なら無視（最終防衛）
+	if (IsInHoleXZ(c.point, /*bullet r 不明なら0*/ 0.0f)) return;
+	AddCrack(c.point, damage);
+}
