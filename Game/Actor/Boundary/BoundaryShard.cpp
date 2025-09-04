@@ -233,6 +233,16 @@ void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
 		}
 	}
 
+	/// 他にHoleが近かったら追加しない
+	Boundary* boundary = Boundary::GetInstance();
+	for(auto& hole : boundary->GetHoles()) {
+		float distance = (hole.position - _position).Length();
+		if (distance < hole.radius) {
+			isNearBreakable = true;
+		}
+	}
+
+
 	/// 近くに罅があったときの処理をしたかチェック、したならreturn
 	if (isNearBreakable) {
 		return;

@@ -18,6 +18,7 @@ void Player::Init() {
 
     // モデル作成
     obj3d_.reset(Object3d::CreateModel("Player.obj"));
+    obj3d_->transform_.rotateOder_ = RotateOder::Quaternion;
 
     // transform初期化
     baseTransform_.Init();
@@ -104,8 +105,8 @@ void Player::HandleInput() {
     // ロール
     angleInput_.z = -stickL.x * (rollSpeed_ * deltaTime);
 
-    // 現在のオイラー角を取得
-    Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
+    // 現在のオイラー角を取得<
+    Vector3 currentEuler = obj3d_->transform_.quaternion_.ToEuler();
     float currentRoll    = currentEuler.z;
 
     // 最大ロール角
@@ -127,117 +128,57 @@ void Player::HandleInput() {
 void Player::RotateUpdate() {
     float deltaTime = Frame::DeltaTime();
 
-    // 角速度の補間
+    // ---- 入力から角速度計算 ----//
     Vector3 targetAngularVelocity = angleInput_;
-
-    // 入力がない場合は減衰させる
-    const float damping = 0.95f; // 減衰率
+    const float damping           = 0.95f;
     if (angleInput_.Length() < 0.001f) {
         targetAngularVelocity = angularVelocity_ * damping;
     }
-
-    // 角速度変化
     angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);
 
-    // 現在の姿勢からローカル軸を取得
-    Vector3 localRight   = GetRightVector();
-    Vector3 localUp      = GetUpVector();
-    Vector3 localForward = GetForwardVector();
+    // ---- ピッチ・ヨーの回転 ----//
+    Vector3 localRight = GetRightVector();
+    Vector3 localUp    = GetUpVector();
 
-    // 各軸周りの回転をQuaternionで作成
     Quaternion pitchRotation = Quaternion::MakeRotateAxisAngle(localRight, angularVelocity_.x * deltaTime);
     Quaternion yawRotation   = Quaternion::MakeRotateAxisAngle(localUp, angularVelocity_.y * deltaTime);
-    Quaternion rollRotation  = Quaternion::MakeRotateAxisAngle(localForward, angularVelocity_.z * deltaTime);
 
-    // ヨーピッチロール
-    Quaternion deltaRotation = yawRotation * pitchRotation * rollRotation;
+    Quaternion deltaRotation = yawRotation * pitchRotation;
+    targetRotation_          = deltaRotation * baseTransform_.quaternion_;
+    targetRotation_          = targetRotation_.Normalize();
 
-    // 回転を適用
-    targetRotation_ = deltaRotation * baseTransform_.quaternion_;
-    targetRotation_ = targetRotation_.Normalize();
-
-    // 機体の上方向ベクトルを取得
-    Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
-    Vector3 targetUpVector = TransformNormal(GetUpVector(), targetMatrix);
-
-    // 機体の上方向とワールドの上方向の内積を計算
-    float upDot = Vector3::Dot(targetUpVector, GetUpVector());
-
-    // 機体が逆さまかどうかを判定
-    const float upsideDownThreshold = -0.3f;
-    bool isUpsideDown               = upDot < upsideDownThreshold;
-
-    // 逆さまの場合の自動補正
-    if (isUpsideDown && angleInput_.Length() < 0.001f) {
-        Vector3 euler      = targetRotation_.ToEuler();
-        float currentYaw   = euler.y;
-        float currentPitch = euler.x;
-        float currentRoll  = euler.z;
-
-        currentPitch = Lerp(currentPitch, 0.0f, rollBackTime_ * deltaTime);
-        currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
-        currentYaw   = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
-
-        // 補正された回転を適用
-        targetRotation_ = Quaternion::EulerToQuaternion(
-            Vector3(currentPitch, currentYaw, currentRoll));
-    }
-    // 通常時の自動復帰処理
-    else if (!isUpsideDown && angleInput_.Length() < 0.001f) {
-        Vector3 euler      = targetRotation_.ToEuler();
-        float currentYaw   = euler.y;
-        float currentPitch = euler.x;
-        float currentRoll  = euler.z;
-
-        if (fabs(angleInput_.z) < 0.001f) { // ロール入力なし
-            currentRoll = Lerp(currentRoll, 0.0f, rollBackTime_ * deltaTime);
-        }
-
-        // 補正された回転を適用
-        targetRotation_ = Quaternion::EulerToQuaternion(
-            Vector3(currentPitch, currentYaw, currentRoll));
-    }
-
-    // 最終的な回転補間
+    // baseTransform_ はピッチ・ヨーだけ保持
     baseTransform_.quaternion_ = Quaternion::Slerp(
-        baseTransform_.quaternion_,
-        targetRotation_,
-        rotationSmoothness_);
+        baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-    // 現在のオイラー角を取得
+     // ---- 逆さ時の補正処理 ----//
+
+
+    // ---- バンクターン処理 ---- //
     Vector3 currentEuler = baseTransform_.quaternion_.ToEuler();
-    float currentRoll    = currentEuler.z;
+    float currentRoll    = angularVelocity_.z * deltaTime; 
 
-    // 前方・右・上方向ベクトルを取得
-    Vector3 forward = GetForwardVector();
-    Vector3 right   = GetRightVector();
-    Vector3 up      = GetUpVector();
-
-    // ロールに基づくヨー角速度を計算
-    float rollToYawRate = 1.5f;
+    float rollToYawRate = 0.7f;
     float yawFromRoll   = -sin(currentRoll) * rollToYawRate * deltaTime;
 
-    // ヨー回転をQuaternionで作成
     if (fabs(yawFromRoll) > 0.0001f) {
-        Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(
-            Vector3::ToUp(), // ワールド上方向
-            yawFromRoll);
-
-        // 回転を適用
-        baseTransform_.quaternion_ = yawFromRollRotation * baseTransform_.quaternion_;
-        baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
+        Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), yawFromRoll);
+        baseTransform_.quaternion_     = yawFromRollRotation * baseTransform_.quaternion_;
+        baseTransform_.quaternion_     = baseTransform_.quaternion_.Normalize();
     }
 
-    // 速度計算
-    Vector3 forwardVelocity = forward * forwardSpeed_ * deltaTime;
+    // ---- 見た目のロールを obj3d_->transform に適用 ----
+    Quaternion visualRoll          = Quaternion::MakeRotateAxisAngle(Vector3::ToForward(), currentRoll);
+    obj3d_->transform_.quaternion_ = visualRoll;
+    obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
 
-    // 合成速度
-    velocity_ = forwardVelocity;
-
-    // 位置を更新
+    // ---- 移動 ---- //
+    Vector3 forwardVelocity = GetForwardVector() * forwardSpeed_ * deltaTime;
+    velocity_               = forwardVelocity;
     baseTransform_.translation_ += velocity_;
 }
+
 void Player::SpeedChange() {
 }
 Vector3 Player::GetForwardVector() const {

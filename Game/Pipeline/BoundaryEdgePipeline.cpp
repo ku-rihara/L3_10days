@@ -277,8 +277,8 @@ void BoundaryEdgePipeline::Draw(ID3D12GraphicsCommandList* _cmdList, const ViewP
 			/// 穴の周囲に配置するICO球のSRTを計算
 			Vector3 position = hole.position;
 			position.y += 0.1f;
-			position.x += std::cos(radian) * hole.radius;
-			position.z += std::sin(radian) * hole.radius;
+			position.x += std::cos(radian + hole.lifeTime) * hole.radius;
+			position.z += std::sin(radian + hole.lifeTime) * hole.radius;
 
 
 			/// 他のHoleと被ってへんな描画にならないようにする
