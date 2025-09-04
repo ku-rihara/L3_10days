@@ -16,6 +16,7 @@
     <ClCompile Include="Game\Actor\Player\Behavior\BasePlayerSpeedBehavior.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBoost.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerSpeedDown.cpp" />
+    <ClCompile Include="Game\Physics\SweepAabb.cpp" />
     <ClCompile Include="Game\Pipeline\BoundaryShardPipeline.cpp" />
     <ClCompile Include="Game\Actor\Boundary\BoundaryShard.cpp" />
     <ClCompile Include="Game\Actor\NPC\EnemyNPC.cpp" />
@@ -199,6 +200,9 @@
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerNormalBullet.h" />
     <ClInclude Include="Game\Actor\Station\UnitDirector\IUnitDirector.h" />
     <ClInclude Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.h" />
+    <ClInclude Include="Game\Details\IDamageSurface.h" />
+    <ClInclude Include="Game\Physics\Contact.h" />
+    <ClInclude Include="Game\Physics\SweepAabb.h" />
     <ClInclude Include="Game\Pipeline\BoundaryEdgePipeline.h" />
     <ClInclude Include="Game\Pipeline\BoundaryPipeline.h" />
     <ClInclude Include="Game\Actor\Boundary\Boundary.h" />
@@ -545,7 +549,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{18750579-e839-444c-a284-141a94dc7efb}</ProjectGuid>
     <RootNamespace>DirectXGame</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

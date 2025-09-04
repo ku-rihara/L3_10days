@@ -4,6 +4,7 @@
 #include "struct/TransformationMatrix.h"
 #include "ShadowMap/ShadowMapData.h"
 #include "RectXZ.h"
+#include "Box.h"
 
 /// game
 #include "../../BaseObject/BaseObject.h"
@@ -12,7 +13,7 @@
 #include "Pipeline/Buffer/IndexBuffer.h"
 #include "Pipeline/Buffer/VertexBuffer.h"
 #include "BoundaryShard.h"
-
+#include "Details/IDamageSurface.h"
 
 /// @brief 境界に空ける穴
 struct Hole {
@@ -32,7 +33,10 @@ struct BoundaryVertex {
 /// //////////////////////////////////////////////////////
 /// 味方陣地と敵陣地を区切る壁
 /// //////////////////////////////////////////////////////
-class Boundary : public BaseObject {
+class Boundary :
+	public BaseObject,
+	public IDamageSurface{
+
 	friend class BoundaryPipeline;
 	friend class BoundaryEdgePipeline;
 
@@ -67,12 +71,17 @@ public:
 	/// 設置できる穴の最大数を設定(罅の最大数でもある)
 	size_t GetMaxHoleCount() const;
 
-	RectXZ GetRectXZLocal() const { return localRectXZ_; }
-	RectXZ GetRectXZWorld() const;
-	void   GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const;
+	// AABB(厚みを極薄にする
+	AABB GetWorldAabb(float halfThicknessY = 0.05f)const;
 
+	void OnBulletImpact(const Contact& c, float damage)override;
+
+	bool IsInHoleXZ(const Vector3& p, float radius)const;
 
 	/// ----- おそらく大野(Boundary内部で)しか使わないであろう関数 ----- ///
+
+	RectXZ GetRectXZWorld()const;
+	void GetDividePlane(Vector3& outOrigin, Vector3& outNormal) const;
 
 	/// 穴の追加、罅を追加していったら穴が追加される
 	void AddHole(const Vector3& pos, float radius);

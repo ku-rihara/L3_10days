@@ -11,8 +11,8 @@ public:
 	NpcBullet() = default;
 	~NpcBullet() override = default;
 
-	void Init() override;                 // パラメータ束縛＋ロード
-	void Init(const Vector3& dir);        // 方向指定で初期化
+	void Init() override;					// パラメータ束縛＋ロード
+	void Init(const Vector3& dir);			// 方向指定で初期化
 	void Update() override;
 
 	// 方向（内部で正規化）＆寿命リセット
@@ -43,12 +43,16 @@ private:
 	std::string groupName_ = "NpcBullet";
 	const std::string fileDirectory_ = "GameActor/NpcBullet";
 
-	float speed_ = 40.0f;  // m/s
-	float maxLifeTime_ = 8.0f;   // s
+	float speed_ = 40.0f;		// m/s
+	float maxLifeTime_ = 8.0f;	// s
 
 	// Runtime
 	Vector3 dir_{ 0,0,1 };
-	float   lifeRemain_ = 0.0f;
-	bool    isActive_ = false;  // ← 自前のアクティブフラグ
-	bool    isInitialized_ = false;
+	float lifeRemain_ = 0.0f;
+	float radius_ = 5.0f;		//< 弾の半径
+	bool isActive_ = false;		//< アクティブフラグ
+	bool isInitialized_ = false;
+
+	Vector3 prevPos_{};
+	float damage_ = 6.0f;
 };
