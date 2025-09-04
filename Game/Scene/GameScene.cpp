@@ -121,6 +121,15 @@ void GameScene::ModelDraw() {
 
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 
+	/// 天球を描画
+	Object3DPiprline::GetInstance()->PreDraw(commandList);
+	skyDome_->Draw(viewProjection_);
+
+	/// 境界の描画
+	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
+	boundaryPipeline->PreDraw(commandList);
+	boundaryPipeline->Draw(commandList, viewProjection_);
+
 	/// オブジェクトの描画
 	Object3DPiprline::GetInstance()->PreDraw(commandList);
 	Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
@@ -132,11 +141,6 @@ void GameScene::ModelDraw() {
 	boundaryShardPipeline->PreDraw(commandList);
 	boundaryShardPipeline->Draw(commandList, viewProjection_);
 
-	/// 境界の描画
-	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
-	boundaryPipeline->PreDraw(commandList);
-	boundaryPipeline->Draw(commandList, viewProjection_);
-
 	/// 境界の穴の境界を描画
 	BoundaryEdgePipeline* boundaryEdgePipeline = BoundaryEdgePipeline::GetInstance();
 	boundaryEdgePipeline->PreDraw(commandList);
@@ -145,6 +149,8 @@ void GameScene::ModelDraw() {
 	MiniMapPipeline* miniMapPipeline = MiniMapPipeline::GetInstance();
 	miniMapPipeline->PreDraw(commandList);
 	miniMapPipeline->Draw(commandList, miniMap_.get());
+
+
 }
 
 /// ===================================================

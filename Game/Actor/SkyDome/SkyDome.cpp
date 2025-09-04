@@ -18,8 +18,13 @@ void SkyDome::Init() {
 	obj3d_->material_.materialData_->enableLighting = false;
 	float scale = 1500.0f;
 	obj3d_->transform_.scale_ = { scale, scale, scale };
+	obj3d_->Update();
 }
 
 void SkyDome::Update() {
 
+}
+
+void SkyDome::Draw(const ViewProjection& _vp) {
+	obj3d_->Draw(_vp);
 }
