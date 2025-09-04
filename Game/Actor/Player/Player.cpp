@@ -101,8 +101,8 @@ void Player::HandleInput() {
     // ヨー
     angleInput_.y = stickR.x * (yawSpeed_ * deltaTime);
 
-   // ロール入力を角速度ではなく「目標角度」に反映
-    float rollInput = -stickL.x; // -1.0f ～ 1.0f
+ 
+    float rollInput = -stickL.x; 
 
     // 目標ロール角を更新
     targetRoll_ += rollInput * rollSpeed_ * deltaTime;
