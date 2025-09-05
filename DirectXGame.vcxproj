@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Fade\Fade.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcHomingBullet.cpp" />
@@ -200,6 +201,7 @@
     <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Fade\Fade.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcHomingBullet.h" />
