@@ -21,6 +21,7 @@ class GameScreenEffectPipeline {
 
 	enum ROOT_PARAM {
 		ROOT_PARAM_TIME,
+		ROOT_PARAM_EFFECT_BUFFER_DATA,
 	};
 
 public:
@@ -66,6 +67,7 @@ private:
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc_;
 
 	ConstantBuffer<float> timeBuffer_;
+	ConstantBuffer<Vector4> effectBuffer_;
 
 };
 

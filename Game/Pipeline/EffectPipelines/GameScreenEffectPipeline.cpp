@@ -27,6 +27,9 @@ void GameScreenEffectPipeline::Init(DirectXCommon* dxCommon) {
 
 	timeBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	timeBuffer_.SetMappedData(0);
+
+	effectBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
+	effectBuffer_.SetMappedData({});
 }
 
 void GameScreenEffectPipeline::CreateGraphicsPipeline() {
@@ -121,12 +124,17 @@ void GameScreenEffectPipeline::CreateRootSignature() {
 	descriptionRootSignature.NumStaticSamplers = 2; // 通常サンプラーとシャドウサンプラーの2個
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
 
 	// 0: Time
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
+
+	// 1: EffectBufData
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].Descriptor.ShaderRegister = 1;
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -161,6 +169,9 @@ void GameScreenEffectPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, GameScr
 
 	timeBuffer_.SetMappedData(timeBuffer_.GetMappingData() + Frame::DeltaTime());
 	timeBuffer_.BindForGraphicsCommandList(_cmdList, ROOT_PARAM_TIME);
+
+	effectBuffer_.SetMappedData(_playerOutsideWarning->GetBaseColor());
+	effectBuffer_.BindForGraphicsCommandList(_cmdList, ROOT_PARAM_EFFECT_BUFFER_DATA);
 
 	/// vertexは
 	_cmdList->DrawIndexedInstanced(
