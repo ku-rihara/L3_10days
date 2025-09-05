@@ -1,26 +1,28 @@
 #include "PlayerOutsideWarning.hlsli"
 
 /// vignetteとrandom noiseで画面端に向かって点滅する警告を表示
-
 ConstantBuffer<Time> gTime : register(b0);
-
 static const float3 gBaseColor = float3(1.0, 0.2, 0.2); // #ff3333
 
-PSOutput main(VSOutput input)
-{
-    PSOutput output;
+float3 ApplyNoise(float2 uv, float3 color) {
+	float2 center = float2(0.5, 0.5);
+	float dist = distance(uv, center); // 0〜0.707（角までの距離）
 
-    output.color = float4(gBaseColor, 0.0f);
+	float minNoise = 0.2; // 中央でも最低20%ノイズ
+	float maxNoise = 0.6; // 端のノイズ強度
+	float noiseStrength = lerp(minNoise, maxNoise, dist / 0.707);
 
-    /// 画面中央に向かって透明になるvignette
-    float2 correct = input.texcoord * (1.0f - input.texcoord.yx);
-    float vignette = correct.x * correct.y * 16.0f;
-    vignette = saturate(pow(vignette, 0.8f));
-    output.color.rgb *= vignette;
+	/// 時間で揺れるノイズにする場合はuvにtimeを混ぜる
+	float random = Rand2dTo1d(uv * 1000.0 + gTime.value);
+	float finalNoise = random * noiseStrength;
+	return color + finalNoise; // ノイズ加算
+}
 
-    /// ランダムノイズで点滅
-    float noise = Rand2dTo1d(input.texcoord * 1000.0f + gTime.value * 0.5f);
-    output.color.a = (1.0f - vignette) * noise;
+PSOutput main(VSOutput input) {
+	PSOutput output;
 
-    return output;
+	float3 color = ApplyNoise(input.texcoord, gBaseColor);
+	output.color = float4(color, 0.2f);
+
+	return output;
 }
