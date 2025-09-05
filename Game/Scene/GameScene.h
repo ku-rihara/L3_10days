@@ -1,5 +1,7 @@
 #pragma once
 
+#include<map>
+
 /// base
 #include "Actor/GameCamera/GameCamera.h"
 #include "Actor/Player/Player.h"
@@ -7,7 +9,7 @@
 
 // game
 #include "Actor/Station/Base/BaseStation.h"
-#include"DebugGround/TestGround.h"
+#include "DebugGround/TestGround.h"
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/MiniMap/MiniMap.h"
 #include "Actor/SkyDome/SkyDome.h"
@@ -17,6 +19,7 @@
 #include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
 
 #include<map>
+#include "Actor/Spline/Spline.h"
 
 class GameScene : public BaseScene {
 private:
@@ -41,6 +44,11 @@ private:
 
 	std::map<FactionType,std::unique_ptr<BaseStation>> stations_;
 	std::unique_ptr<QuotaUnitDirector> director_;
+
+
+	/// debug
+	Spline spline_;
+
 public:
 	///========================================================
 	/// Constralt destract

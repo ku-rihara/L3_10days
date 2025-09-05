@@ -50,6 +50,8 @@ public:
     // ロール所得
     float GetRollDegree() const;
 
+   
+
     bool GetIsUpsideDown()const;
 
     // Behavior management

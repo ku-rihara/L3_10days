@@ -206,6 +206,9 @@
     <ClCompile Include="Game\Actor\UI\GameUIs.cpp" />
     <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBrake.cpp" />
+    <ClCompile Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.cpp" />
+    <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.cpp" />
+    <ClCompile Include="Game\Actor\Player\Reticle\PlayerReticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -410,6 +413,9 @@
     <ClInclude Include="Game\Actor\UI\GameUIs.h" />
     <ClInclude Include="Game\Actor\SkyDome\SkyDome.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerBrake.h" />
+    <ClInclude Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.h" />
+    <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.h" />
+    <ClInclude Include="Game\Actor\Player\Reticle\PlayerReticle.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
