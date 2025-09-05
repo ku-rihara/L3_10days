@@ -13,16 +13,33 @@ class Player;
 struct ShooterParameter {
     float intervalTime;
     int32_t maxBulletNum;
-    int32_t shotNum;
     float reloadTime;
 };
 
 struct ShooterState {
-    bool isShooting     = false;
-    bool isReloading    = false;
-    int32_t currentAmmo = 0;
-    float intervalTimer = 0.0f;
-    float reloadTimer   = 0.0f;
+    bool isShooting;
+    bool isReloading;
+    int32_t currentAmmo;
+    float intervalTimer;
+    float reloadTimer;
+};
+
+// ミサイル独自パラメータ
+struct MissileParameter {
+    float trackingStrength;
+    float maxTurnRate;
+ 
+};
+
+// ミサイル連射状態
+struct MissileBurstState {
+    int32_t currentBurstCount;
+    float burstTimer;
+    bool isBursting;
+};
+
+struct TypeSpecificParameters {
+    MissileParameter missile;
 };
 
 class PlayerBulletShooter {
@@ -48,8 +65,10 @@ private:
     // 入力処理
     void HandleInput();
 
-    // 発射処理
-    void UpdateShooting(const Player* player);
+    // 発射処理 - 弾種別に分離
+    void UpdateNormalBulletShooting(const Player* player);
+    void UpdateMissileShooting(const Player* player);
+
     void FireBullets(const Player* player, BulletType type);
 
     // 弾丸更新・管理
@@ -60,11 +79,9 @@ private:
     void UpdateReload();
     void StartReload(BulletType type);
     bool CanShoot(BulletType type) const;
+    bool CanShootMissile() const; 
 
-     void ClearAllBullets();
-
-    // 弾種切り替え
-    void SwitchBulletType();
+    void ClearAllBullets();
 
 private:
     // globalParameter
@@ -76,15 +93,23 @@ private:
     std::array<ShooterParameter, static_cast<int32_t>(BulletType::COUNT)> shooterParameters_;
     std::array<std::string, static_cast<int32_t>(BulletType::COUNT)> typeNames_;
 
+    // 弾種別専用パラメータ
+    TypeSpecificParameters typeSpecificParams_;
+
     // アクティブな弾丸のリスト
     std::vector<std::unique_ptr<BasePlayerBullet>> activeBullets_;
 
-    // 発射状態
+    // 発射状態 - 各弾種独立
     std::array<ShooterState, static_cast<int32_t>(BulletType::COUNT)> shooterStates_;
-    BulletType currentBulletType_ = BulletType::NORMAL;
+
+    // ミサイル連射状態
+    MissileBurstState missileBurstState_;
+
+    // 入力状態
+    bool normalBulletInput_ = false;
+    bool missileInput_      = false;
 
 public:
-   
     /// -----------------------------------------------------------------
     /// Getter
     /// -----------------------------------------------------------------
@@ -92,11 +117,14 @@ public:
     int32_t GetCurrentAmmo(BulletType type) const;
     bool IsReloading(BulletType type) const;
     float GetReloadProgress(BulletType type) const;
-    BulletType GetCurrentBulletType() const;
     int32_t GetActiveBulletCount() const;
+
+    const MissileParameter& GetMissileParameter() const { return typeSpecificParams_.missile; }
+
+    int32_t GetMissileBurstCount() const { return missileBurstState_.currentBurstCount; }
+    bool IsMissileBursting() const { return missileBurstState_.isBursting; }
 
     /// -----------------------------------------------------------------
     /// Setter
     /// -----------------------------------------------------------------
-  
 };

@@ -3,6 +3,7 @@
 #include "BulletFactory.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
+#include "PlayerMissile.h"
 #undef max
 #include <algorithm>
 #include <imgui.h>
@@ -18,19 +19,12 @@ void PlayerBulletShooter::Init() {
     typeNames_[static_cast<int32_t>(BulletType::NORMAL)]  = "Normal";
     typeNames_[static_cast<int32_t>(BulletType::MISSILE)] = "Missile";
 
-    // 発射状態の初期化
-    for (auto& state : shooterStates_) {
-        state = ShooterState{};
-    }
-
     // 初期弾数設定
     InitializeAmmo();
-
-    currentBulletType_ = BulletType::NORMAL;
 }
 
 void PlayerBulletShooter::InitializeAmmo() {
-    // 各弾種の初期弾数を設定
+    // 弾数Maxで初期化
     for (size_t i = 0; i < shooterStates_.size() && i < shooterParameters_.size(); ++i) {
         shooterStates_[i].currentAmmo = shooterParameters_[i].maxBulletNum;
     }
@@ -44,8 +38,9 @@ void PlayerBulletShooter::Update(const Player* player) {
     // 入力処理
     HandleInput();
 
-    // 発射処理
-    UpdateShooting(player);
+    // 各弾種の発射処理を独立して実行
+    UpdateNormalBulletShooting(player);
+    UpdateMissileShooting(player);
 
     // 弾丸の更新
     UpdateBullets();
@@ -60,34 +55,23 @@ void PlayerBulletShooter::Update(const Player* player) {
 void PlayerBulletShooter::HandleInput() {
     Input* input = Input::GetInstance();
 
-    // ToDo::ボタン配置決める
+    // 通常弾発射
+    normalBulletInput_ = input->PushKey(DIK_J) || Input::IsPressPad(0, XINPUT_GAMEPAD_A);
 
-    // 弾種切り替え（Tabキー）
-    if (input->TrrigerKey(DIK_TAB)) {
-        SwitchBulletType();
-    }
+    // ミサイル発射
+    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_X);
 
-    // 手動リロード（Rキー）
+    // 手動リロード
     if (input->TrrigerKey(DIK_R)) {
-        StartReload(currentBulletType_);
-    }
-
-    // 発射ボタン
-    bool shootInput = input->PushKey(DIK_J) || Input::IsPressPad(0, XINPUT_GAMEPAD_A);
-
-    size_t typeIndex    = static_cast<size_t>(currentBulletType_);
-    ShooterState& state = shooterStates_[typeIndex];
-
-    if (shootInput && CanShoot(currentBulletType_)) {
-        state.isShooting = true;
-    } else {
-        state.isShooting = false;
+        // 両方の弾種をリロード
+        StartReload(BulletType::NORMAL);
+        StartReload(BulletType::MISSILE);
     }
 }
 
-void PlayerBulletShooter::UpdateShooting(const Player* player) {
+void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
     float deltaTime     = Frame::DeltaTime();
-    size_t typeIndex    = static_cast<size_t>(currentBulletType_);
+    size_t typeIndex    = static_cast<size_t>(BulletType::NORMAL);
     ShooterState& state = shooterStates_[typeIndex];
 
     // 発射間隔の更新
@@ -95,58 +79,79 @@ void PlayerBulletShooter::UpdateShooting(const Player* player) {
         state.intervalTimer -= deltaTime;
     }
 
-    // 発射処理
-    if (state.isShooting && CanShoot(currentBulletType_) && state.intervalTimer <= 0.0f) {
-        FireBullets(player, currentBulletType_);
+    // 通常弾の発射処理
+    if (normalBulletInput_ && CanShoot(BulletType::NORMAL) && state.intervalTimer <= 0.0f) {
+        FireBullets(player, BulletType::NORMAL);
 
         // 発射間隔をリセット
         state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
 
         // 弾数を減らす
-        int32_t shotNum   = shooterParameters_[typeIndex].shotNum;
-        state.currentAmmo = std::max(0, state.currentAmmo - shotNum);
+        state.currentAmmo = std::max(0, state.currentAmmo - 1);
 
         // 弾切れチェック
         if (state.currentAmmo <= 0) {
-            StartReload(currentBulletType_);
+            StartReload(BulletType::NORMAL);
+        }
+    }
+}
+
+void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
+    float deltaTime     = Frame::DeltaTime();
+    size_t typeIndex    = static_cast<size_t>(BulletType::MISSILE);
+    ShooterState& state = shooterStates_[typeIndex];
+
+    // 発射間隔の更新
+    if (state.intervalTimer > 0.0f) {
+        state.intervalTimer -= deltaTime;
+    }
+
+    // 通常弾の発射処理
+    if (missileInput_ && CanShoot(BulletType::MISSILE) && state.intervalTimer <= 0.0f) {
+        FireBullets(player, BulletType::MISSILE);
+
+        // 発射間隔をリセット
+        state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
+
+        // 弾数を減らす
+        state.currentAmmo = std::max(0, state.currentAmmo - 1);
+
+        // 弾切れチェック
+        if (state.currentAmmo <= 0) {
+            StartReload(BulletType::MISSILE);
         }
     }
 }
 
 void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
     size_t typeIndex = static_cast<size_t>(type);
-    int32_t shotNum  = shooterParameters_[typeIndex].shotNum;
 
     Vector3 playerPos    = player->GetPosition();
     Vector3 forwardDir   = player->GetForwardVector();
     Quaternion playerRot = player->GetBaseTQuaternion();
 
-    for (int32_t i = 0; i < shotNum; ++i) {
-        // 新しい弾丸を動的に生成
-        auto bullet = BulletFactory::CreateBullet(type);
-        if (bullet) {
-            bullet->Init();
-            bullet->SetParameter(type, bulletParameters_[typeIndex]);
+    // 新しい弾丸を生成
+    auto bullet = BulletFactory::CreateBullet(type);
+    if (bullet) {
+        bullet->Init();
+        bullet->SetParameter(type, bulletParameters_[typeIndex]);
 
-            // 発射位置を少し前方にオフセット
-            Vector3 firePos = playerPos + forwardDir * 2.0f;
-
-            // 複数発射の場合は少し散らす
-            Vector3 fireDir = forwardDir;
-            if (shotNum > 1) {
-                float spreadAngle = 0.1f;
-                float angleOffset = (i - (shotNum - 1) * 0.5f) * spreadAngle;
-
-                // Y軸周りに回転させて散らす
-                Quaternion spreadRot = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), angleOffset);
-                fireDir              = spreadRot.RotateVector(forwardDir);
+        // ミサイルの場合は専用パラメータを設定
+        if (type == BulletType::MISSILE) {
+            auto* missile = dynamic_cast<PlayerMissile*>(bullet.get());
+            if (missile) {
+                missile->SetMissileParameters(typeSpecificParams_.missile);
             }
-
-            bullet->Fire(firePos, fireDir, playerRot);
-
-            // アクティブな弾丸リストに追加
-            activeBullets_.push_back(std::move(bullet));
         }
+
+        // 発射位置決定
+        Vector3 firePos = playerPos + forwardDir;
+
+        // 発射
+        bullet->Fire(firePos, forwardDir, playerRot);
+
+        // 弾丸リストに追加
+        activeBullets_.push_back(std::move(bullet));
     }
 }
 
@@ -174,24 +179,33 @@ void PlayerBulletShooter::UpdateReload() {
     for (size_t i = 0; i < shooterStates_.size(); ++i) {
         ShooterState& state = shooterStates_[i];
 
-        if (state.isReloading) {
-            state.reloadTimer -= deltaTime;
-
-            if (state.reloadTimer <= 0.0f) {
-                // リロード完了
-                state.isReloading = false;
-                state.currentAmmo = shooterParameters_[i].maxBulletNum;
-                state.reloadTimer = 0.0f;
-            }
+        // 　リロード中の処理
+        if (!state.isReloading) {
+            continue;
         }
+        // リロードタイマー更新
+        state.reloadTimer -= deltaTime;
+
+        // リロード完了
+        if (state.reloadTimer > 0.0f) {
+            continue;
+        }
+
+        state.isReloading = false;
+        state.currentAmmo = shooterParameters_[i].maxBulletNum;
+        state.reloadTimer = 0.0f;
     }
 }
 
 bool PlayerBulletShooter::CanShoot(BulletType type) const {
     size_t typeIndex          = static_cast<size_t>(type);
     const ShooterState& state = shooterStates_[typeIndex];
-
     return !state.isReloading && state.currentAmmo > 0 && state.intervalTimer <= 0.0f;
+}
+
+bool PlayerBulletShooter::CanShootMissile() const {
+    const ShooterState& state = shooterStates_[static_cast<size_t>(BulletType::MISSILE)];
+    return !state.isReloading && state.currentAmmo > 0 && !missileBurstState_.isBursting && state.intervalTimer <= 0.0f;
 }
 
 void PlayerBulletShooter::StartReload(BulletType type) {
@@ -201,12 +215,79 @@ void PlayerBulletShooter::StartReload(BulletType type) {
     if (!state.isReloading && state.currentAmmo < shooterParameters_[typeIndex].maxBulletNum) {
         state.isReloading = true;
         state.reloadTimer = shooterParameters_[typeIndex].reloadTime;
+
+        // ミサイルの連射状態リセット
+        if (type == BulletType::MISSILE) {
+            missileBurstState_.isBursting        = false;
+            missileBurstState_.currentBurstCount = 0;
+        }
+    }
+}
+void PlayerBulletShooter::BindParams() {
+    for (uint32_t i = 0; i < bulletParameters_.size(); ++i) {
+        // 弾のパラメータ
+        globalParameter_->Bind(groupName_, "lifeTime" + std::to_string(int(i + 1)), &bulletParameters_[i].lifeTime);
+        globalParameter_->Bind(groupName_, "speed" + std::to_string(int(i + 1)), &bulletParameters_[i].speed);
+        // 発射パラメータ
+        globalParameter_->Bind(groupName_, "intervalTime" + std::to_string(int(i + 1)), &shooterParameters_[i].intervalTime);
+        globalParameter_->Bind(groupName_, "maxBulletNum" + std::to_string(int(i + 1)), &shooterParameters_[i].maxBulletNum);
+        globalParameter_->Bind(groupName_, "reloadTime" + std::to_string(int(i + 1)), &shooterParameters_[i].reloadTime);
+    }
+
+    // ミサイル専用パラメータ
+    globalParameter_->Bind(groupName_, "missileTrackingStrength", &typeSpecificParams_.missile.trackingStrength);
+    globalParameter_->Bind(groupName_, "missileMaxTurnRate", &typeSpecificParams_.missile.maxTurnRate);
+  
+}
+
+void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
+    // 弾のパラメータ
+    ImGui::SeparatorText("BulletParameter");
+    ImGui::DragFloat("LifeTime", &bulletParameters_[static_cast<size_t>(type)].lifeTime, 0.01f);
+    ImGui::DragFloat("Speed", &bulletParameters_[static_cast<size_t>(type)].speed, 0.01f);
+
+    // 発射のパラメータ
+    ImGui::SeparatorText("ShooterParameter");
+    ImGui::DragFloat("intervalTime", &shooterParameters_[static_cast<size_t>(type)].intervalTime, 0.01f);
+    ImGui::DragFloat("ReloadTime", &shooterParameters_[static_cast<size_t>(type)].reloadTime, 0.01f);
+    ImGui::InputInt("maxBulletNum", &shooterParameters_[static_cast<size_t>(type)].maxBulletNum);
+
+    // ミサイル専用パラメータ
+    if (type == BulletType::MISSILE) {
+        ImGui::SeparatorText("MissileParameter");
+        ImGui::DragFloat("TrackingStrength", &typeSpecificParams_.missile.trackingStrength, 0.01f);
+        ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f);
+    
     }
 }
 
-void PlayerBulletShooter::SwitchBulletType() {
-    int32_t nextType   = (static_cast<int32_t>(currentBulletType_) + 1) % static_cast<int32_t>(BulletType::COUNT);
-    currentBulletType_ = static_cast<BulletType>(nextType);
+void PlayerBulletShooter::AdjustParam() {
+#ifdef _DEBUG
+
+    if (ImGui::CollapsingHeader(groupName_.c_str())) {
+        ImGui::PushID(groupName_.c_str());
+
+        // 現在の状態表示
+        ImGui::SeparatorText("Current Status");
+
+        // パラメータ編集
+        for (size_t i = 0; i < static_cast<size_t>(BulletType::COUNT); ++i) {
+            BulletType type = static_cast<BulletType>(i);
+            ImGui::SeparatorText(typeNames_[i].c_str());
+            ImGui::PushID(typeNames_[i].c_str());
+
+            DrawEnemyParamUI(type);
+
+            ImGui::PopID();
+        }
+
+        globalParameter_->ParamSaveForImGui(groupName_);
+        globalParameter_->ParamLoadForImGui(groupName_);
+
+        ImGui::PopID();
+    }
+
+#endif
 }
 
 int32_t PlayerBulletShooter::GetCurrentAmmo(BulletType type) const {
@@ -229,10 +310,6 @@ float PlayerBulletShooter::GetReloadProgress(BulletType type) const {
 
     float totalReloadTime = shooterParameters_[typeIndex].reloadTime;
     return 1.0f - (state.reloadTimer / totalReloadTime);
-}
-
-BulletType PlayerBulletShooter::GetCurrentBulletType() const {
-    return currentBulletType_;
 }
 
 std::vector<BasePlayerBullet*> PlayerBulletShooter::GetActiveBullets() const {
@@ -260,71 +337,4 @@ int32_t PlayerBulletShooter::GetActiveBulletCount() const {
 
 void PlayerBulletShooter::ClearAllBullets() {
     activeBullets_.clear();
-}
-
-void PlayerBulletShooter::BindParams() {
-    for (uint32_t i = 0; i < bulletParameters_.size(); ++i) {
-        // 弾のパラメータ
-        globalParameter_->Bind(groupName_, "lifeTime" + std::to_string(int(i + 1)), &bulletParameters_[i].lifeTime);
-        globalParameter_->Bind(groupName_, "speed" + std::to_string(int(i + 1)), &bulletParameters_[i].speed);
-        // 発射パラメータ
-        globalParameter_->Bind(groupName_, "intervalTime" + std::to_string(int(i + 1)), &shooterParameters_[i].intervalTime);
-        globalParameter_->Bind(groupName_, "maxBulletNum" + std::to_string(int(i + 1)), &shooterParameters_[i].maxBulletNum);
-        globalParameter_->Bind(groupName_, "shotNum" + std::to_string(int(i + 1)), &shooterParameters_[i].shotNum);
-        globalParameter_->Bind(groupName_, "reloadTime" + std::to_string(int(i + 1)), &shooterParameters_[i].reloadTime);
-    }
-}
-
-void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
-    // 弾のパラメータ
-    ImGui::SeparatorText("BulletParameter");
-    ImGui::DragFloat("LifeTime", &bulletParameters_[static_cast<size_t>(type)].lifeTime, 0.01f);
-    ImGui::DragFloat("Speed", &bulletParameters_[static_cast<size_t>(type)].speed, 0.01f);
-
-    // 発射のパラメータ
-    ImGui::SeparatorText("ShooterParameter");
-    ImGui::DragFloat("intervalTime", &shooterParameters_[static_cast<size_t>(type)].intervalTime, 0.01f);
-    ImGui::DragFloat("ReloadTime", &shooterParameters_[static_cast<size_t>(type)].reloadTime, 0.01f);
-    ImGui::InputInt("maxBulletNum", &shooterParameters_[static_cast<size_t>(type)].maxBulletNum);
-    ImGui::InputInt("shotNum", &shooterParameters_[static_cast<size_t>(type)].shotNum);
-}
-
-void PlayerBulletShooter::AdjustParam() {
-#ifdef _DEBUG
-
-    if (ImGui::CollapsingHeader(groupName_.c_str())) {
-        ImGui::PushID(groupName_.c_str());
-
-        // 現在の弾種表示
-        ImGui::SeparatorText("Current Status");
-        ImGui::Text("Current Bullet Type: %s", typeNames_[static_cast<size_t>(currentBulletType_)].c_str());
-
-        size_t currentTypeIndex          = static_cast<size_t>(currentBulletType_);
-        const ShooterState& currentState = shooterStates_[currentTypeIndex];
-
-        ImGui::Text("Ammo: %d / %d", currentState.currentAmmo, shooterParameters_[currentTypeIndex].maxBulletNum);
-        ImGui::Text("Active Bullets: %d", GetActiveBulletCount());
-        ImGui::Text("Reloading: %s", currentState.isReloading ? "Yes" : "No");
-        if (currentState.isReloading) {
-            ImGui::Text("Reload Progress: %.1f%%", GetReloadProgress(currentBulletType_) * 100.0f);
-        }
-
-
-        for (size_t i = 0; i < static_cast<size_t>(BulletType::COUNT); ++i) {
-            BulletType type = static_cast<BulletType>(i);
-            ImGui::SeparatorText(typeNames_[i].c_str());
-            ImGui::PushID(typeNames_[i].c_str());
-
-            DrawEnemyParamUI(type);
-
-            ImGui::PopID();
-        }
-
-        globalParameter_->ParamSaveForImGui(groupName_);
-        globalParameter_->ParamLoadForImGui(groupName_);
-
-        ImGui::PopID();
-    }
-
-#endif
 }
