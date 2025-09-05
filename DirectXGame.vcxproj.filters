@@ -209,6 +209,8 @@
     <ClCompile Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.cpp" />
     <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.cpp" />
     <ClCompile Include="Game\Actor\Spline\Spline.cpp" />
+    <ClCompile Include="Game\TitleActor\FighterAircraft\FighterAircraft.cpp" />
+    <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -416,6 +418,8 @@
     <ClInclude Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.h" />
     <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.h" />
     <ClInclude Include="Game\Actor\Spline\Spline.h" />
+    <ClInclude Include="Game\TitleActor\FighterAircraft\FighterAircraft.h" />
+    <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

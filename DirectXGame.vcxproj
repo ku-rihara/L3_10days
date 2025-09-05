@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\TitleActor\FighterAircraft\FighterAircraft.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBrake.cpp" />
     <ClCompile Include="Game\Actor\Player\Reticle\PlayerReticle.cpp" />
@@ -192,8 +193,10 @@
     <ClCompile Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.cpp" />
     <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.cpp" />
     <ClCompile Include="Game\Actor\Spline\Spline.cpp" />
+    <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\TitleActor\FighterAircraft\FighterAircraft.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
     <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
     <ClInclude Include="Game\Actor\Boundary\RectXZ.h" />
@@ -398,6 +401,7 @@
     <ClInclude Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.h" />
     <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.h" />
     <ClInclude Include="Game\Actor\Spline\Spline.h" />
+    <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
