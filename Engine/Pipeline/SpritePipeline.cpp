@@ -53,22 +53,32 @@ void SpritePipeline::CreateGraphicsPipeline() {
 
     // BlendStateの設定
     D3D12_BLEND_DESC blendDesc{};
-    blendDesc.AlphaToCoverageEnable = FALSE; // アルファテストを無効に
-    blendDesc.IndependentBlendEnable = FALSE; // 各レンダーターゲットのブレンドを独立させない
+    //blendDesc.AlphaToCoverageEnable = FALSE; // アルファテストを無効に
+    //blendDesc.IndependentBlendEnable = FALSE; // 各レンダーターゲットのブレンドを独立させない
 
-    // レンダーターゲットの設定
-    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+    //// レンダーターゲットの設定
+    //blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+    //blendDesc.RenderTarget[0].BlendEnable = TRUE;
+
+    //// ソースブレンド、デスティネーションブレンド、ブレンドオペレーションの設定
+    //blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA; // ソースのアルファ
+    //blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA; // 1 - ソースのアルファ
+    //blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD; // 加算
+
+    //// アルファのソースとデスティネーションのブレンド設定
+    //blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE; // アルファをそのまま使用
+    //blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO; // デスティネーションのアルファは無視
+    //blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD; // 加算
+
     blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
-    // ソースブレンド、デスティネーションブレンド、ブレンドオペレーションの設定
-    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA; // ソースのアルファ
-    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA; // 1 - ソースのアルファ
-    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD; // 加算
-
-    // アルファのソースとデスティネーションのブレンド設定
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE; // アルファをそのまま使用
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO; // デスティネーションのアルファは無視
-    blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD; // 加算
 
     // RasterizerStateの設定
     D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -81,7 +91,7 @@ void SpritePipeline::CreateGraphicsPipeline() {
     //書き込みする
     depthStencilDesc_.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
     //比較関数はLessEqual。つまり、近ければ描画される
-    depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
     // Shaderをコンパイルする ()
     vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Sprite.VS.hlsl",L"vs_6_0");

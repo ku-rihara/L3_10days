@@ -68,8 +68,10 @@ void GameScene::Init(){
 							   director_.get());
 
 	const Vector3 enemyStaitonPos = stations_[FactionType::Enemy]->GetWorldPosition();
-	Installer::InstallBoundaryBreaker(boundaryBreakers_,enemyStaitonPos,2,
-									  stations_[FactionType::Ally].get());
+	Installer::InstallBoundaryBreakers(boundaryBreakers_,
+									   stations_[FactionType::Enemy].get(),
+									   stations_[FactionType::Enemy].get(),
+									   2);
 
 	gameCamera_->Init();
 	//testGround_->Init();
@@ -176,22 +178,24 @@ void GameScene::SkyBoxDraw(){}
 /// ======================================================
 /// スプライト描画
 /// ======================================================
-void GameScene::SpriteDraw(){
+void GameScene::SpriteDraw() {
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	
+	/// random noise + vignette
+	PlayerOutsideWarningPipeline* outsideWarning = PlayerOutsideWarningPipeline::GetInstance();
+	outsideWarning->PreDraw(commandList);
+	outsideWarning->Draw(commandList, outsideWarning_.get());
+
+	Sprite::PreDraw(commandList);
 	uis_->Draw();
     player_->ReticleDraw();
-
 	/// ミニマップ描画
 	miniMap_->DrawMiniMap();
 
-	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 	/// UI用に
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
 	miniMapIconPipeline->Draw(commandList,miniMap_.get());
-
-	PlayerOutsideWarningPipeline* outsideWarning = PlayerOutsideWarningPipeline::GetInstance();
-	outsideWarning->PreDraw(commandList);
-	outsideWarning->Draw(commandList,outsideWarning_.get());
 }
 
 /// ======================================================

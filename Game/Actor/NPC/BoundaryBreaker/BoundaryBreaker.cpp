@@ -1,6 +1,7 @@
 #include "BoundaryBreaker.h"
 #include "Frame/Frame.h"
 #include "Actor/NPC/NPC.h"
+#include "random.h"
 
 //===================================================================*/
 //				初期化
@@ -19,6 +20,10 @@ void BoundaryBreaker::Init(){
 	BindParms();
 	globalParam_->SyncParamForGroup(groupName_);
 
+	// 弾のクールダウンをランダムで初期化
+	shootCooldown_ = Random::Range(1.0f,shootInterval_);
+
+
 	// とりあえず色を変えてわかりやすく
 	SetColor(Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 }
@@ -28,6 +33,7 @@ void BoundaryBreaker::Init(){
 //===================================================================*/
 void BoundaryBreaker::Update(){
 	Move();
+	Shoot();
 	BaseObject::Update();
 }
 
@@ -48,10 +54,28 @@ void BoundaryBreaker::Move(){
 	baseTransform_.translation_ = newPos;
 }
 
+//===================================================================*/
+//				パラメータの動機
+//===================================================================*/
 void BoundaryBreaker::BindParms(){
 	globalParam_->Bind(groupName_, "maxHP",         &maxHp_);
 	globalParam_->Bind(groupName_, "speed",         &speed_);
 	globalParam_->Bind(groupName_, "shootInterval", &shootInterval_);
+}
+
+//===================================================================*/
+//				発射処理
+//===================================================================*/
+void BoundaryBreaker::Shoot(){
+	if (!pFireController_)return;
+	shootCooldown_ -= Frame::DeltaTime();
+	if (shootCooldown_ > 0.0f) return;
+	if (!pRivalStation_) return;
+
+	//ライバルのステーションに向けて発射する
+	Vector3 dir = Vector3(pRivalStation_->GetWorldPosition() - GetWorldPosition()).Normalize();
+	pFireController_->Spawn(GetWorldPosition(),dir);
+	shootCooldown_ = shootInterval_;
 }
 
 //===================================================================*/
@@ -60,6 +84,7 @@ void BoundaryBreaker::BindParms(){
 void BoundaryBreaker::SetFactionType(const FactionType type){ faction_ = type; }
 void BoundaryBreaker::SetAnchorPoint(const Vector3& point){ anchorPosition_ = point; }
 void BoundaryBreaker::SetRivalStation(const BaseStation* station){ pRivalStation_ = station; }
+void BoundaryBreaker::SetFireController(NpcFireController* controller){pFireController_ = controller; }
 
 void BoundaryBreaker::SetPhase(float rad){ phase_ = rad; }
 void BoundaryBreaker::SetRadius(float r){ turningRadius_ = r; }

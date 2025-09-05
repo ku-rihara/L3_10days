@@ -3,11 +3,11 @@
 #include <vector>
 
 class BaseStation;
-class Vector3;
 class BoundaryBreaker;
 
 namespace Installer{
-void InstallBoundaryBreaker(std::vector<std::unique_ptr<BoundaryBreaker>>& boundaryBreakers,
-							const Vector3& stationPos,
-							int spawnNum,const BaseStation* rivalStation);
+void InstallBoundaryBreakers(std::vector<std::unique_ptr<BoundaryBreaker>>& boundaryBreakers,
+							const BaseStation* stationPos,
+							const BaseStation* rivalStation,
+							int spawnNum);
 }
