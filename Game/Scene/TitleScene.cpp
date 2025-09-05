@@ -41,6 +41,9 @@ void TitleScene::Init() {
 	titleSprite_ = std::make_unique<TitleSprite>();
 	titleSprite_->Init();
 
+	viewProjection_.translation_ = Vector3(4.02f, 2.61f, -7.57f);
+	viewProjection_.rotation_ = Vector3(0.24f, -0.55f, 0.0f);
+
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
