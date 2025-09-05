@@ -31,11 +31,19 @@ void TitleScene::Init() {
 		object3ds_.push_back(std::make_unique<FighterAircraft>(pos));
 	}
 
+	cameraRendition_ = std::make_unique<CameraRendition>();
+
 	// 初期化
 	for (auto& obj : object3ds_) {
 		obj->Init();
 	}
 
+	cameraRendition_->Init();
+    cameraRendition_->SetViewProjection(&viewProjection_);
+
+	// 任意のタイミングで呼び出せる
+	/*cameraRendition_->AnimationPlay("");
+    cameraRendition_->ShakePlay("");*/
 
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
@@ -45,6 +53,8 @@ void TitleScene::Update() {
 	for (auto& obj : object3ds_) {
 		obj->Update();
 	}
+
+	cameraRendition_->Update();
 
 	Object3DRegistry::GetInstance()->UpdateAll();
 	ParticleManager::GetInstance()->Update();
@@ -89,6 +99,7 @@ void TitleScene::Debug() {
 	ImGui::DragFloat3("pos", &viewProjection_.translation_.x, 0.1f);
 	ImGui::DragFloat3("rotate", &viewProjection_.rotation_.x, 0.1f);
 	ImGui::End();
+    cameraRendition_->Edit();
 #endif
 }
 

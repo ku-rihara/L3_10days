@@ -18,6 +18,7 @@ public:
     // play呼び出し
     void AnimationPlay(const std::string& filename);
     void ShakePlay(const std::string& filename);
+    void Edit();
 
 private:
     // メンバ変数

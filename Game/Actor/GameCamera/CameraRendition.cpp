@@ -12,10 +12,7 @@ void CameraRendition::Init() {
 }
 
 void CameraRendition::Update() {
-    if (!pGameCamera_) {
-        return;
-    }
-
+  
     shakePlayer_->Update(Frame::DeltaTime());
     cameraAnimation_->Update(Frame::DeltaTimeRate());
 }
@@ -32,3 +29,7 @@ void CameraRendition::ShakePlay(const std::string& filename) {
     cameraAnimation_->Init(viewProjection);
  }
 
+ void CameraRendition::Edit() {
+     shakePlayer_->EditorUpdate();
+     cameraAnimation_->EditorUpdate();
+   }

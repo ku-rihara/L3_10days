@@ -10,6 +10,8 @@
 #include "utility/ParticleEditor/ParticleEmitter.h"
 #include "BaseObject/BaseObject.h"
 
+#include "Actor/GameCamera/CameraRendition.h"
+
 /// <summary>
 /// タイトルシーン
 /// </summary>
@@ -18,6 +20,8 @@ private:
 
 	using Object = std::unique_ptr<BaseObject>;
 	std::vector<Object> object3ds_;
+
+	std::unique_ptr<CameraRendition> cameraRendition_;
 
 public:
 	///========================================================
