@@ -1,4 +1,4 @@
-#include "PlayerOutsideWarning.hlsli"
+#include "GameScreenEffect.hlsli"
 
 /// vignetteとrandom noiseで画面端に向かって点滅する警告を表示
 ConstantBuffer<Time> gTime : register(b0);

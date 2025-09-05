@@ -23,7 +23,7 @@
 #include "Pipeline/BoundaryShardPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
 #include "Pipeline/MiniMapPipeline.h"
-#include "Pipeline/EffectPipelines/GameScreenEffect.h"
+#include "Pipeline/EffectPipelines/GameScreenEffectPipeline.h"
 
 #include "Actor/Spline/Spline.h"
 
@@ -55,7 +55,7 @@ void GameScene::Init(){
 	uis_ = std::make_unique<GameUIs>();
 
 	/// Effect -----
-	outsideWarning_ = std::make_unique<PlayerOutsideWarning>();
+	outsideWarning_ = std::make_unique<GameScreenEffect>();
 
 	spline_.Load("./Resources/Spline/Spline.json");
 
@@ -182,7 +182,7 @@ void GameScene::SpriteDraw() {
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 	
 	/// random noise + vignette
-	GameScreenEffect* outsideWarning = GameScreenEffect::GetInstance();
+	GameScreenEffectPipeline* outsideWarning = GameScreenEffectPipeline::GetInstance();
 	outsideWarning->PreDraw(commandList);
 	outsideWarning->Draw(commandList, outsideWarning_.get());
 

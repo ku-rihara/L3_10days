@@ -1,4 +1,4 @@
-#include "GameScreenEffect.h"
+#include "GameScreenEffectPipeline.h"
 
 /// std
 #include <cassert>
@@ -13,12 +13,12 @@
 #include "Frame/Frame.h"
 
 
-GameScreenEffect* GameScreenEffect::GetInstance() {
-	static GameScreenEffect instance;
+GameScreenEffectPipeline* GameScreenEffectPipeline::GetInstance() {
+	static GameScreenEffectPipeline instance;
 	return &instance;
 }
 
-void GameScreenEffect::Init(DirectXCommon* dxCommon) {
+void GameScreenEffectPipeline::Init(DirectXCommon* dxCommon) {
 
 	// 引数で受けとる
 	dxCommon_ = dxCommon;
@@ -29,7 +29,7 @@ void GameScreenEffect::Init(DirectXCommon* dxCommon) {
 	timeBuffer_.SetMappedData(0);
 }
 
-void GameScreenEffect::CreateGraphicsPipeline() {
+void GameScreenEffectPipeline::CreateGraphicsPipeline() {
 
 	HRESULT hr = 0;
 
@@ -84,8 +84,8 @@ void GameScreenEffect::CreateGraphicsPipeline() {
 	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	// Shaderをコンパイルする
-	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/PlayerOutsideWarning.vs.hlsl", L"vs_6_0");
-	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/PlayerOutsideWarning.ps.hlsl", L"ps_6_0");
+	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/GameScreenEffect.vs.hlsl", L"vs_6_0");
+	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/GameScreenEffect.ps.hlsl", L"ps_6_0");
 
 	// PSO作成用関数
 	auto CreatePSO = [&](D3D12_BLEND_DESC& blendDesc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso) {
@@ -112,7 +112,7 @@ void GameScreenEffect::CreateGraphicsPipeline() {
 	CreatePSO(blendDescNormal, graphicsPipelineStateNone_);
 }
 
-void GameScreenEffect::CreateRootSignature() {
+void GameScreenEffectPipeline::CreateRootSignature() {
 	HRESULT hr = 0;
 	// RootSignatureを作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -145,7 +145,7 @@ void GameScreenEffect::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void GameScreenEffect::PreDraw(ID3D12GraphicsCommandList* commandList) {
+void GameScreenEffectPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	// RootSignatureを設定
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	// パイプラインステートの設定
@@ -154,7 +154,7 @@ void GameScreenEffect::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void GameScreenEffect::Draw(ID3D12GraphicsCommandList* _cmdList, PlayerOutsideWarning* _playerOutsideWarning) {
+void GameScreenEffectPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, GameScreenEffect* _playerOutsideWarning) {
 	if (!_playerOutsideWarning) {
 		return;
 	}

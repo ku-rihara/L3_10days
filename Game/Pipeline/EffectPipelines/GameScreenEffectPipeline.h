@@ -15,9 +15,9 @@
 #include "Pipeline/Buffer/ConstantBuffer.h"
 
 /// 描画対象
-#include "Actor/Effects/PlayerOutsideWarning/PlayerOutsideWarning.h"
+#include "Actor/Effects/GameScreenEffect/GameScreenEffect.h"
 
-class GameScreenEffect {
+class GameScreenEffectPipeline {
 
 	enum ROOT_PARAM {
 		ROOT_PARAM_TIME,
@@ -28,17 +28,17 @@ public:
 	/// public : methods
 	/// ========================================================
 
-	GameScreenEffect() = default;
-	~GameScreenEffect() = default;
+	GameScreenEffectPipeline() = default;
+	~GameScreenEffectPipeline() = default;
 
 	/// @brief シングルトン化
-	static GameScreenEffect* GetInstance();
+	static GameScreenEffectPipeline* GetInstance();
 
 	void Init(DirectXCommon* dxCommon);
 	void PreDraw(ID3D12GraphicsCommandList* commandList);
 	void Draw(
 		ID3D12GraphicsCommandList* _cmdList,
-		PlayerOutsideWarning* _playerOutsideWarning
+		GameScreenEffect* _playerOutsideWarning
 	);
 
 private:

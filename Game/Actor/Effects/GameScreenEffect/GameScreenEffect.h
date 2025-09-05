@@ -6,14 +6,14 @@
 /// ////////////////////////////////////////////////////////////
 /// プレイヤーがフィールド外に出たときの警告
 /// ////////////////////////////////////////////////////////////
-class PlayerOutsideWarning {
+class GameScreenEffect {
 public:
 	/// ==========================================================
 	/// public : methods
 	/// ==========================================================
 	
-	PlayerOutsideWarning() = default;
-	~PlayerOutsideWarning() = default;
+	GameScreenEffect() = default;
+	~GameScreenEffect() = default;
 	
 	void Init();
 	void Update(Player* _player);

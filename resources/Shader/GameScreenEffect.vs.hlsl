@@ -1,4 +1,4 @@
-#include "PlayerOutsideWarning.hlsli"
+#include "GameScreenEffect.hlsli"
 
 struct Vertex {
     float4 position;

@@ -15,7 +15,7 @@
 #include "Actor/SkyDome/SkyDome.h"
 #include "Actor/Station/UnitDirector/QuotaUnitDirector.h"
 #include "Actor/UI/GameUIs.h"
-#include "Actor/Effects/PlayerOutsideWarning/PlayerOutsideWarning.h"
+#include "Actor/Effects/GameScreenEffect/GameScreenEffect.h"
 #include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
 
 #include<map>
@@ -40,7 +40,7 @@ private:
 	std::unique_ptr<GameUIs> uis_ = nullptr;
 
 	/// ----- Effect ----- ///
-	std::unique_ptr<PlayerOutsideWarning> outsideWarning_ = nullptr;
+	std::unique_ptr<GameScreenEffect> outsideWarning_ = nullptr;
 
 	std::map<FactionType,std::unique_ptr<BaseStation>> stations_;
 	std::unique_ptr<QuotaUnitDirector> director_;
