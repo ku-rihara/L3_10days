@@ -23,7 +23,7 @@
 #include "Pipeline/BoundaryShardPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
 #include "Pipeline/MiniMapPipeline.h"
-#include "Pipeline/EffectPipelines/PlayerOutsideWarningPipeline.h"
+#include "Pipeline/EffectPipelines/GameScreenEffect.h"
 
 #include "Actor/Spline/Spline.h"
 
@@ -182,7 +182,7 @@ void GameScene::SpriteDraw() {
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 	
 	/// random noise + vignette
-	PlayerOutsideWarningPipeline* outsideWarning = PlayerOutsideWarningPipeline::GetInstance();
+	GameScreenEffect* outsideWarning = GameScreenEffect::GetInstance();
 	outsideWarning->PreDraw(commandList);
 	outsideWarning->Draw(commandList, outsideWarning_.get());
 

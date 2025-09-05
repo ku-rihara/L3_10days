@@ -17,7 +17,7 @@
 /// 描画対象
 #include "Actor/Effects/PlayerOutsideWarning/PlayerOutsideWarning.h"
 
-class PlayerOutsideWarningPipeline {
+class GameScreenEffect {
 
 	enum ROOT_PARAM {
 		ROOT_PARAM_TIME,
@@ -28,11 +28,11 @@ public:
 	/// public : methods
 	/// ========================================================
 
-	PlayerOutsideWarningPipeline() = default;
-	~PlayerOutsideWarningPipeline() = default;
+	GameScreenEffect() = default;
+	~GameScreenEffect() = default;
 
 	/// @brief シングルトン化
-	static PlayerOutsideWarningPipeline* GetInstance();
+	static GameScreenEffect* GetInstance();
 
 	void Init(DirectXCommon* dxCommon);
 	void PreDraw(ID3D12GraphicsCommandList* commandList);

@@ -207,7 +207,7 @@
     <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBrake.cpp" />
     <ClCompile Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.cpp" />
-    <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.cpp" />
+    <ClCompile Include="Game\Pipeline\EffectPipelines\GameScreenEffect.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.cpp" />
     <ClCompile Include="Game\Actor\Spline\Spline.cpp" />
@@ -427,7 +427,7 @@
     <ClInclude Include="Game\Actor\SkyDome\SkyDome.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerBrake.h" />
     <ClInclude Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.h" />
-    <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.h" />
+    <ClInclude Include="Game\Pipeline\EffectPipelines\GameScreenEffect.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.h" />
     <ClInclude Include="Game\Actor\Spline\Spline.h" />

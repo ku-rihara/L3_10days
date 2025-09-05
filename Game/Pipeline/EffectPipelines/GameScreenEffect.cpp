@@ -1,4 +1,4 @@
-#include "PlayerOutsideWarningPipeline.h"
+#include "GameScreenEffect.h"
 
 /// std
 #include <cassert>
@@ -13,12 +13,12 @@
 #include "Frame/Frame.h"
 
 
-PlayerOutsideWarningPipeline* PlayerOutsideWarningPipeline::GetInstance() {
-	static PlayerOutsideWarningPipeline instance;
+GameScreenEffect* GameScreenEffect::GetInstance() {
+	static GameScreenEffect instance;
 	return &instance;
 }
 
-void PlayerOutsideWarningPipeline::Init(DirectXCommon* dxCommon) {
+void GameScreenEffect::Init(DirectXCommon* dxCommon) {
 
 	// 引数で受けとる
 	dxCommon_ = dxCommon;
@@ -29,7 +29,7 @@ void PlayerOutsideWarningPipeline::Init(DirectXCommon* dxCommon) {
 	timeBuffer_.SetMappedData(0);
 }
 
-void PlayerOutsideWarningPipeline::CreateGraphicsPipeline() {
+void GameScreenEffect::CreateGraphicsPipeline() {
 
 	HRESULT hr = 0;
 
@@ -112,7 +112,7 @@ void PlayerOutsideWarningPipeline::CreateGraphicsPipeline() {
 	CreatePSO(blendDescNormal, graphicsPipelineStateNone_);
 }
 
-void PlayerOutsideWarningPipeline::CreateRootSignature() {
+void GameScreenEffect::CreateRootSignature() {
 	HRESULT hr = 0;
 	// RootSignatureを作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -145,7 +145,7 @@ void PlayerOutsideWarningPipeline::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void PlayerOutsideWarningPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
+void GameScreenEffect::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	// RootSignatureを設定
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	// パイプラインステートの設定
@@ -154,7 +154,7 @@ void PlayerOutsideWarningPipeline::PreDraw(ID3D12GraphicsCommandList* commandLis
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void PlayerOutsideWarningPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, PlayerOutsideWarning* _playerOutsideWarning) {
+void GameScreenEffect::Draw(ID3D12GraphicsCommandList* _cmdList, PlayerOutsideWarning* _playerOutsideWarning) {
 	if (!_playerOutsideWarning) {
 		return;
 	}
