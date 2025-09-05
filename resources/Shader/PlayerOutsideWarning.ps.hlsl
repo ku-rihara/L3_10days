@@ -22,7 +22,7 @@ PSOutput main(VSOutput input) {
 	PSOutput output;
 
 	float3 color = ApplyNoise(input.texcoord, gBaseColor);
-	output.color = float4(color, 0.2f);
+	output.color = float4(color, 0.15f);
 
 	return output;
 }
