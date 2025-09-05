@@ -23,13 +23,7 @@ void TitleScene::Init() {
 	BaseScene::Init();
 
 	// 生成
-	for (size_t i = 0; i < 16; i++) {
-		Vector3 pos = {
-			static_cast<float>(i) * 16.0f,
-			0.0f, 0.0f
-		};
-		object3ds_.push_back(std::make_unique<FighterAircraft>(pos));
-	}
+	object3ds_.push_back(std::make_unique<FighterAircraft>(Vector3{}));
 
 	// 初期化
 	for (auto& obj : object3ds_) {
@@ -37,17 +31,27 @@ void TitleScene::Init() {
 	}
 
 
-
 	titleSprite_ = std::make_unique<TitleSprite>();
 	titleSprite_->Init();
 
+	/// カメラの位置を調整
 	viewProjection_.translation_ = Vector3(4.02f, 2.61f, -7.57f);
 	viewProjection_.rotation_ = Vector3(0.24f, -0.55f, 0.0f);
 
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+
+	/// このシーンのBGMを再生
+	int soundId = audio_->LoadWave("./resources/Sound/BGM/TitleBGM.wav");
+	audio_->PlayBGM(soundId, 0.1f);
+
 }
 
 void TitleScene::Update() {
+
+	if(Input::GetInstance()->PushKey(DIK_ESCAPE)){
+		int soundId = audio_->LoadWave("./resources/Sound/BGM/TitleBGM.wav");
+		audio_->StopBGM(soundId);
+	}
 
 	for (auto& obj : object3ds_) {
 		obj->Update();
