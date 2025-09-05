@@ -25,5 +25,6 @@ private:
 
 	std::unique_ptr<Sprite> sprite_ = nullptr;
 
+
 };
 

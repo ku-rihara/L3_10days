@@ -37,6 +37,10 @@ void TitleScene::Init() {
 	}
 
 
+
+	titleSprite_ = std::make_unique<TitleSprite>();
+	titleSprite_->Init();
+
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
@@ -45,6 +49,8 @@ void TitleScene::Update() {
 	for (auto& obj : object3ds_) {
 		obj->Update();
 	}
+
+	titleSprite_->Update();
 
 	Object3DRegistry::GetInstance()->UpdateAll();
 	ParticleManager::GetInstance()->Update();
@@ -76,7 +82,9 @@ void TitleScene::SkyBoxDraw() {}
 /// ===================================================
 /// スプライト描画
 /// ===================================================
-void TitleScene::SpriteDraw() {}
+void TitleScene::SpriteDraw() {
+	titleSprite_->Draw();
+}
 
 /// ===================================================
 /// 影
