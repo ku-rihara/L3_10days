@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.cpp" />
+    <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.cpp" />
     <ClCompile Include="Game\TitleActor\FighterAircraft\FighterAircraft.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBrake.cpp" />
@@ -196,6 +198,8 @@
     <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.h" />
+    <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.h" />
     <ClInclude Include="Game\TitleActor\FighterAircraft\FighterAircraft.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
     <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />

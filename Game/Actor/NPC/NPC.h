@@ -7,7 +7,6 @@
 #include "Details/Faction.h"
 #include "Navigation/NpcNavigator.h"
 #include "Navigation/MoveConstraint.h"
-#include "Navigation/RectXZWithGatesConstraint.h"
 
 class BaseStation;
 class Boundary;
@@ -45,7 +44,7 @@ public:
 	virtual void SaveData();
 
 private:
-	// 内部処理（末尾アンスコ無し）
+	// 内部処理
 	void Move();
 	void StartOrbit(const Vector3& center);
 
@@ -93,5 +92,5 @@ protected:
 		const std::vector<Hole>& GetHoles() const override;
 	} holeSource_;
 
-	std::unique_ptr<IMoveConstraint> moveConstraint_; // RectXZWithGatesConstraint を格納
+	std::unique_ptr<IMoveConstraint> moveConstraint_;// 移動制御
 };
