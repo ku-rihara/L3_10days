@@ -16,6 +16,7 @@
 #include "Actor/Station/Player/PlayerStation.h"
 #include "Actor/Station/Installer/StationsInstaller.h"
 
+#include "Pipeline/Line3DPipeline.h"
 #include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryEdgePipeline.h"
 #include "Pipeline/BoundaryShardPipeline.h"
@@ -23,13 +24,14 @@
 #include "Pipeline/MiniMapPipeline.h"
 #include "Pipeline/EffectPipelines/PlayerOutsideWarningPipeline.h"
 
+#include "Actor/Spline/Spline.h"
+
 #include <imgui.h>
 
 GameScene::GameScene() {}
 GameScene::~GameScene() {}
 
 void GameScene::Init() {
-
 	BaseScene::Init();
 
 	// 生成
@@ -54,7 +56,9 @@ void GameScene::Init() {
 	/// Effect -----
 	outsideWarning_ = std::make_unique<PlayerOutsideWarning>();
 
+	spline_.Load("./Resources/Spline/Spline.json");
 
+	
 	//====================================初期化===================================================
 	skyDome_->Init();
 	player_->Init();
@@ -126,6 +130,10 @@ void GameScene::Update() {
 void GameScene::ModelDraw() {
 
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+
+	Line3DPipeline* line3dPipeline = Line3DPipeline::GetInstance();
+	line3dPipeline->PreDraw(commandList);
+	spline_.DebugDraw(viewProjection_);
 
 	/// 天球を描画
 	Object3DPiprline::GetInstance()->PreDraw(commandList);
