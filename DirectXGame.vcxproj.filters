@@ -214,6 +214,8 @@
     <ClCompile Include="Game\TitleActor\FighterAircraft\FighterAircraft.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcHomingBullet.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcStraightBullet.cpp" />
+    <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
+    <ClCompile Include="Game\Actor\Player\Reticle\PlayerReticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -426,6 +428,8 @@
     <ClInclude Include="Game\TitleActor\FighterAircraft\FighterAircraft.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcHomingBullet.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcStraightBullet.h" />
+    <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
+    <ClInclude Include="Game\Actor\Player\Reticle\PlayerReticle.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
