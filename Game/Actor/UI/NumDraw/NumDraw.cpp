@@ -10,7 +10,7 @@ void NumDraw::Init(size_t _maxNumDigit) {
 		numSprites_.emplace_back(std::make_unique<Sprite>());
 		numSprites_[i]->CreateSprite(TextureManager::GetInstance()->LoadTexture("./resources/Texture/UI/Num.png"), { 100, 100 }, { 1, 1, 1, 1 });
 		numSprites_[i]->anchorPoint_ = { 0.5f, 0.5f };
-		Vector2 size = Vector2{ 8 * 4, 8 * 5 } / 3.0f;
+		Vector2 size = Vector2{ 4.0f, 5.0f } * 2.0f;
 		Vector2 texSize = numSprites_[i]->GetTextureSize();
 		numSprites_[i]->SetScale({ size.x / texSize.x, size.y / texSize.y });
 	}

@@ -23,13 +23,7 @@ void TitleScene::Init() {
 	BaseScene::Init();
 
 	// 生成
-	for (size_t i = 0; i < 16; i++) {
-		Vector3 pos = {
-			static_cast<float>(i) * 16.0f,
-			0.0f, 0.0f
-		};
-		object3ds_.push_back(std::make_unique<FighterAircraft>(pos));
-	}
+	object3ds_.push_back(std::make_unique<FighterAircraft>(Vector3{}));
 
 	cameraRendition_ = std::make_unique<CameraRendition>();
 
@@ -38,23 +32,34 @@ void TitleScene::Init() {
 		obj->Init();
 	}
 
-	cameraRendition_->Init();
-    cameraRendition_->SetViewProjection(&viewProjection_);
 
-	// 任意のタイミングで呼び出せる
-	/*cameraRendition_->AnimationPlay("");
-    cameraRendition_->ShakePlay("");*/
+	titleSprite_ = std::make_unique<TitleSprite>();
+	titleSprite_->Init();
+
+	/// カメラの位置を調整
+	viewProjection_.translation_ = Vector3(4.02f, 2.61f, -7.57f);
+	viewProjection_.rotation_ = Vector3(0.24f, -0.55f, 0.0f);
 
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+
+	/// このシーンのBGMを再生
+	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	audio_->PlayBGM(soundId, 0.1f);
+
 }
 
 void TitleScene::Update() {
+
+	if(input_->PushKey(DIK_ESCAPE)){
+		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+		audio_->StopBGM(soundId);
+	}
 
 	for (auto& obj : object3ds_) {
 		obj->Update();
 	}
 
-	cameraRendition_->Update();
+	titleSprite_->Update();
 
 	Object3DRegistry::GetInstance()->UpdateAll();
 	ParticleManager::GetInstance()->Update();
@@ -62,6 +67,20 @@ void TitleScene::Update() {
 	Debug();
 	ViewProjectionUpdate();
 
+
+	/// Scene Change
+	if(input_->PushKey(DIK_SPACE)){
+		/// 効果音の再生
+		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+		audio_->PlayWave(soundId, 0.2f);
+
+		/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
+		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		return;
+	}
+
+
+	/// Debug用なのであとで消す
 	if (input_->TrrigerKey(DIK_RETURN)) {
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 	}
@@ -86,7 +105,9 @@ void TitleScene::SkyBoxDraw() {}
 /// ===================================================
 /// スプライト描画
 /// ===================================================
-void TitleScene::SpriteDraw() {}
+void TitleScene::SpriteDraw() {
+	titleSprite_->Draw();
+}
 
 /// ===================================================
 /// 影
