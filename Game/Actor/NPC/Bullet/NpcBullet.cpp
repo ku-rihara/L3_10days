@@ -37,7 +37,7 @@ void NpcBullet::Update() {
 	if (!isActive_) return;
 
 	prevPos_ = baseTransform_.translation_;
-	Move(); // 速度 * dt
+	Move();
 
 	auto boundary = Boundary::GetInstance();
 
@@ -60,8 +60,9 @@ void NpcBullet::Update() {
 	BaseObject::Update();
 }
 
-
-
+/// ===================================================
+/// 移動
+/// ===================================================
 void NpcBullet::Move() {
 	baseTransform_.translation_ += dir_ * speed_ * Frame::DeltaTime();
 }

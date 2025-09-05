@@ -10,22 +10,5 @@ public:
 	NpcStraightBullet() = default;
 	~NpcStraightBullet() override = default;
 
-	void Init() override;
-	void Update() override;
-	void ShootInit();
-
-	//=== accessor ========================================
-	void SetTarget(const BaseObject* target);
-
-private:
-	/// ===================================================
-	/// private func
-	/// ===================================================
-	void BindParms()override;
-
-private:
-	/// ===================================================
-	/// private variable
-	/// ===================================================
-	const BaseObject* target_ = nullptr;
+	void Init() override;		//< モデルを変えるため初期化をoverride
 };
