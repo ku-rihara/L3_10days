@@ -25,8 +25,6 @@ void TitleScene::Init() {
 	// 生成
 	object3ds_.push_back(std::make_unique<FighterAircraft>(Vector3{}));
 
-	cameraRendition_ = std::make_unique<CameraRendition>();
-
 	// 初期化
 	for (auto& obj : object3ds_) {
 		obj->Init();
@@ -120,7 +118,6 @@ void TitleScene::Debug() {
 	ImGui::DragFloat3("pos", &viewProjection_.translation_.x, 0.1f);
 	ImGui::DragFloat3("rotate", &viewProjection_.rotation_.x, 0.1f);
 	ImGui::End();
-    cameraRendition_->Edit();
 #endif
 }
 

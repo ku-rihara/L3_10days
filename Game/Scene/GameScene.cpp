@@ -190,15 +190,10 @@ void GameScene::SpriteDraw() {
 	/// ミニマップ描画
 	miniMap_->DrawMiniMap();
 
-
 	/// UI用に
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
 	miniMapIconPipeline->Draw(commandList,miniMap_.get());
-
-	PlayerOutsideWarningPipeline* outsideWarning = PlayerOutsideWarningPipeline::GetInstance();
-	outsideWarning->PreDraw(commandList);
-	outsideWarning->Draw(commandList,outsideWarning_.get());
 }
 
 /// ======================================================
