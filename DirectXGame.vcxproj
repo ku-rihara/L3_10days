@@ -190,6 +190,7 @@
     <ClCompile Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.cpp" />
     <ClCompile Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.cpp" />
     <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.cpp" />
+    <ClCompile Include="Game\Actor\Spline\Spline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -394,6 +395,7 @@
     <ClInclude Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.h" />
     <ClInclude Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.h" />
     <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.h" />
+    <ClInclude Include="Game\Actor\Spline\Spline.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
