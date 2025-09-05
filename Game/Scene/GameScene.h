@@ -4,7 +4,6 @@
 #include "Actor/GameCamera/GameCamera.h"
 #include "Actor/Player/Player.h"
 #include "BaseScene.h"
-#include "SkyBox/SkyBox.h"
 
 // game
 #include "Actor/Station/Base/BaseStation.h"
@@ -15,6 +14,7 @@
 #include "Actor/Station/UnitDirector/QuotaUnitDirector.h"
 #include "Actor/UI/GameUIs.h"
 #include "Actor/Effects/PlayerOutsideWarning/PlayerOutsideWarning.h"
+#include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
 
 #include<map>
 
@@ -27,9 +27,10 @@ private:
 	std::unique_ptr<SkyDome> skyDome_ = nullptr;
 	std::unique_ptr<Player> player_ = nullptr;
 	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
-	 std::unique_ptr<TestGround> testGround_     = nullptr;
+	std::unique_ptr<TestGround> testGround_     = nullptr;
 	/// game objects
 	Boundary* boundary_ = nullptr;
+	std::vector<std::unique_ptr<BoundaryBreaker>> boundaryBreakers_;
 
 	/// ----- UI ----- ///
 	std::unique_ptr<MiniMap> miniMap_ = nullptr;
