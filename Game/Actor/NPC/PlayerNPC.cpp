@@ -1,4 +1,5 @@
 #include "PlayerNPC.h"
+#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 
 PlayerNPC::PlayerNPC() {
 	//調整用グループ名
@@ -6,6 +7,8 @@ PlayerNPC::PlayerNPC() {
 	//派閥
 	SetFaction(FactionType::Ally);
 }
+
+PlayerNPC::~PlayerNPC() = default;
 
 /// ===================================================
 ///  初期化

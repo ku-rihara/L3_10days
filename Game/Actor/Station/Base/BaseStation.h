@@ -17,7 +17,6 @@
 #include <vector>
 
 class NPC;
-class NpcFireController;
 
 class BaseStation : public BaseObject {
 public:
@@ -38,7 +37,6 @@ public:
 	// ---- accessor ----
 	void SetRivalStation(BaseStation* rival);
 	BaseStation* GetRivalStation() const;
-	NpcFireController* GetNpcFireController() const;
 	void SetFaction(FactionType type);
 	FactionType GetFactionType() const;
 
@@ -79,7 +77,6 @@ protected:
 	float   hp_ = 100.0f;
 	float   currentTime_ = 0.0f;
 
-	std::unique_ptr< NpcFireController> fireController_ = nullptr;
 	std::vector<NpcHandle> spawned_;
 	BaseStation* pRivalStation_ = nullptr; //< ライバル拠点
 

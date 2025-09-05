@@ -3,6 +3,7 @@
 #include "Actor/NPC/NPC.h"
 #include "random.h"
 
+BoundaryBreaker::~BoundaryBreaker() = default;
 //===================================================================*/
 //				初期化
 //===================================================================*/
@@ -12,6 +13,9 @@ void BoundaryBreaker::Init(){
 	BaseObject::Init();
 
 	obj3d_->transform_.parent_ = &baseTransform_;
+
+	fireController_ = std::make_unique<NpcFireController>();
+	fireController_->Init();
 
 	// グローバル変数
 	globalParam_ = GlobalParameter::GetInstance();
@@ -32,6 +36,7 @@ void BoundaryBreaker::Init(){
 //				更新
 //===================================================================*/
 void BoundaryBreaker::Update(){
+	fireController_->Tick();
 	Move();
 	Shoot();
 	BaseObject::Update();
@@ -67,14 +72,14 @@ void BoundaryBreaker::BindParms(){
 //				発射処理
 //===================================================================*/
 void BoundaryBreaker::Shoot(){
-	if (!pFireController_)return;
+	if (!fireController_)return;
 	shootCooldown_ -= Frame::DeltaTime();
 	if (shootCooldown_ > 0.0f) return;
 	if (!pRivalStation_) return;
 
 	//ライバルのステーションに向けて発射する
 	Vector3 dir = Vector3(pRivalStation_->GetWorldPosition() - GetWorldPosition()).Normalize();
-	pFireController_->Spawn(GetWorldPosition(),dir);
+	fireController_->SpawnStraight(GetWorldPosition(),dir);
 	shootCooldown_ = shootInterval_;
 }
 
@@ -84,7 +89,6 @@ void BoundaryBreaker::Shoot(){
 void BoundaryBreaker::SetFactionType(const FactionType type){ faction_ = type; }
 void BoundaryBreaker::SetAnchorPoint(const Vector3& point){ anchorPosition_ = point; }
 void BoundaryBreaker::SetRivalStation(const BaseStation* station){ pRivalStation_ = station; }
-void BoundaryBreaker::SetFireController(NpcFireController* controller){pFireController_ = controller; }
 
 void BoundaryBreaker::SetPhase(float rad){ phase_ = rad; }
 void BoundaryBreaker::SetRadius(float r){ turningRadius_ = r; }
