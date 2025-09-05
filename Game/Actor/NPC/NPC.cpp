@@ -30,6 +30,7 @@ const std::vector<Hole>& NPC::BoundaryHoleSource::GetHoles() const{
 	return boundary ? boundary->GetHoles() : kEmpty;
 }
 
+NPC::~NPC() = default;
 /// ===================================================
 /// 初期化
 /// ===================================================
@@ -49,6 +50,10 @@ void NPC::Init(){
 	// 航法初期化（自分の位置を中心に旋回開始）
 	navigator_.Reset(GetWorldPosition());
 
+	//npcの弾制御
+	fireController_ = std::make_unique< NpcFireController>();
+	fireController_->Init();
+
 	// --- 通行制約（XZ 長方形＋穴ゲート）---
 	Boundary* boundary = Boundary::GetInstance();
 	holeSource_.boundary = boundary;
@@ -64,6 +69,7 @@ void NPC::Init(){
 /// 更新
 /// ===================================================
 void NPC::Update(){
+	fireController_->Tick();
 	Move();
 	TryFire();
 	BaseObject::Update();
@@ -131,14 +137,14 @@ void NPC::Move(){
 }
 
 void NPC::TryFire(){
-	if (!pFireController) return;
+	if (!fireController_) return;
 	shootCooldown_ -= Frame::DeltaTime();
 	if (shootCooldown_ > 0.0f) return;
 	if (!target_) return;
 
 	Vector3 dir = Vector3(target_->GetWorldPosition() - GetWorldPosition()).Normalize();
 	// （必要なら拡散処理）
-	pFireController->Spawn(GetWorldPosition(),dir);
+	fireController_->SpawnStraight(GetWorldPosition(),dir);
 	shootCooldown_ = shootInterval_;
 }
 

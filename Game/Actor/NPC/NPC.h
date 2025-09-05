@@ -19,7 +19,7 @@ public:
 	///  public func
 	/// ===================================================
 	NPC() = default;
-	~NPC() override = default;
+	~NPC() override;
 
 	void Init() override;
 	void Update() override;
@@ -28,7 +28,6 @@ public:
 	void SetTarget(const BaseStation* target);
 	void SetFaction(FactionType faction);
 	bool GetIsAlive() const { return isActive_; }
-	void SetFireControl(NpcFireController* fc) { pFireController = fc; }
 
 	void Activate();
 	void Deactivate();
@@ -54,7 +53,7 @@ protected:
 	/// ===================================================
 	///  protected-like variable
 	/// ===================================================
-	NpcFireController* pFireController = nullptr;
+	std::unique_ptr<NpcFireController> fireController_ = nullptr;
 	// ---- param ----
 	GlobalParameter* globalParam_ = nullptr;   //< 調整項目用
 	std::string groupName_;                    //< 調整項目グループ名

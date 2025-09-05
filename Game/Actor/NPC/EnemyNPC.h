@@ -9,9 +9,8 @@ public:
 	///  public func
 	/// ===================================================
 	EnemyNPC();
-	~EnemyNPC()override = default;
+	~EnemyNPC()override;
 
 	void Init()override;
 	void Update()override;
 };
-

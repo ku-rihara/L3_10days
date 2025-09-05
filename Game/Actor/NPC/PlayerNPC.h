@@ -9,9 +9,8 @@ public:
 	///  public func
 	/// ===================================================
 	PlayerNPC();
-	~PlayerNPC()override = default;
+	~PlayerNPC()override;
 
 	void Init()override;
 	void Update()override;
 };
-

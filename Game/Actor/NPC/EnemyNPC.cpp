@@ -1,11 +1,15 @@
 #include "EnemyNPC.h"
 
+#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
+
 EnemyNPC::EnemyNPC() {
 	//調整用グループ名
 	groupName_ = "EnemyNPC";
 	//派閥
 	SetFaction(FactionType::Enemy);
 }
+
+EnemyNPC::~EnemyNPC() = default;
 
 /// ===================================================
 ///  初期化
