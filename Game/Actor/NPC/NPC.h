@@ -32,7 +32,6 @@ public:
 
 	void Activate();
 	void Deactivate();
-	void TryFire();
 
 	// 防衛アンカー（防衛時の旋回中心）を指定/解除
 	void SetDefendAnchor(const Vector3& p);
@@ -44,7 +43,10 @@ public:
 	virtual void SaveData();
 
 private:
-	// 内部処理
+	/// ===================================================
+	///  private func
+	/// ===================================================
+	void TryFire();
 	void Move();
 	void StartOrbit(const Vector3& center);
 

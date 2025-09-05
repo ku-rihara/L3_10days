@@ -38,6 +38,7 @@ public:
 	// ---- accessor ----
 	void SetRivalStation(BaseStation* rival);
 	BaseStation* GetRivalStation() const;
+	NpcFireController* GetNpcFireController() const;
 	void SetFaction(FactionType type);
 	FactionType GetFactionType() const;
 
