@@ -13,8 +13,6 @@
   <ItemGroup>
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.cpp" />
-    <ClCompile Include="Game\Actor\NPC\Bullet\NpcHomingBullet.cpp" />
-    <ClCompile Include="Game\Actor\NPC\Bullet\NpcStraightBullet.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBrake.cpp" />
     <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
@@ -198,8 +196,6 @@
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.h" />
-    <ClInclude Include="Game\Actor\NPC\Bullet\NpcHomingBullet.h" />
-    <ClInclude Include="Game\Actor\NPC\Bullet\NpcStraightBullet.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
     <ClInclude Include="Game\Actor\Boundary\BoundaryShard.h" />
     <ClInclude Include="Game\Actor\Boundary\RectXZ.h" />

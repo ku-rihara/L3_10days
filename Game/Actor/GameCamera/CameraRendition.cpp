@@ -9,14 +9,10 @@ void CameraRendition::Init() {
     cameraAnimation_ = std::make_unique<CameraAnimation>();
 
     shakePlayer_->Init();
-    cameraAnimation_->Init();
 }
 
 void CameraRendition::Update() {
-    if (!pGameCamera_) {
-        return;
-    }
-
+  
     shakePlayer_->Update(Frame::DeltaTime());
     cameraAnimation_->Update(Frame::DeltaTimeRate());
 }
@@ -30,6 +26,10 @@ void CameraRendition::ShakePlay(const std::string& filename) {
 }
 
  void CameraRendition::SetViewProjection(ViewProjection* viewProjection) {
-     cameraAnimation_->SetViewProjection(viewProjection); 
+    cameraAnimation_->Init(viewProjection);
  }
 
+ void CameraRendition::Edit() {
+     shakePlayer_->EditorUpdate();
+     cameraAnimation_->EditorUpdate();
+   }

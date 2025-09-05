@@ -1,24 +1,31 @@
 #pragma once
 
-///baseScene
-#include"BaseScene.h"
+/// std
+#include <string>
+#include <array>
+#include <memory>
 
+/// engine
+#include "BaseScene.h"
+#include "utility/ParticleEditor/ParticleEmitter.h"
+#include "BaseObject/BaseObject.h"
 
-#include"utility/ParticleEditor/ParticleEmitter.h"
-#include<string>
-#include<array>
+#include "Actor/GameCamera/CameraRendition.h"
+
 /// <summary>
 /// タイトルシーン
 /// </summary>
 class TitleScene :public BaseScene {
 private:
-	
-	std::array<std::unique_ptr<ParticleEmitter>,3>EnemydamageEffect_;
-    std::array<std::unique_ptr<ParticleEmitter>, 1> afterGlowEffect_;
-   
+
+	using Object = std::unique_ptr<BaseObject>;
+	std::vector<Object> object3ds_;
+
+	std::unique_ptr<CameraRendition> cameraRendition_;
+
 public:
 	///========================================================
-	/// Constralt destract
+	/// Construct Destruct
 	///========================================================
 	TitleScene();
 	~TitleScene()override;
@@ -32,8 +39,8 @@ public:
 	void Update()override;
 	void ModelDraw()override;
 	void SpriteDraw()override;
-    void SkyBoxDraw() override;
-    void DrawShadow() override;
+	void SkyBoxDraw() override;
+	void DrawShadow() override;
 
 
 	void Debug()override;/// debug

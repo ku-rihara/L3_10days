@@ -113,7 +113,7 @@ void Player::HandleInput() {
     if (fabs(rollInput) < 0.001f) {
         currentMaxRoll_ = 0.0f;
     } else {
-
+        angleInput_.y   = 0.0f;
         currentMaxRoll_ = ToRadian(rollRotateLimit_);
     }
     targetRoll_ = std::clamp(targetRoll_, -currentMaxRoll_, currentMaxRoll_);
@@ -203,7 +203,7 @@ void Player::CorrectionHorizon() {
     }
 }
 
-bool Player::GetIsUpsideDown() const{
+bool Player::GetIsUpsideDown() const {
     // 機体の上方向ベクトルを取得
     Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
     Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
@@ -258,7 +258,7 @@ void Player::SpeedUpdate() {
     speedParam_.currentForwardSpeed = speedBehavior_->GetCurrentSpeed();
 }
 
- float Player::GetRollDegree() const {
+float Player::GetRollDegree() const {
     Vector3 currentEuler = obj3d_->transform_.quaternion_.ToEuler();
     return ToDegree(currentEuler.z);
 }
@@ -328,7 +328,6 @@ void Player::AdjustParam() {
         ImGui::Text("Euler (deg): P=%.1f, Y=%.1f, R=%.1f",
             ToDegree(euler.x), ToDegree(euler.y), ToDegree(euler.z));
 
-    
         if (GetIsUpsideDown()) {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "STATUS: UPSIDE DOWN!");
         } else {
