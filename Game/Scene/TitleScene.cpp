@@ -41,15 +41,15 @@ void TitleScene::Init() {
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
 	/// このシーンのBGMを再生
-	int soundId = audio_->LoadWave("./resources/Sound/BGM/TitleBGM.wav");
+	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
 	audio_->PlayBGM(soundId, 0.1f);
 
 }
 
 void TitleScene::Update() {
 
-	if(Input::GetInstance()->PushKey(DIK_ESCAPE)){
-		int soundId = audio_->LoadWave("./resources/Sound/BGM/TitleBGM.wav");
+	if(input_->PushKey(DIK_ESCAPE)){
+		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
 		audio_->StopBGM(soundId);
 	}
 
@@ -65,6 +65,20 @@ void TitleScene::Update() {
 	Debug();
 	ViewProjectionUpdate();
 
+
+	/// Scene Change
+	if(input_->PushKey(DIK_SPACE)){
+		/// 効果音の再生
+		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+		audio_->PlayWave(soundId, 0.2f);
+
+		/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
+		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		return;
+	}
+
+
+	/// Debug用なのであとで消す
 	if (input_->TrrigerKey(DIK_RETURN)) {
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 	}

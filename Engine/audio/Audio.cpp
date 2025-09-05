@@ -129,6 +129,12 @@ int Audio::PlayBGM(const int& soundId, const float& volume) {
         return -1;
     }
 
+	/// すでに同じBGMが再生されている場合は停止
+	auto it = bgmVoices_.find(soundId);
+    if (it != bgmVoices_.end()) {
+		StopBGM(soundId);
+    }
+
     const SoundData& soundData = soundDatas_[soundId];
 
     HRESULT result;
