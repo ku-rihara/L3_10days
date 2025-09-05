@@ -51,8 +51,8 @@ void Player::Update() {
     // 物理計算
     RotateUpdate();
 
-    //レティクル
-    reticle_->Update(this,viewProjection_);
+    // レティクル
+    reticle_->Update(this, viewProjection_);
 
     // 弾丸システム更新
     if (bulletShooter_) {
@@ -355,12 +355,14 @@ void Player::AdjustParam() {
 
         ImGui::PopID();
     }
+    // 弾
     if (bulletShooter_) {
         bulletShooter_->AdjustParam();
     }
+    // レティクル
     if (reticle_) {
         reticle_->AdjustParam();
     }
-        
+
 #endif // _DEBUG
 }

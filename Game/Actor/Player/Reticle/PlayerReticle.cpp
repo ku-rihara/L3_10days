@@ -41,6 +41,7 @@ void PlayerReticle::Update(const Player* player, const ViewProjection* viewProje
 
     //スプライトに適応
     sprite_->SetPosition(screenPos_);
+    sprite_->SetScale(Vector2(scale_, scale_));
 }
 
 void PlayerReticle::Draw() {
@@ -54,6 +55,7 @@ void PlayerReticle::Draw() {
 ///==========================================================
 void PlayerReticle::BindParams() {
     globalParameter_->Bind(groupName_, "forwardDistance", &forwardDistance_);
+    globalParameter_->Bind(groupName_, "scale", &scale_);
 }
 
 ///=========================================================
@@ -66,8 +68,8 @@ void PlayerReticle::AdjustParam() {
         ImGui::PushID(groupName_.c_str());
 
         ImGui::DragFloat("forwardDistance", &forwardDistance_, 0.01f);
+        ImGui::DragFloat("scale", &scale_, 0.01f);
        
-
         // セーブ・ロード
         globalParameter_->ParamSaveForImGui(groupName_);
         globalParameter_->ParamLoadForImGui(groupName_);

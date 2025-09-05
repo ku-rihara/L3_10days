@@ -24,9 +24,6 @@ public:
     void BindParams();
 
 private:
-    Vector2 WorldToScreen(const Vector3& worldPos, const ViewProjection& viewProjection);
-
-private:
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "PlayerReticle";
 
@@ -36,6 +33,9 @@ private:
     // Pos
     Vector3 worldPos_;
     Vector2 screenPos_;
+
+    // scale
+    float scale_;
 
     // 前方の距離
     float forwardDistance_;
