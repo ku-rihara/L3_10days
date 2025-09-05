@@ -178,6 +178,7 @@ void GameScene::SkyBoxDraw(){}
 /// ======================================================
 void GameScene::SpriteDraw(){
 	uis_->Draw();
+    player_->ReticleDraw();
 
 	/// ミニマップ描画
 	miniMap_->DrawMiniMap();

@@ -1,12 +1,16 @@
 #pragma once
+
 #include "BaseObject/BaseObject.h"
-#include "Behavior/BasePlayerSpeedBehavior.h"
+#include "Reticle/PlayerReticle.h"
 #include "Bullet/PlayerBulletShooter.h"
+#include "Behavior/BasePlayerSpeedBehavior.h"
 #include "Easing/Easing.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <cstdint>
 #include <memory>
 
+class PlayerBulletShooter;
+class PlayerReticle;
 class Player : public BaseObject {
 public:
     struct SpeedParam {
@@ -27,6 +31,8 @@ public:
     // 初期化、更新
     void Init();
     void Update();
+
+    void ReticleDraw();
 
     // Move
     void HandleInput();
@@ -50,9 +56,7 @@ public:
     // ロール所得
     float GetRollDegree() const;
 
-   
-
-    bool GetIsUpsideDown()const;
+    bool GetIsUpsideDown() const;
 
     // Behavior management
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
@@ -60,9 +64,10 @@ public:
 
 private:
     // other class
-    const ViewProjection* viewProjection_ = nullptr;
-    std::unique_ptr<PlayerBulletShooter> bulletShooter_;
-    std::unique_ptr<BasePlayerSpeedBehavior> speedBehavior_;
+    const ViewProjection* viewProjection_                   = nullptr;
+    std::unique_ptr<PlayerReticle> reticle_                 = nullptr;
+    std::unique_ptr<PlayerBulletShooter> bulletShooter_     = nullptr;
+    std::unique_ptr<BasePlayerSpeedBehavior> speedBehavior_ = nullptr;
 
     // ブースト
     bool isLBPressed_;
