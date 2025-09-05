@@ -1,10 +1,12 @@
 #include "BoundaryBreakerInstaller.h"
 
 #include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include "Actor/Station/Base/BaseStation.h"
 
-void Installer::InstallBoundaryBreaker(std::vector<std::unique_ptr<BoundaryBreaker>>& boundaryBreakers,
-									   const Vector3& stationPos, int spawnNum,
-									   const BaseStation* rivalStation){
+void Installer::InstallBoundaryBreakers(std::vector<std::unique_ptr<BoundaryBreaker>>& boundaryBreakers,
+										const BaseStation* allyStation,
+										const BaseStation* rivalStation,
+										int spawnNum){
 	boundaryBreakers.resize(spawnNum);
 
 	float r = 100.0f;
@@ -16,8 +18,10 @@ void Installer::InstallBoundaryBreaker(std::vector<std::unique_ptr<BoundaryBreak
 
 		auto boundaryBreaker = std::make_unique<BoundaryBreaker>();
 		boundaryBreaker->Init();
-		boundaryBreaker->SetAnchorPoint(stationPos);
+		Vector3 stationPosition = allyStation->GetWorldPosition();
+		boundaryBreaker->SetAnchorPoint(stationPosition);
 		boundaryBreaker->SetRivalStation(rivalStation);
+		boundaryBreaker->SetFireController(allyStation->GetNpcFireController());
 
 		boundaryBreaker->SetPhase(angle);
 		boundaryBreaker->SetRadius(r);

@@ -68,8 +68,10 @@ void GameScene::Init(){
 							   director_.get());
 
 	const Vector3 enemyStaitonPos = stations_[FactionType::Enemy]->GetWorldPosition();
-	Installer::InstallBoundaryBreaker(boundaryBreakers_,enemyStaitonPos,2,
-									  stations_[FactionType::Ally].get());
+	Installer::InstallBoundaryBreakers(boundaryBreakers_,
+									   stations_[FactionType::Enemy].get(),
+									   stations_[FactionType::Enemy].get(),
+									   2);
 
 	gameCamera_->Init();
 	//testGround_->Init();

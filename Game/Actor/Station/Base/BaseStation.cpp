@@ -160,6 +160,7 @@ void BaseStation::SaveData() {
 // accessor
 void BaseStation::SetRivalStation(BaseStation* rival) { pRivalStation_ = rival; }
 BaseStation* BaseStation::GetRivalStation() const { return pRivalStation_; }
+NpcFireController* BaseStation::GetNpcFireController() const{return fireController_.get();}
 void BaseStation::SetFaction(FactionType type) { faction_ = type; }
 FactionType BaseStation::GetFactionType() const { return faction_; }
 

@@ -10,9 +10,6 @@
 /// 初期化
 /// ===================================================
 void NpcBullet::Init() {
-	//初期化済みの場合は初期化しない
-	if (isInitialized_) return;
-
 	globalParam_ = GlobalParameter::GetInstance();
 
 	globalParam_->CreateGroup(groupName_, true);
@@ -21,7 +18,7 @@ void NpcBullet::Init() {
 	globalParam_->SyncParamForGroup(groupName_);
 
 	//transformの初期化
-	obj3d_.reset(Object3d::CreateModel("cube.obj"));
+	obj3d_.reset(Object3d::CreateModel(modelName_));
 	BaseObject::Init();
 	obj3d_->transform_.parent_ = &baseTransform_;
 	isInitialized_ = true;

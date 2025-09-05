@@ -17,8 +17,8 @@ NpcBullet* NpcFireController::Spawn(const Vector3& worldPos, const Vector3& dir)
 void NpcFireController::Tick(){
 	for (auto& h : bullets_) if (h) h->Update();
 	bullets_.erase(
-	               std::remove_if(bullets_.begin(),bullets_.end(),
-	                              [](const NpcBulletHandle& h){ return !h || !h->IsAlive(); }),
-	               bullets_.end()
-	              );
+				   std::remove_if(bullets_.begin(),bullets_.end(),
+								  [](const NpcBulletHandle& h){ return !h || !h->IsAlive(); }),
+				   bullets_.end()
+				  );
 }

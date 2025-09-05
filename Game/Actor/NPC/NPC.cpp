@@ -150,7 +150,6 @@ void NPC::StartOrbit(const Vector3& center){ navigator_.StartOrbit(center); }
 /////////////////////////////////////////////////////////////////////////////////////////
 //      パラメータ
 /////////////////////////////////////////////////////////////////////////////////////////
-
 void NPC::BindParms(){
 	globalParam_->Bind(groupName_,"maxHP",&maxHP_);
 	globalParam_->Bind(groupName_,"speed",&speed_);
@@ -163,7 +162,6 @@ void NPC::SaveData(){ globalParam_->SaveFile(groupName_,fileDirectory_); }
 /////////////////////////////////////////////////////////////////////////////////////////
 //      accessor
 /////////////////////////////////////////////////////////////////////////////////////////
-
 void NPC::SetTarget(const BaseStation* target){ target_ = target; }
 void NPC::SetFaction(FactionType faction){ faction_ = faction; }
 void NPC::Activate(){ isActive_ = true; }

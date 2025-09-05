@@ -9,9 +9,9 @@ public:
 	/// public func
 	/// ===================================================
 	NpcBullet() = default;
-	~NpcBullet() override = default;
+	virtual ~NpcBullet() override = default;
 
-	void Init() override;					// パラメータ束縛＋ロード
+	virtual void Init() override;			// パラメータ束縛＋ロード
 	void Init(const Vector3& dir);			// 方向指定で初期化
 	void Update() override;
 
@@ -27,20 +27,21 @@ protected:
 	/// ===================================================
 	/// protected Func
 	/// ===================================================
-	void BindParms();
+	virtual void BindParms();
 	void LoadData();
 	void SaveData();
 
 private:
 	void Move();
 
-private:
+protected:
 	/// ===================================================
-	/// private Variables
+	/// protected Variables
 	/// ===================================================
 	// Param
 	GlobalParameter* globalParam_ = nullptr;
 	std::string groupName_ = "NpcBullet";
+	std::string modelName_ = "cube.obj";	//< とりあえずデバッグ用
 	const std::string fileDirectory_ = "GameActor/NpcBullet";
 
 	float speed_ = 40.0f;		// m/s
