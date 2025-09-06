@@ -10,18 +10,21 @@
 #include "Matrix4x4.h"
 #include <algorithm>
 #include <cmath>
+#include <imgui.h>
 
 void LockOn::Init() {
+
+     ///* グローバルパラメータ
+    globalParameter_ = GlobalParameter::GetInstance();
+    globalParameter_->CreateGroup(groupName_, false);
+    BindParams();
+    globalParameter_->SyncParamForGroup(groupName_);
+
     // スプライトの読み込みと作成
-    int TextureHandle = TextureManager::GetInstance()->LoadTexture("Resources/Texture/default.png");
-    lockOnMark_.reset(Sprite::Create(TextureHandle, Vector2{640, 320}, Vector4(1, 1, 1, 1)));
+    int TextureHandle = TextureManager::GetInstance()->LoadTexture("Resources/Texture/UI/Reticle.png");
+    lockOnMark_.reset(Sprite::Create(TextureHandle, Vector2{0, 0}, Vector4(1, 1, 1, 1)));
     lockOnMark_->SetAnchorPoint(Vector2(0.5f, 0.5f));
-
-    // 初期パラメータ設定
-    minDistance_ = 5.0f;
-    maxDistance_ = 90.0f;
-    angleRange_  = ToRadian(180.0f);
-
+ 
     lerpTime_        = 0.0f;
     spriteRotation_  = 0.0f;
     autoSearchTimer_ = 0.0f;
@@ -238,7 +241,6 @@ void LockOn::OnObjectDestroyed(const LockOnVariant& obj) {
     }
 }
 
-// 既存のヘルパー関数たちはそのまま...
 Vector3 LockOn::GetPosition(const LockOnVariant& target) const {
     return std::visit([](auto&& obj) -> Vector3 {
         return obj->GetWorldPosition();
@@ -246,18 +248,21 @@ Vector3 LockOn::GetPosition(const LockOnVariant& target) const {
         target);
 }
 
-bool LockOn::IsDead(const LockOnVariant& target) const {
-    target;
-    return false;
-}
-
-FactionType LockOn::GetFaction(const LockOnVariant& target) const {
-    target;
-    return FactionType::Enemy;
-}
+//bool LockOn::IsDead(const LockOnVariant& target) const {
+//    target;
+//    return false;
+//}
+//
+//FactionType LockOn::GetFaction(const LockOnVariant& target) const {
+//    target;
+//    return FactionType::Enemy;
+//}
 
 bool LockOn::IsLockable(const LockOnVariant& target, FactionType playerFaction) const {
-    return !IsDead(target) && GetFaction(target) != playerFaction;
+   /* return !IsDead(target) && GetFaction(target) != playerFaction;*/
+    target;
+   playerFaction;
+    return true;
 }
 
 bool LockOn::IsTargetRange(const LockOnVariant& target, const ViewProjection& viewProjection, Vector3& positionView)const {
@@ -274,7 +279,7 @@ bool LockOn::IsTargetRange(const LockOnVariant& target, const ViewProjection& vi
             positionView.z);
 
         // 角度条件チェック（コーンに収まっているか）
-        return (std::abs(actTangent) <= std::abs(angleRange_));
+        return (std::abs(actTangent) <= std::abs(ToRadian(angleRange_)));
     }
 
     return false;
@@ -285,4 +290,36 @@ void LockOn::LerpTimeIncrement(float incrementTime) {
     if (lerpTime_ >= 1.0f) {
         lerpTime_ = 1.0f;
     }
+}
+
+
+///=========================================================
+/// バインド
+///==========================================================
+void LockOn::BindParams() {
+    globalParameter_->Bind(groupName_, "minDistance", &minDistance_);
+    globalParameter_->Bind(groupName_, "maxDistance", &maxDistance_);
+    globalParameter_->Bind(groupName_, "angleRange", &angleRange_);
+}
+
+///=========================================================
+/// パラメータ調整
+///==========================================================
+void LockOn::AdjustParam() {
+
+#ifdef _DEBUG
+    if (ImGui::CollapsingHeader(groupName_.c_str())) {
+        ImGui::PushID(groupName_.c_str());
+
+        ImGui::DragFloat("minDistance", &minDistance_, 0.1f);
+        ImGui::DragFloat("maxDistance", &maxDistance_, 0.1f);
+        ImGui::DragFloat("angleRange", &angleRange_, 0.1f);
+
+        // セーブ・ロード
+        globalParameter_->ParamSaveForImGui(groupName_);
+        globalParameter_->ParamLoadForImGui(groupName_);
+
+        ImGui::PopID();
+    }
+#endif // _DEBUG
 }

@@ -3,6 +3,7 @@
 #include "3d/ViewProjection.h"
 #include "Details/Faction.h"
 #include "Vector3.h"
+ #include "utility/ParameterEditor/GlobalParameter.h"
 
 #include <memory>
 #include <optional>
@@ -27,11 +28,15 @@ public:
 
     void OnObjectDestroyed(const LockOnVariant& obj);
 
+    // editor
+    void AdjustParam();
+    void BindParams();
+
 private:
     // ヘルパー関数
     Vector3 GetPosition(const LockOnVariant& target) const;
-    bool IsDead(const LockOnVariant& target) const;
-    FactionType GetFaction(const LockOnVariant& target) const;
+  /*  bool IsDead(const LockOnVariant& target) const;
+    FactionType GetFaction(const LockOnVariant& target) const;*/
     bool IsLockable(const LockOnVariant& target, FactionType playerFaction) const;
 
     // 自動検索関連
@@ -51,19 +56,23 @@ private:
     void LerpTimeIncrement(float incrementTime);
 
 private:
+
+    GlobalParameter* globalParameter_;
+    const std::string groupName_ = "LockOn"; 
+
     std::unique_ptr<Sprite> lockOnMark_;
     std::optional<LockOnVariant> currentTarget_;
     std::vector<LockOnVariant> validTargets_;
     size_t currentTargetIndex_ = 0;
 
-    float lerpTime_ = 0.0f;
+    float lerpTime_;
     Vector2 prePos_;
     Vector2 lockOnMarkPos_;
-    float spriteRotation_ = 0.0f;
+    float spriteRotation_;
 
     // 自動検索設定
     bool autoSearchEnabled_   = true;
-    float autoSearchInterval_ = 0.1f; // 自動検索の間隔
+    float autoSearchInterval_ = 0.1f; 
     float autoSearchTimer_    = 0.0f;
 
     // 切り替え入力
