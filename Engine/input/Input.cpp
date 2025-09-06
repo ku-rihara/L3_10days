@@ -39,8 +39,11 @@ void Input::Init(HINSTANCE hInstance, HWND hWnd) {
 	mouse_ = std::make_unique<Mouse>();
 	mouse_->Init(directInput_, hWnd);
 
+	std::unique_ptr<Gamepad> pad = std::make_unique<Gamepad>();
+	pad->Init(directInput_, 0);
+	gamepads_.push_back(std::move(pad));
 
-	for (DWORD i = 0; i < XUSER_MAX_COUNT; ++i) {
+	for (DWORD i = 1; i < XUSER_MAX_COUNT; ++i) {
 		auto gamepad = std::make_unique<Gamepad>();
 		if (gamepad->Init(directInput_, i)) {
 			gamepads_.push_back(std::move(gamepad));

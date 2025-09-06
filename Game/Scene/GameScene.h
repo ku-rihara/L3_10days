@@ -15,8 +15,11 @@
 #include "Actor/SkyDome/SkyDome.h"
 #include "Actor/Station/UnitDirector/QuotaUnitDirector.h"
 #include "Actor/UI/GameUIs.h"
-#include "Actor/Effects/PlayerOutsideWarning/PlayerOutsideWarning.h"
+#include "Actor/Effects/GameScreenEffect/GameScreenEffect.h"
 #include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+
+/// pause
+#include "PauseActor/Pause.h"
 
 #include<map>
 #include "Actor/Spline/Spline.h"
@@ -25,6 +28,11 @@ class GameScene : public BaseScene {
 private:
 	///========================================================
 	/// Private variants
+	///========================================================
+
+	
+	///========================================================
+	/// game objects
 	///========================================================
 
 	std::unique_ptr<SkyDome> skyDome_ = nullptr;
@@ -40,14 +48,18 @@ private:
 	std::unique_ptr<GameUIs> uis_ = nullptr;
 
 	/// ----- Effect ----- ///
-	std::unique_ptr<PlayerOutsideWarning> outsideWarning_ = nullptr;
+	std::unique_ptr<GameScreenEffect> outsideWarning_ = nullptr;
 
 	std::map<FactionType,std::unique_ptr<BaseStation>> stations_;
 	std::unique_ptr<QuotaUnitDirector> director_;
 
 
-	/// debug
-	Spline spline_;
+
+	///========================================================
+	/// pause objects
+	///========================================================
+
+	std::unique_ptr<Pause> pause_ = nullptr;
 
 public:
 	///========================================================
@@ -71,4 +83,16 @@ public:
 	void Debug() override; /// debug
 	void ViewProjectionUpdate() override;
 	void ViewProssess() override;
+
+
+	void GameUpdate();
+	void PauseUpdate();
+
+	/// DrawMethods
+	void GameModelDraw();
+	void GameSpriteDraw();
+
+	void PauseModelDraw();
+	void PauseSpriteDraw();
+
 };

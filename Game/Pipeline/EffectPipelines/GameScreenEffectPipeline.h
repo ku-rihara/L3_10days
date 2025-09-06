@@ -15,12 +15,13 @@
 #include "Pipeline/Buffer/ConstantBuffer.h"
 
 /// 描画対象
-#include "Actor/Effects/PlayerOutsideWarning/PlayerOutsideWarning.h"
+#include "Actor/Effects/GameScreenEffect/GameScreenEffect.h"
 
-class PlayerOutsideWarningPipeline {
+class GameScreenEffectPipeline {
 
 	enum ROOT_PARAM {
 		ROOT_PARAM_TIME,
+		ROOT_PARAM_EFFECT_BUFFER_DATA,
 	};
 
 public:
@@ -28,17 +29,17 @@ public:
 	/// public : methods
 	/// ========================================================
 
-	PlayerOutsideWarningPipeline() = default;
-	~PlayerOutsideWarningPipeline() = default;
+	GameScreenEffectPipeline() = default;
+	~GameScreenEffectPipeline() = default;
 
 	/// @brief シングルトン化
-	static PlayerOutsideWarningPipeline* GetInstance();
+	static GameScreenEffectPipeline* GetInstance();
 
 	void Init(DirectXCommon* dxCommon);
 	void PreDraw(ID3D12GraphicsCommandList* commandList);
 	void Draw(
 		ID3D12GraphicsCommandList* _cmdList,
-		PlayerOutsideWarning* _playerOutsideWarning
+		GameScreenEffect* _playerOutsideWarning
 	);
 
 private:
@@ -66,6 +67,7 @@ private:
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc_;
 
 	ConstantBuffer<float> timeBuffer_;
+	ConstantBuffer<Vector4> effectBuffer_;
 
 };
 

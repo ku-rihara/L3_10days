@@ -1,4 +1,4 @@
-#include "PlayerOutsideWarningPipeline.h"
+#include "GameScreenEffectPipeline.h"
 
 /// std
 #include <cassert>
@@ -13,12 +13,12 @@
 #include "Frame/Frame.h"
 
 
-PlayerOutsideWarningPipeline* PlayerOutsideWarningPipeline::GetInstance() {
-	static PlayerOutsideWarningPipeline instance;
+GameScreenEffectPipeline* GameScreenEffectPipeline::GetInstance() {
+	static GameScreenEffectPipeline instance;
 	return &instance;
 }
 
-void PlayerOutsideWarningPipeline::Init(DirectXCommon* dxCommon) {
+void GameScreenEffectPipeline::Init(DirectXCommon* dxCommon) {
 
 	// 引数で受けとる
 	dxCommon_ = dxCommon;
@@ -27,9 +27,12 @@ void PlayerOutsideWarningPipeline::Init(DirectXCommon* dxCommon) {
 
 	timeBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	timeBuffer_.SetMappedData(0);
+
+	effectBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
+	effectBuffer_.SetMappedData({});
 }
 
-void PlayerOutsideWarningPipeline::CreateGraphicsPipeline() {
+void GameScreenEffectPipeline::CreateGraphicsPipeline() {
 
 	HRESULT hr = 0;
 
@@ -84,8 +87,8 @@ void PlayerOutsideWarningPipeline::CreateGraphicsPipeline() {
 	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	// Shaderをコンパイルする
-	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/PlayerOutsideWarning.vs.hlsl", L"vs_6_0");
-	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/PlayerOutsideWarning.ps.hlsl", L"ps_6_0");
+	vertexShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/GameScreenEffect.vs.hlsl", L"vs_6_0");
+	pixelShaderBlob_ = dxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/GameScreenEffect.ps.hlsl", L"ps_6_0");
 
 	// PSO作成用関数
 	auto CreatePSO = [&](D3D12_BLEND_DESC& blendDesc, Microsoft::WRL::ComPtr<ID3D12PipelineState>& pso) {
@@ -112,7 +115,7 @@ void PlayerOutsideWarningPipeline::CreateGraphicsPipeline() {
 	CreatePSO(blendDescNormal, graphicsPipelineStateNone_);
 }
 
-void PlayerOutsideWarningPipeline::CreateRootSignature() {
+void GameScreenEffectPipeline::CreateRootSignature() {
 	HRESULT hr = 0;
 	// RootSignatureを作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -121,12 +124,17 @@ void PlayerOutsideWarningPipeline::CreateRootSignature() {
 	descriptionRootSignature.NumStaticSamplers = 2; // 通常サンプラーとシャドウサンプラーの2個
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
 
 	// 0: Time
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
+
+	// 1: EffectBufData
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].Descriptor.ShaderRegister = 1;
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーターの配列
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -145,7 +153,7 @@ void PlayerOutsideWarningPipeline::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void PlayerOutsideWarningPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
+void GameScreenEffectPipeline::PreDraw(ID3D12GraphicsCommandList* commandList) {
 	// RootSignatureを設定
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	// パイプラインステートの設定
@@ -154,13 +162,16 @@ void PlayerOutsideWarningPipeline::PreDraw(ID3D12GraphicsCommandList* commandLis
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void PlayerOutsideWarningPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, PlayerOutsideWarning* _playerOutsideWarning) {
+void GameScreenEffectPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, GameScreenEffect* _playerOutsideWarning) {
 	if (!_playerOutsideWarning) {
 		return;
 	}
 
 	timeBuffer_.SetMappedData(timeBuffer_.GetMappingData() + Frame::DeltaTime());
 	timeBuffer_.BindForGraphicsCommandList(_cmdList, ROOT_PARAM_TIME);
+
+	effectBuffer_.SetMappedData(_playerOutsideWarning->GetBaseColor());
+	effectBuffer_.BindForGraphicsCommandList(_cmdList, ROOT_PARAM_EFFECT_BUFFER_DATA);
 
 	/// vertexは
 	_cmdList->DrawIndexedInstanced(

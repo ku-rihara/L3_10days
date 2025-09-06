@@ -1,8 +1,12 @@
-#include "PlayerOutsideWarning.hlsli"
+#include "GameScreenEffect.hlsli"
+
+struct EffectBufData {
+	float4 baseColor;
+};
 
 /// vignetteとrandom noiseで画面端に向かって点滅する警告を表示
 ConstantBuffer<Time> gTime : register(b0);
-static const float3 gBaseColor = float3(1.0, 0.2, 0.2); // #ff3333
+ConstantBuffer<EffectBufData> gEffectBuf : register(b1);
 
 float3 ApplyNoise(float2 uv, float3 color) {
 	float2 center = float2(0.5, 0.5);
@@ -21,8 +25,8 @@ float3 ApplyNoise(float2 uv, float3 color) {
 PSOutput main(VSOutput input) {
 	PSOutput output;
 
-	float3 color = ApplyNoise(input.texcoord, gBaseColor);
-	output.color = float4(color, 0.15f);
+	float3 color = ApplyNoise(input.texcoord, gEffectBuf.baseColor.rgb);
+	output.color = float4(color, gEffectBuf.baseColor.a);
 
 	return output;
 }
