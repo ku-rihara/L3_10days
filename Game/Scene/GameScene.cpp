@@ -93,6 +93,7 @@ void GameScene::Init(){
 
 	//====================================Class Set===================================================
 	player_->SetViewProjection(&viewProjection_);
+    player_->SetGameCamera(gameCamera_.get());
 	gameCamera_->SetTarget(&player_->GetTransform());
 	gameCamera_->SetPlayer(player_.get());
 
