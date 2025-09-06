@@ -2,8 +2,8 @@
 #include "2d/Sprite.h"
 #include "3d/ViewProjection.h"
 #include "Details/Faction.h"
+#include "utility/ParameterEditor/GlobalParameter.h"
 #include "Vector3.h"
- #include "utility/ParameterEditor/GlobalParameter.h"
 
 #include <memory>
 #include <optional>
@@ -35,8 +35,8 @@ public:
 private:
     // ヘルパー関数
     Vector3 GetPosition(const LockOnVariant& target) const;
-  /*  bool IsDead(const LockOnVariant& target) const;
-    FactionType GetFaction(const LockOnVariant& target) const;*/
+    /*  bool IsDead(const LockOnVariant& target) const;
+      FactionType GetFaction(const LockOnVariant& target) const;*/
     bool IsLockable(const LockOnVariant& target, FactionType playerFaction) const;
 
     // 自動検索関連
@@ -47,7 +47,7 @@ private:
 
     // ターゲット検索・管理
     std::vector<LockOnVariant> GetValidTargets(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction) const;
-    bool IsTargetRange(const LockOnVariant& target, const ViewProjection& viewProjection, Vector3& positionView)const;
+    bool IsTargetRange(const LockOnVariant& target, const ViewProjection& viewProjection, Vector3& positionView) const;
     void SortTargetsByDistance(std::vector<std::pair<float, LockOnVariant>>& validTargets) const;
     void SortTargetsByAngle(std::vector<std::pair<float, LockOnVariant>>& validTargets) const;
 
@@ -56,10 +56,9 @@ private:
     void LerpTimeIncrement(float incrementTime);
 
 private:
-
     // global parameter
     GlobalParameter* globalParameter_;
-    const std::string groupName_ = "LockOn"; 
+    const std::string groupName_ = "LockOn";
 
     // Sprite
     std::unique_ptr<Sprite> lockOnMark_;
@@ -77,7 +76,7 @@ private:
 
     // 自動検索設定
     bool autoSearchEnabled_   = true;
-    float autoSearchInterval_ = 0.1f; 
+    float autoSearchInterval_ = 0.1f;
     float autoSearchTimer_    = 0.0f;
 
     // 切り替え
@@ -100,4 +99,7 @@ private:
 public:
     bool ExistTarget() const { return currentTarget_.has_value(); }
     Vector3 GetTargetPosition() const;
+
+    const LockOnVariant* GetCurrentTarget() const;
+   
 };

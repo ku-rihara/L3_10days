@@ -307,7 +307,7 @@ void LockOn::BindParams() {
     globalParameter_->Bind(groupName_, "spriteScale", &spriteScale_);
     globalParameter_->Bind(groupName_, "targetChangeSpeed", &targetChangeSpeed_);
 }
-    ///=========================================================
+///=========================================================
 /// パラメータ調整
 ///==========================================================
 void LockOn::AdjustParam() {
@@ -329,4 +329,8 @@ void LockOn::AdjustParam() {
         ImGui::PopID();
     }
 #endif // _DEBUG
+}
+
+const LockOn::LockOnVariant* LockOn::GetCurrentTarget() const {
+    return currentTarget_ ? &(*currentTarget_) : nullptr;
 }

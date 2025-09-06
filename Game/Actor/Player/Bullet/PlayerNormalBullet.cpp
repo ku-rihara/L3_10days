@@ -1,9 +1,7 @@
 #include "PlayerNormalBullet.h"
 #include "Frame/Frame.h"
-#include "MathFunction.h"
-#include "Matrix4x4.h"
-#include <numbers>
 #include "Actor/Player/Player.h"
+#include "BasePlayerBullet.h"
 
 void PlayerNormalBullet::Init() {
     // モデル作成
@@ -50,7 +48,13 @@ void PlayerNormalBullet::UpdateNormalBullet(float deltaTime) {
     deltaTime;
 }
 
-void PlayerNormalBullet::Fire(const Player& player) {
+void PlayerNormalBullet::Fire(const Player& player, const LockOn::LockOnVariant* target) {
+   
+    // ターゲットを取得
+    if (target) {
+        target_ = target;
+    }
+
     // 発射位置を設定
     baseTransform_.translation_ = player.GetWorldPosition();
 

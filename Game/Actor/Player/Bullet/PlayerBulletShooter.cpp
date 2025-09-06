@@ -142,7 +142,7 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
         }
 
         // 発射
-        bullet->Fire(*player);
+        bullet->Fire(*player, lockOn_->GetCurrentTarget());
 
         // 弾丸リストに追加
         activeBullets_.push_back(std::move(bullet));

@@ -5,6 +5,7 @@
 #include "Matrix4x4.h"
 #include "PlayerBulletShooter.h"
 #include <numbers>
+#include "BasePlayerBullet.h"
 
 void PlayerMissile::Init() {
     // モデル作成
@@ -105,7 +106,13 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
     baseTransform_.quaternion_ = QuaternionFromMatrix(lookMatrix);
 }
 
-void PlayerMissile::Fire(const Player& player) {
+void PlayerMissile::Fire(const Player& player, const LockOn::LockOnVariant* target) {
+  
+    // ターゲットいればそれを取得
+    if (target) {
+        target_ = target;
+    }
+
     // 発射位置を設定
     baseTransform_.translation_ = player.GetWorldPosition();
 

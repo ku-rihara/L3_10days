@@ -1,8 +1,10 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
+#include"Actor/Player/LockOn/lockOn.h"
 #include "BasePlayerBullet.h"
 
 class Player;
+class LockOn;
 class PlayerNormalBullet : public BasePlayerBullet {
 public:
     PlayerNormalBullet()  = default;
@@ -12,7 +14,7 @@ public:
     void Init();
     void Update() override;
 
-    void Fire(const Player&player) override;
+    void Fire(const Player& player, const LockOn::LockOnVariant* target) override;
     void Deactivate() override;
     Vector3 GetPosition() const override;
 

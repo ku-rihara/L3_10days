@@ -1,9 +1,9 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
+#include "Actor/Player/LockOn/LockOn.h"
 #include "BasePlayerBullet.h"
 
 struct MissileParameter;
-
 class PlayerMissile : public BasePlayerBullet {
 public:
     PlayerMissile()  = default;
@@ -13,7 +13,7 @@ public:
     void Init();
     void Update() override;
 
-    void Fire(const Player& player) override;
+    void Fire(const Player& player, const LockOn::LockOnVariant* target) override;
     void Deactivate() override;
     Vector3 GetPosition() const override;
 
