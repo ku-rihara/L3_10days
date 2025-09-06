@@ -26,7 +26,7 @@ public:
 	///  public func
 	/// ===================================================
 	NPC() = default;
-	~NPC() override;               // 定義は .cpp 側
+	~NPC() override;
 
 	void Init() override;
 	void Update() override;
@@ -81,17 +81,16 @@ protected:
 	const std::string fileDirectory_ = "GameActor/NPC";
 
 	// パラメータ
-	float maxHP_ = 10.0f;      //< 最大hp
-	float speed_ = 5.0f;       //< 基本移動速度（Navigator に渡す）
+	float maxHP_ = 10.0f;				//< 最大hp
+	float speed_ = 5.0f;				//< 基本移動速度（Navigator に渡す）
 	float shootInterval_ = 5.0f;
 	float shootCooldown_ = 1.0f;
 
 	// ---- firing cone（前方視錐台）----
-	float fireConeNear_    = 2.0f;    // 最短距離
-	float fireConeFar_     = 120.0f;  // 射程（遠）
-	float fireConeHFovDeg_ = 25.0f;   // 水平ハーフFOV（度）
-	float fireConeVFovDeg_ = 15.0f;   // 垂直ハーフFOV（度）
-	bool  fireConeDebug_   = false;   // デバッグ可視化（必要なら使用）
+	float fireConeNear_    = 2.0f;		//< 最短距離
+	float fireConeFar_     = 120.0f;	//< 射程
+	float fireConeHFovDeg_ = 25.0f;		//< 水平ハーフFOV（度）
+	float fireConeVFovDeg_ = 15.0f;		//< 垂直ハーフFOV（度）
 
 	// ---- game ----
 	const BaseStation* target_ = nullptr;      // 航法上の目標（既存）
@@ -118,7 +117,7 @@ protected:
 	};
 	NpcNavigator navigator_{ navConfig_ };
 
-	// ---- 制約（境界板 XZ + 穴ゲート）----
+	// ---- 制約 ----
 	struct BoundaryHoleSource : IHoleSource {
 		const Boundary* boundary = nullptr;
 		const std::vector<Hole>& GetHoles() const override;

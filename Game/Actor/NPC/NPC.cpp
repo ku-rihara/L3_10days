@@ -300,7 +300,6 @@ void NPC::BindParms(){
 	globalParam_->Bind(groupName_,"fireConeFar",&fireConeFar_);
 	globalParam_->Bind(groupName_,"fireConeHFovDeg",&fireConeHFovDeg_);
 	globalParam_->Bind(groupName_,"fireConeVFovDeg",&fireConeVFovDeg_);
-	globalParam_->Bind(groupName_,"fireConeDebug",&fireConeDebug_);
 }
 
 void NPC::LoadData(){ globalParam_->LoadFile(groupName_,fileDirectory_); }

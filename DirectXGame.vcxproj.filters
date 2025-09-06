@@ -216,6 +216,7 @@
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcStraightBullet.cpp" />
     <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
     <ClCompile Include="Game\Actor\Player\Reticle\PlayerReticle.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -428,6 +429,7 @@
     <ClInclude Include="Game\TitleActor\FighterAircraft\FighterAircraft.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcHomingBullet.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcStraightBullet.h" />
+    <ClInclude Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.h" />
     <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
     <ClInclude Include="Game\Actor\Player\Reticle\PlayerReticle.h" />
   </ItemGroup>

@@ -5,13 +5,13 @@
 // 初期化
 // ===================================================
 void NpcStraightBullet::Init() {
-    if (isInitialized_) return;
+	if (isInitialized_) return;
 
-    modelName_ = "cube.obj";
-    groupName_ = "NpcStraightBullet";
+	modelName_ = "cube.obj";
+	groupName_ = "NpcStraightBullet";
 
-    NpcBullet::Init();                       // 基底のセットアップ（モデル・親子付け等）
-    BindParms();                             // 速度などをバインド
-    if (globalParam_) globalParam_->SyncParamForGroup(groupName_);
+	NpcBullet::Init();                       // 基底のセットアップ（モデル・親子付け等）
+	BindParms();                             // 速度などをバインド
+	if (globalParam_) globalParam_->SyncParamForGroup(groupName_);
 }
 
