@@ -79,7 +79,7 @@ void BoundaryBreaker::Shoot(){
 
 	//ライバルのステーションに向けて発射する
 	Vector3 dir = Vector3(pRivalStation_->GetWorldPosition() - GetWorldPosition()).Normalize();
-	fireController_->SpawnStraight(GetWorldPosition(),dir);
+	fireController_->SpawnBreaker(GetWorldPosition(),dir);
 	shootCooldown_ = shootInterval_;
 }
 
