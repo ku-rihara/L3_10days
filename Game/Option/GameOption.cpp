@@ -53,14 +53,18 @@ void GameOption::Init() {
 	Vector2 startPos = { 640.0f, 360.0f };
 	//Vector2 offset = { 0.0f, 100.0f };
 
-
+	/// 背景
+	uint32_t bgTexHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png");
 	background_.reset(Sprite::Create(
+		bgTexHandle, {}, { 0.1f, 0.1f, 0.1f, 0.5f }));
+	background_->SetScale({ 1280.0f, 720.0f });
+
+
+	/// フレーム
+	frame_.reset(Sprite::Create(
 		TextureManager::GetInstance()->LoadTexture("./resources/Texture/Option/Frame.png"),
-		startPos, { 0.302f, 0.302f, 0.302f, 0.5f }
-	));
-	//Vector2 texSize = { 256.0f, 256.0f };
-	//background_->SetScale(texSize / Vector2{ 512.0f, 512.0f });
-	background_->anchorPoint_ = { 0.1f, 0.5f };
+		startPos, { 1, 1, 1, 1.0f }));
+	frame_->anchorPoint_ = { 0.1f, 0.5f };
 
 	/// サウンドオプションの生成
 	std::unique_ptr<SoundOption> soundOption = std::make_unique<SoundOption>();
@@ -96,6 +100,7 @@ void GameOption::Draw() {
 	}
 
 	background_->Draw();
+	frame_->Draw();
 
 	for (auto& item : menuItems_) {
 		item->Draw();

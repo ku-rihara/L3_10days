@@ -16,6 +16,10 @@ PauseMenuItem::PauseMenuItem(const std::string& _texFilePath, size_t _thisIndex)
 
 	sprite_->anchorPoint_ = { 0.5f, 0.5f };
 
+	maxScale_ = 0.5f;
+	minScale_ = 0.3f;
+	scale_ = minScale_;
+	sprite_->SetScale({ scale_, scale_ });
 }
 
 void PauseMenuItem::Update(size_t _currentIndex) {
@@ -28,15 +32,15 @@ void PauseMenuItem::Update(size_t _currentIndex) {
 
 	/// 拡大率
 	if (isSelected_) {
-		scale_ += (1.2f - scale_) * 0.1f;
-		alpha_ += (1.0f - alpha_) * 0.1f;
+		scale_ += (maxScale_ - scale_) * 0.1f;
+		colorScale_ += (1.0f - colorScale_) * 0.1f;
 	} else {
-		scale_ += (1.0f - scale_) * 0.1f;
-		alpha_ += (0.5f - alpha_) * 0.1f;
+		scale_ += (minScale_ - scale_) * 0.1f;
+		colorScale_ += (0.5f - colorScale_) * 0.1f;
 	}
 
 	sprite_->SetScale({ scale_, scale_ });
-	sprite_->SetAlpha(alpha_);
+	sprite_->SetColor(baseColor_ * colorScale_);
 }
 
 void PauseMenuItem::Draw() {
@@ -56,11 +60,6 @@ float PauseMenuItem::GetScale() const {
 	return scale_;
 }
 
-float PauseMenuItem::GetAlpha() const {
-	return alpha_;
-}
-
-
 void PauseMenuItem::SetIsSelected(bool _isSelected) {
 	isSelected_ = _isSelected;
 }
@@ -75,10 +74,6 @@ void PauseMenuItem::SetScale(float _scale) {
 
 void PauseMenuItem::SetRotation(float _rotation) {
 	rotation_ = _rotation;
-}
-
-void PauseMenuItem::SetAlpha(float _alpha) {
-	alpha_ = _alpha;
 }
 
 void PauseMenuItem::SetPosition(const Vector2& _position) {

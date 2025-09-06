@@ -29,13 +29,11 @@ public:
 	bool GetIsActive() const;
 	float GetScale() const;
 	float GetRotation() const;
-	float GetAlpha() const;
 
 	void SetIsSelected(bool _isSelected);
 	void SetIsActive(bool _isActive);
 	void SetScale(float _scale);
 	void SetRotation(float _rotation);
-	void SetAlpha(float _alpha);
 
 	void SetPosition(const Vector2& _pos);
 
@@ -51,9 +49,13 @@ private:
 	bool isActive_ = true;     // 使用可能か
 	float scale_ = 1.0f;       // 拡大率
 	float rotation_ = 0.0f;    // 回転角
-	float alpha_ = 1.0f;       // 透明度
+	Vector3 baseColor_ = { 1.0f, 1.0f, 1.0f };
+	float   colorScale_ = 1.0f;
 
 	size_t thisIndex_ = 0;   // 自分のインデックス
+
+	float minScale_ = 0.5f;
+	float maxScale_ = 1.2f;
 
 };
 

@@ -17,8 +17,8 @@ void Pause::Init() {
 		"./resources/Texture/Pause/OpenOption.png"
 	};
 
-	Vector2 startPos = { 240.0f, 200.0f };
 	Vector2 offset = { 0.0f, 120.0f };
+	Vector2 startPos = { 640.0f, 360.0f - offset.y };
 
 	for (size_t i = 0; i < paths.size(); ++i) {
 		Item newItem = std::make_unique<PauseMenuItem>(paths[i], i);
