@@ -14,7 +14,7 @@
         "pitchReturnThreshold": 5.0,
         "pitchSpeed": 100.0,
         "reboundDecay": 0.949999988079071,
-        "reboundPower": 10.4399995803833,
+        "reboundPower": 3.190000057220459,
         "reverseDecisionValue": -0.5,
         "rollBackTime": 5.0,
         "rollRotateLimit": 40.0,

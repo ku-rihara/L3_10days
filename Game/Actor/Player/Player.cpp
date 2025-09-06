@@ -141,12 +141,13 @@ void Player::HandleInput() {
     // deltaTime
     float deltaTime = Frame::DeltaTime();
 
-    // ピッチ
+    // ピッチの回転スピードきめる
     float pitchSpeed = speedParam_.pitchSpeed;
     if (isAutoRotateByCollision) {
         pitchSpeed = speedParam_.autoRotateSpeed;
     }
 
+    // ピッチ
     angleInput_.x = -stickL.y * (pitchSpeed * deltaTime);
 
     // ヨー
@@ -265,21 +266,10 @@ void Player::ReboundByBoundary() {
 
     // 跳ね返り処理
     if (ImGui::Button("is")) {
-        // 衝突面の法線を計算
-        Vector3 collisionNormal = CalculateCollisionNormal(from, to);
 
-        // 入射ベクトル（移動方向）
-        Vector3 incidentVector = velocity_.Normalize();
-
-        // 反射ベクトルを計算
-        float dotProduct         = Vector3::Dot(incidentVector, collisionNormal);
-        Vector3 reflectionVector = incidentVector - collisionNormal * (2.0f * dotProduct);
-
-        // 跳ね返り速度を設定
-        reboundVelocity_.y = reflectionVector.y * -reboundPower_;
-
-        // 最後の衝突法線を記録
-        lastCollisionNormal_ = collisionNormal;
+        // Y だけ跳ね返す
+        const float inVy   = velocity_.y;
+        reboundVelocity_.y = -inVy * reboundPower_;
 
         float reboundVelocityY = reboundVelocity_.y;
 
@@ -290,19 +280,18 @@ void Player::ReboundByBoundary() {
         } else if (reboundVelocityY <= -0.1f) {
             isAutoRotateByCollision = true;
             autoRotateDirection_    = -1.0f;
-        } 
+        }
 
         // カメラシェイク
         pGameCamera_->PlayShake("PlayerHitBoundaryShake");
     }
 
-    // 跳ね返り速度の減衰処理
-    if (reboundVelocity_.Length() > minReboundVelocity_) {
-        // 減衰を適用
-        reboundVelocity_.y = reboundVelocity_.y * reboundDecay_;
+    // 減衰処理
+    if (std::abs(reboundVelocity_.y) > minReboundVelocity_) {
+        reboundVelocity_.y *= reboundDecay_;
     } else {
         // 減衰おわり
-        reboundVelocity_ = Vector3::ZeroVector();
+        reboundVelocity_.y      = 0.0f;
         isAutoRotateByCollision = false;
     }
 
@@ -312,58 +301,6 @@ void Player::ReboundByBoundary() {
     }
 }
 
-Vector3 Player::CalculateCollisionNormal(const Vector3& from, const Vector3& to) {
-    // プレイヤーの現在の水平方向を取得
-    Vector3 playerForward = GetForwardVector();
-    Vector3 playerRight   = GetRightVector();
-
-    // 水平面での移動方向
-    Vector3 horizontalMovement = to - from;
-    horizontalMovement.y       = 0.0f;
-
-    if (horizontalMovement.Length() < 0.001f) {
-        return -playerForward;
-    }
-
-    horizontalMovement = horizontalMovement.Normalize();
-
-    // 境界との衝突方向を推定
-    RectXZWithGatesConstraint* rectConstraint = dynamic_cast<RectXZWithGatesConstraint*>(moveConstraint_.get());
-    if (rectConstraint) {
-        // 矩形の中心を計算（
-        Vector3 playerPos = baseTransform_.translation_;
-
-        // 最も近い境界面を特定
-        Vector3 normal = Vector3::ZeroVector();
-
-        // X方向の境界チェック
-        if (std::abs(playerPos.x - (-1500.0f)) < std::abs(playerPos.x - 1500.0f)) {
-            // 左の境界に近い
-            normal = Vector3(1.0f, 0.0f, 0.0f); // 右向きの法線
-        } else {
-            // 右の境界に近い
-            normal = Vector3(-1.0f, 0.0f, 0.0f); // 左向きの法線
-        }
-
-        // Z方向の境界チェック
-        float xDistance = std::min(std::abs(playerPos.x - (-1500.0f)), std::abs(playerPos.x - 1500.0f));
-        float zDistance = std::min(std::abs(playerPos.z - (-1500.0f)), std::abs(playerPos.z - 1500.0f));
-
-        if (zDistance < xDistance) {
-            // Z方向の境界の方が近い
-            if (std::abs(playerPos.z - (-1500.0f)) < std::abs(playerPos.z - 1500.0f)) {
-                normal = Vector3(0.0f, 0.0f, 1.0f); // 前向きの法線
-            } else {
-                normal = Vector3(0.0f, 0.0f, -1.0f); // 後ろ向きの法線
-            }
-        }
-
-        return normal;
-    }
-
-    // 移動方向の逆
-    return -horizontalMovement;
-}
 
 bool Player::GetIsUpsideDown() {
     // 機体の上方向ベクトルを取得
@@ -475,7 +412,7 @@ void Player::AdjustParam() {
         ImGui::DragFloat("rebound Power", &reboundPower_, 0.01f);
         ImGui::DragFloat("rebound Decay", &reboundDecay_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("min Rebound Velocity", &minReboundVelocity_, 0.01f, 0.0f, 10.0f);
-     
+
         ImGui::SeparatorText("etc");
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
