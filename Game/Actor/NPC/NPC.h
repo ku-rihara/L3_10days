@@ -7,7 +7,6 @@
 #include "Details/Faction.h"
 #include "Navigation/NpcNavigator.h"
 #include "Navigation/MoveConstraint.h"
-
 // targeting
 #include "Bullet/Targeting.h"
 
@@ -16,6 +15,7 @@
 #include <memory>
 
 class BaseStation;
+class Line3D;
 class Boundary;
 class NpcFireController;   // 前方宣言
 struct Hole;
@@ -25,11 +25,12 @@ public:
 	/// ===================================================
 	///  public func
 	/// ===================================================
-	NPC() = default;
+	NPC();
 	~NPC() override;
 
 	void Init() override;
 	void Update() override;
+	void DebugDraw(const class ViewProjection& vp);
 
 	// --------- accessor --------------------------------
 	void SetTarget(const BaseStation* target);
@@ -124,4 +125,6 @@ protected:
 	} holeSource_;
 
 	std::unique_ptr<IMoveConstraint> moveConstraint_;// 移動制御
+
+	std::unique_ptr<Line3D> lineDrawer_;
 };

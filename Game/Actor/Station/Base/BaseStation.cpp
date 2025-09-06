@@ -2,6 +2,7 @@
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Frame/Frame.h"
 #include "Actor/NPC/NPC.h"
+#include "3d/ViewProjection.h"
 #include "random.h"
 #include <algorithm>
 #include "imgui.h"
@@ -39,13 +40,17 @@ void BaseStation::Init() {
 void BaseStation::Update() {
 	BaseObject::Update();
 	// === AI 更新 ===
-	const float dt = Frame::DeltaTime(); 
+	const float dt = Frame::DeltaTime();
 	ai_.SetRivalCached(pRivalStation_);
 	ai_.UpdateWeighted(dt,
-					   /*self*/  hp_, maxLife_,
-					   /*pos*/   baseTransform_.translation_,
-					   /*rival*/ pRivalStation_,
-					   /*H*/     homeThreatDebug_);
+		/*self*/  hp_, maxLife_,
+		/*pos*/   baseTransform_.translation_,
+		/*rival*/ pRivalStation_,
+		/*H*/     homeThreatDebug_);
+}
+
+void BaseStation::DrawDebug(const ViewProjection& vp) {
+	for (auto& h : spawned_) h->DebugDraw(vp);
 }
 
 void BaseStation::ShowGui() {
@@ -176,4 +181,9 @@ void BaseStation::CollectTargets(std::vector<const BaseObject*>& out) const {
 
 		out.push_back(static_cast<const BaseObject*>(pRivalStation_));
 	}
+}
+
+void BaseStation::OnCollisionEnter(BaseCollider* /*other*/) {
+	/// TODO: 衝突した相手が弾ならダメージを受ける
+
 }

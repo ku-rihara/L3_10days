@@ -228,6 +228,8 @@ void GameScene::GameModelDraw() {
 	Line3DPipeline* line3dPipeline = Line3DPipeline::GetInstance();
 	line3dPipeline->PreDraw(commandList);
 
+	for (auto& stations : stations_)stations.second->DrawDebug(viewProjection_);
+
 	/// 天球を描画
 	Object3DPiprline::GetInstance()->PreDraw(commandList);
 	skyDome_->Draw(viewProjection_);
