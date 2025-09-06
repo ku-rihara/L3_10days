@@ -22,50 +22,194 @@ void LockOn::Init() {
     maxDistance_ = 90.0f;
     angleRange_  = ToRadian(180.0f);
 
-    lerpTime_       = 0.0f;
-    spriteRotation_ = 0.0f;
+    lerpTime_        = 0.0f;
+    spriteRotation_  = 0.0f;
+    autoSearchTimer_ = 0.0f;
 }
 
 void LockOn::Update(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction) {
-    // ロックオンを外す処理
+    float deltaTime = Frame::DeltaTime();
+    autoSearchTimer_ += deltaTime;
+
+    // 現在のターゲットの有効性チェック
     if (currentTarget_.has_value()) {
-        if (Input::IsTriggerPad(0, XINPUT_GAMEPAD_B)) {
-            currentTarget_.reset();
-        } else if (!IsLockable(currentTarget_.value(), playerFaction)) {
+        if (!IsLockable(currentTarget_.value(), playerFaction)) {
             // ターゲットが死亡したり、ロック不可能になった場合
             currentTarget_.reset();
+            currentTargetIndex_ = 0;
         } else {
             // 範囲外チェック
             Vector3 positionView;
             if (!IsTargetRange(currentTarget_.value(), viewProjection, positionView)) {
                 currentTarget_.reset();
+                currentTargetIndex_ = 0;
             }
         }
+    }
+
+    // 手動切り替え処理
+    HandleTargetSwitching(targets, viewProjection, playerFaction);
+
+    // 自動検索処理
+    if (autoSearchEnabled_ && autoSearchTimer_ >= autoSearchInterval_) {
+        AutoSearchTarget(targets, viewProjection, playerFaction);
+        autoSearchTimer_ = 0.0f;
+    }
+
+    // UI更新
+    UpdateLockOnUI(viewProjection);
+}
+
+void LockOn::HandleTargetSwitching(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction) {
+    // ボタン入力の検出
+    bool currentSwitchInput = Input::IsTriggerPad(0, XINPUT_GAMEPAD_Y);
+    bool switchTriggered    = currentSwitchInput && !prevSwitchInput_;
+    prevSwitchInput_        = currentSwitchInput;
+
+    if (!switchTriggered)
+        return;
+
+    // 有効なターゲットリストを更新
+    validTargets_ = GetValidTargets(targets, viewProjection, playerFaction);
+    if (validTargets_.empty()) {
+        currentTarget_.reset();
+        currentTargetIndex_ = 0;
+        return;
+    }
+
+    // ソート（距離順または角度順）
+    std::vector<std::pair<float, LockOnVariant>> sortedTargets;
+    for (const auto& target : validTargets_) {
+        Vector3 positionView;
+        IsTargetRange(target, viewProjection, positionView);
+
+        float sortValue = (switchMode_ == SwitchMode::Distance) ? positionView.z : std::sqrt(positionView.x * positionView.x + positionView.y * positionView.y);
+        sortedTargets.emplace_back(sortValue, target);
+    }
+
+    if (switchMode_ == SwitchMode::Distance) {
+        SortTargetsByDistance(sortedTargets);
     } else {
-        // ロックオン対象の検索
-        if (Input::IsTriggerPad(0, XINPUT_GAMEPAD_B)) {
-            Search(targets, viewProjection, playerFaction);
+        SortTargetsByAngle(sortedTargets);
+    }
+
+    // ソート後のターゲットリストを更新
+    validTargets_.clear();
+    for (const auto& pair : sortedTargets) {
+        validTargets_.push_back(pair.second);
+    }
+
+    // 現在のターゲットがない場合は最初のターゲットを選択
+    if (!currentTarget_.has_value()) {
+        currentTargetIndex_ = 0;
+        currentTarget_      = validTargets_[0];
+        prePos_             = lockOnMark_->GetPosition();
+        lerpTime_           = 0.0f;
+        return;
+    }
+
+    // 現在のターゲットのインデックスを見つける
+    auto it = std::find(validTargets_.begin(), validTargets_.end(), currentTarget_.value());
+    if (it != validTargets_.end()) {
+        currentTargetIndex_ = std::distance(validTargets_.begin(), it);
+    } else {
+        currentTargetIndex_ = 0;
+    }
+
+    // 次のターゲットに切り替え
+    currentTargetIndex_ = (currentTargetIndex_ + 1) % validTargets_.size();
+    currentTarget_      = validTargets_[currentTargetIndex_];
+
+    // UI切り替えのためのリセット
+    prePos_   = lockOnMark_->GetPosition();
+    lerpTime_ = 0.0f;
+}
+
+void LockOn::AutoSearchTarget(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction) {
+    // 有効なターゲットを検索
+    auto validTargets = GetValidTargets(targets, viewProjection, playerFaction);
+
+    if (validTargets.empty()) {
+        if (currentTarget_.has_value()) {
+            currentTarget_.reset();
+            currentTargetIndex_ = 0;
+        }
+        return;
+    }
+
+    // 現在ターゲットがない場合、最も近いターゲットを自動選択
+    if (!currentTarget_.has_value()) {
+        std::vector<std::pair<float, LockOnVariant>> sortedTargets;
+
+        for (const auto& target : validTargets) {
+            Vector3 positionView;
+            IsTargetRange(target, viewProjection, positionView);
+            sortedTargets.emplace_back(positionView.z, target);
+        }
+
+        SortTargetsByDistance(sortedTargets);
+
+        if (!sortedTargets.empty()) {
+            currentTarget_ = sortedTargets[0].second;
+            prePos_        = lockOnMark_->GetPosition();
+            lerpTime_      = 0.0f;
+
+            // validTargets_も更新
+            validTargets_.clear();
+            for (const auto& pair : sortedTargets) {
+                validTargets_.push_back(pair.second);
+            }
+            currentTargetIndex_ = 0;
+        }
+    }
+}
+
+std::vector<LockOn::LockOnVariant> LockOn::GetValidTargets(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction) const {
+    std::vector<LockOnVariant> validTargets;
+    Vector3 positionView;
+
+    for (const auto& target : targets) {
+        if (IsLockable(target, playerFaction) && IsTargetRange(target, viewProjection, positionView)) {
+            validTargets.push_back(target);
         }
     }
 
-    // ロックオン継続処理
-    if (currentTarget_.has_value()) {
-        // ターゲットの座標取得
-        Vector3 positionWorld = GetPosition(currentTarget_.value());
-        // ワールド座標からスクリーン座標に変換
-        Vector3 positionScreen = ScreenTransform(positionWorld, viewProjection);
-        // Vector2に格納
-        Vector2 positionScreenV2(positionScreen.x, positionScreen.y);
+    return validTargets;
+}
 
-        // 線形補間の計算
-        LerpTimeIncrement(0.1f);
-        lockOnMarkPos_ = Lerp(prePos_, positionScreenV2, lerpTime_);
+void LockOn::UpdateLockOnUI(const ViewProjection& viewProjection) {
+    if (!currentTarget_.has_value())
+        return;
 
-        // スプライトの座標と回転を設定
-        lockOnMark_->SetPosition(lockOnMarkPos_);
-        spriteRotation_ += Frame::DeltaTime();
-        lockOnMark_->transform_.rotate.z = spriteRotation_;
-    }
+    // ターゲットの座標取得
+    Vector3 positionWorld = GetPosition(currentTarget_.value());
+    // ワールド座標からスクリーン座標に変換
+    Vector3 positionScreen = ScreenTransform(positionWorld, viewProjection); 
+    // Vector2に格納
+    Vector2 positionScreenV2(positionScreen.x, positionScreen.y);
+
+    // 線形補間の計算
+    LerpTimeIncrement(0.1f);
+    lockOnMarkPos_ = Lerp(prePos_, positionScreenV2, lerpTime_);
+
+    // スプライトの座標と回転を設定
+    lockOnMark_->SetPosition(lockOnMarkPos_);
+    spriteRotation_ += Frame::DeltaTime();
+    lockOnMark_->transform_.rotate.z = spriteRotation_;
+}
+
+void LockOn::SortTargetsByDistance(std::vector<std::pair<float, LockOnVariant>>& validTargets) const {
+    std::sort(validTargets.begin(), validTargets.end(),
+        [](const auto& a, const auto& b) {
+            return a.first < b.first; // 距離昇順
+        });
+}
+
+void LockOn::SortTargetsByAngle(std::vector<std::pair<float, LockOnVariant>>& validTargets) const {
+    std::sort(validTargets.begin(), validTargets.end(),
+        [](const auto& a, const auto& b) {
+            return a.first < b.first; // 画面中央からの距離昇順
+        });
 }
 
 void LockOn::Draw() {
@@ -84,10 +228,17 @@ Vector3 LockOn::GetTargetPosition() const {
 void LockOn::OnObjectDestroyed(const LockOnVariant& obj) {
     if (currentTarget_.has_value() && currentTarget_.value() == obj) {
         currentTarget_.reset();
+        currentTargetIndex_ = 0;
+
+        // validTargets_からも削除
+        auto it = std::find(validTargets_.begin(), validTargets_.end(), obj);
+        if (it != validTargets_.end()) {
+            validTargets_.erase(it);
+        }
     }
 }
 
-// ヘルパー関数の実装
+// 既存のヘルパー関数たちはそのまま...
 Vector3 LockOn::GetPosition(const LockOnVariant& target) const {
     return std::visit([](auto&& obj) -> Vector3 {
         return obj->GetWorldPosition();
@@ -96,24 +247,11 @@ Vector3 LockOn::GetPosition(const LockOnVariant& target) const {
 }
 
 bool LockOn::IsDead(const LockOnVariant& target) const {
-    /*return std::visit([](auto&& obj) -> bool {
-        if constexpr (std::is_same_v<std::decay_t<decltype(obj)>, EnemyNPC*>) {
-            return obj->GetIsDeath();
-        } else if constexpr (std::is_same_v<std::decay_t<decltype(obj)>, BoundaryBreaker*>) {
-            return obj->GetIsDeath();
-        }
-        return true;
-    },
-        target);*/
     target;
     return false;
 }
 
 FactionType LockOn::GetFaction(const LockOnVariant& target) const {
-    /*return std::visit([](auto&& obj) -> FactionType {
-        return obj->GetFaction();
-    },
-        target);*/
     target;
     return FactionType::Enemy;
 }
@@ -122,43 +260,12 @@ bool LockOn::IsLockable(const LockOnVariant& target, FactionType playerFaction) 
     return !IsDead(target) && GetFaction(target) != playerFaction;
 }
 
-void LockOn::Search(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction) {
-    Vector3 positionView = {};
-    std::vector<std::pair<float, LockOnVariant>> validTargets;
-
-    // 全てのターゲットに対してロックオン判定
-    for (const auto& target : targets) {
-        if (IsLockable(target, playerFaction) && IsTargetRange(target, viewProjection, positionView)) {
-            validTargets.emplace_back(positionView.z, target);
-        }
-    }
-
-    // ロックオン対象をリセット
-    currentTarget_.reset();
-
-    if (!validTargets.empty()) {
-        // 距離で昇順にソート
-        std::sort(validTargets.begin(), validTargets.end(),
-            [](const auto& a, const auto& b) {
-                return a.first < b.first;
-            });
-
-        // 最も近い敵をロックオン対象とする
-        currentTarget_ = validTargets.front().second;
-
-        // ロックオン前の座標を記録
-        prePos_   = lockOnMark_->GetPosition();
-        lerpTime_ = 0.0f; // 線形補間の進行度をリセット
-    }
-}
-
-bool LockOn::IsTargetRange(const LockOnVariant& target, const ViewProjection& viewProjection, Vector3& positionView) {
+bool LockOn::IsTargetRange(const LockOnVariant& target, const ViewProjection& viewProjection, Vector3& positionView)const {
     // ターゲットの座標を取得
     Vector3 positionWorld = GetPosition(target);
 
     // ワールド→ビュー座標系
     positionView = TransformMatrix(positionWorld, viewProjection.matView_);
-
     // 距離条件チェック
     if (minDistance_ <= positionView.z && positionView.z <= maxDistance_) {
         // カメラ前方との角度を計算
