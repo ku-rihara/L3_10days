@@ -199,6 +199,8 @@
     <ClCompile Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.cpp" />
     <ClCompile Include="Game\Actor\Effects\GameScreenEffect\GameScreenEffect.cpp" />
     <ClCompile Include="Game\Pipeline\EffectPipelines\GameScreenEffectPipeline.cpp" />
+    <ClCompile Include="Game\PauseActor\Item\PauseMenuItem.cpp" />
+    <ClCompile Include="Game\PauseActor\Pause.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Fade\Fade.h" />
@@ -412,6 +414,8 @@
     <ClInclude Include="Game\Actor\NPC\Bullet\FireController\NpcFierController.h" />
     <ClInclude Include="Game\Actor\Effects\GameScreenEffect\GameScreenEffect.h" />
     <ClInclude Include="Game\Pipeline\EffectPipelines\GameScreenEffectPipeline.h" />
+    <ClInclude Include="Game\PauseActor\Item\PauseMenuItem.h" />
+    <ClInclude Include="Game\PauseActor\Pause.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

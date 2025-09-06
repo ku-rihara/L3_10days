@@ -222,6 +222,8 @@
     <ClCompile Include="Game\Actor\Spline\Spline.cpp" />
     <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
     <ClCompile Include="Game\Fade\Fade.cpp" />
+    <ClCompile Include="Game\PauseActor\Item\PauseMenuItem.cpp" />
+    <ClCompile Include="Game\PauseActor\Pause.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -442,6 +444,8 @@
     <ClInclude Include="Game\Actor\Spline\Spline.h" />
     <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
     <ClInclude Include="Game\Fade\Fade.h" />
+    <ClInclude Include="Game\PauseActor\Item\PauseMenuItem.h" />
+    <ClInclude Include="Game\PauseActor\Pause.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
