@@ -78,7 +78,7 @@ void TitleScene::Update() {
 
 
 	/// Scene Change
-	if(input_->PushKey(DIK_SPACE)){
+	if(input_->TrrigerKey(DIK_SPACE)){
 		/// 効果音の再生
 		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
 		audio_->PlayWave(soundId, 0.2f);

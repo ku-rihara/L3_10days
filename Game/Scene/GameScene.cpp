@@ -39,7 +39,6 @@ void GameScene::Init() {
 
 	// option load
 	GameOption::GetInstance()->Init();
-	GameOption::GetInstance()->Load();
 
 
 	BaseScene::Init();

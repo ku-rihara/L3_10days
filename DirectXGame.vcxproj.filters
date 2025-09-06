@@ -229,6 +229,7 @@
     <ClCompile Include="Game\Option\Item\SoundOption.cpp" />
     <ClCompile Include="Game\Option\Item\GameOptionItem.cpp" />
     <ClCompile Include="Game\Option\GameOption.cpp" />
+    <ClCompile Include="Game\Option\Item\OperationOptionItem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -456,6 +457,7 @@
     <ClInclude Include="Game\Option\Item\SoundOption.h" />
     <ClInclude Include="Game\Option\Item\GameOptionItem.h" />
     <ClInclude Include="Game\Option\GameOption.h" />
+    <ClInclude Include="Game\Option\Item\OperationOptionItem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

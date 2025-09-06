@@ -9,9 +9,11 @@
 /// engine
 #include "base/TextureManager.h"
 #include "input/Input.h"
+#include "audio/Audio.h"
 
 /// option
 #include "Item/SoundOption.h"
+#include "Item/OperationOptionItem.h"
 
 GameOption* GameOption::GetInstance() {
 	static GameOption instance;
@@ -43,11 +45,25 @@ void GameOption::Load() {
 	soundOption->SetVolume(SoundOption::SE_VOLUME, seVolume);
 }
 
+void GameOption::Save() {
+	/// save
+	const std::string path = "./resources/Option/GameOption.json";
+	nlohmann::json json;
+	json["masterVolume"] = GetMasterVolume();
+	json["bgmVolume"] = GetBGMVolume();
+	json["seVolume"] = GetSEVolume();
+	std::ofstream ofs(path);
+	ofs << json.dump(4);
+}
+
 
 void GameOption::Init() {
 	if (isInitialized_) {
 		return;
 	}
+
+	isInitialized_ = true;
+
 
 	isOpen_ = false;
 	Vector2 startPos = { 640.0f, 360.0f };
@@ -56,15 +72,23 @@ void GameOption::Init() {
 	/// 背景
 	uint32_t bgTexHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png");
 	background_.reset(Sprite::Create(
-		bgTexHandle, {}, { 0.1f, 0.1f, 0.1f, 0.5f }));
-	background_->SetScale({ 1280.0f, 720.0f });
+		bgTexHandle, { 640.0f, 360.0f }, { 0.25098f, 0.25098f, 0.25098f, 1.0f }));
+	background_->anchorPoint_ = { 0.5f, 0.5f };
+	background_->SetScale(Vector2{ 1280.0f, 720.0f } *0.4f);
+
+	/// SelectedFrameの生成
+	selectedFrame_.reset(Sprite::Create(
+		TextureManager::GetInstance()->LoadTexture("./resources/Texture/Option/SelectedFrame.png"),
+		{ 0.0f, 0.0f }, { 1, 1, 1, 1.0f }));
+	selectedFrame_->anchorPoint_ = { 0.5f, 0.5f };
+	selectedFrame_->SetScale({ 1.0f, 1.0f });
 
 
-	/// フレーム
-	frame_.reset(Sprite::Create(
-		TextureManager::GetInstance()->LoadTexture("./resources/Texture/Option/Frame.png"),
-		startPos, { 1, 1, 1, 1.0f }));
-	frame_->anchorPoint_ = { 0.1f, 0.5f };
+	/// 操作オプションの生成
+	std::unique_ptr<OperationOptionItem> operationOption = std::make_unique<OperationOptionItem>();
+	operationOption->BaseInit("./resources/Texture/Option/OperationOption.png", OPERATION_OPTION);
+	operationOption->Init();
+	menuItems_.emplace_back(std::move(operationOption));
 
 	/// サウンドオプションの生成
 	std::unique_ptr<SoundOption> soundOption = std::make_unique<SoundOption>();
@@ -72,21 +96,56 @@ void GameOption::Init() {
 	soundOption->Init();
 	menuItems_.emplace_back(std::move(soundOption));
 
+
+	Load();
 }
 
 void GameOption::Update() {
 
-	/// Close
+	/// Closeする処理
 	Input* input = Input::GetInstance();
-	if (input->TrrigerKey(DIK_ESCAPE)) {
+	if (input->TrrigerKey(DIK_ESCAPE) ||
+		input->IsTriggerPad(0, Gamepad::Start)) {
+
 		if (GetIsOpen()) {
 			Close();
 		}
 	}
 
+	/// 開いていないなら更新しない
 	if (!isOpen_) {
 		return;
 	}
+
+	/// Itemを選択していないなら
+	if (!isSelectedItem_) {
+
+		if (input->TrrigerKey(DIK_UP) ||
+			input->TrrigerKey(DIK_W) ||
+			input->IsTriggerPad(0, Gamepad::DPadUp)) {
+
+			if (currentIndex_ > 0) {
+				currentIndex_--;
+			}
+		}
+
+		if (input->TrrigerKey(DIK_DOWN) ||
+			input->TrrigerKey(DIK_S) ||
+			input->IsTriggerPad(0, Gamepad::DPadDown)) {
+
+			if (currentIndex_ < menuItems_.size() - 1) {
+				currentIndex_++;
+			}
+		}
+
+
+		/// 選択しているItemの位置にFrameを移動
+		Vector2 itemPos = menuItems_[currentIndex_]->GetStartPos() +
+			menuItems_[currentIndex_]->GetOffsetPos() * static_cast<float>(currentIndex_);
+		selectedFrame_->SetPosition(itemPos);
+
+	}
+
 
 	for (size_t i = 0; i < menuItems_.size(); i++) {
 		menuItems_[i]->Update(currentIndex_);
@@ -100,11 +159,14 @@ void GameOption::Draw() {
 	}
 
 	background_->Draw();
-	frame_->Draw();
+	selectedFrame_->Draw();
+
 
 	for (auto& item : menuItems_) {
-		item->Draw();
+		item->BaseDraw();
 	}
+
+	menuItems_[currentIndex_]->Draw();
 }
 
 float GameOption::GetMasterVolume() const {
@@ -124,19 +186,23 @@ float GameOption::GetSEVolume() const {
 
 void GameOption::Open() {
 	isOpen_ = true;
+
+	/// SEの再生
+	Audio* audio_ = Audio::GetInstance();
+	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	audio_->PlayWave(soundId, 0.2f);
 }
 
 void GameOption::Close() {
 	isOpen_ = false;
 
-	/// save
-	const std::string path = "./resources/Option/GameOption.json";
-	nlohmann::json json;
-	json["masterVolume"] = GetMasterVolume();
-	json["bgmVolume"] = GetBGMVolume();
-	json["seVolume"] = GetSEVolume();
-	std::ofstream ofs(path);
-	ofs << json.dump(4);
+	/// SEの再生
+	Audio* audio_ = Audio::GetInstance();
+	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	audio_->PlayWave(soundId, 0.2f);
+
+	Save();
+
 }
 
 bool GameOption::GetIsOpen() const {

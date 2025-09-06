@@ -4,6 +4,7 @@
 #include "input/Input.h"
 #include "base/TextureManager.h"
 #include "Scene/Manager/SceneManager.h"
+#include "audio/Audio.h"
 
 #include "Option/GameOption.h"
 
@@ -18,7 +19,7 @@ void Pause::Init() {
 	};
 
 	Vector2 offset = { 0.0f, 120.0f };
-	Vector2 startPos = { 640.0f, 360.0f - offset.y };
+	Vector2 startPos = { 360.0f, 360.0f - offset.y };
 
 	for (size_t i = 0; i < paths.size(); ++i) {
 		Item newItem = std::make_unique<PauseMenuItem>(paths[i], i);
@@ -28,11 +29,12 @@ void Pause::Init() {
 
 	uint32_t texHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png");
 	background_.reset(Sprite::Create(
-		texHandle, {},
-		{ 1.0f, 1.0f, 1.0f, 0.5f }
+		texHandle, { 640.0f, 360.0f },
+		{ 0.25098f, 0.25098f, 0.25098f, 1.0f }
 	));
 
-	background_->SetScale({ 1280.0f, 720.0f });
+	background_->anchorPoint_ = { 0.5f, 0.5f };
+	background_->SetScale(Vector2{ 1280.0f, 720.0f } * 0.4f);
 
 }
 
@@ -41,7 +43,12 @@ void Pause::Update() {
 	GameOption* option = GameOption::GetInstance();
 
 	if (!option->GetIsOpen()) {
-		if (input->TrrigerKey(DIK_ESCAPE)) {
+		if (input->TrrigerKey(DIK_ESCAPE) ||
+			input->IsTriggerPad(0, Gamepad::Start)) {
+			/// SEの再生
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/the_tmp.wav");
+			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
+
 			isPause_ = !isPause_;
 		}
 	}
@@ -50,7 +57,13 @@ void Pause::Update() {
 
 	/// メニュー操作
 	if (!option->GetIsOpen()) {
-		if (input->TrrigerKey(DIK_UP)) {
+		if (input->TrrigerKey(DIK_UP) ||
+			input->TrrigerKey(DIK_W) ||
+			input->IsTriggerPad(0, Gamepad::DPadUp)) {
+			/// SEの再生
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/the_tmp.wav");
+			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
+
 			if (currentIndex_ == 0) {
 				currentIndex_ = menuItems_.size() - 1;
 			} else {
@@ -58,7 +71,14 @@ void Pause::Update() {
 			}
 		}
 
-		if (input->TrrigerKey(DIK_DOWN)) {
+		if (input->TrrigerKey(DIK_DOWN) ||
+			input->TrrigerKey(DIK_S) ||
+			input->IsTriggerPad(0, Gamepad::DPadDown)) {
+			/// SEの再生
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/the_tmp.wav");
+			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
+
+
 			if (currentIndex_ == menuItems_.size() - 1) {
 				currentIndex_ = 0;
 			} else {
@@ -67,7 +87,12 @@ void Pause::Update() {
 		}
 
 		/// 決定
-		if (input->TrrigerKey(DIK_SPACE)) {
+		if (input->TrrigerKey(DIK_SPACE) ||
+			input->IsTriggerPad(0, Gamepad::A)) {
+			/// SEの再生
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/the_tmp.wav");
+			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
+
 			switch (currentIndex_) {
 			case Resume: // Resume
 				isPause_ = false;
