@@ -34,7 +34,7 @@ void GameCamera::Update() {
 
     if (target_) {
 
-        viewProjection_.translation_ = offsetParam_.cameraOffset;
+        viewProjection_.translation_ = offsetParam_.cameraOffset + offsetParam_.shakeOffsetPos;
         viewProjection_.rotation_    = offsetParam_.rotationOffset;
 
         // 目標のローカルオフセット位置
@@ -112,6 +112,8 @@ void GameCamera::AdjustParam() {
 
         ImGui::PopID();
     }
+
+    rendition_->Edit();
 #endif
 }
 

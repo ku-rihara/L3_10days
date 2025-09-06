@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+class GameCamera;
 class Boundary;
 struct Hole;
 class Player : public BaseObject {
@@ -41,12 +42,6 @@ public:
 
     void ReticleDraw();
 
-    // Move
-    void HandleInput();
-    void RotateUpdate();
-    void MoveUpdate();
-    void ReboundByBoundary();
-
     // speed
     void SpeedInit();
     void SpeedUpdate();
@@ -73,7 +68,12 @@ public:
     void UpdateSpeedBehavior();
 
 private:
-    void SetupReboundRotation(const Vector3& reflectionDirection);
+    // Move
+    void HandleInput();
+    void RotateUpdate();
+    void MoveUpdate();
+    void ReboundByBoundary();
+
     Vector3 CalculateCollisionNormal(const Vector3& from, const Vector3& to);
 
 private:
@@ -84,6 +84,7 @@ private:
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Player";
+    GameCamera* pGameCamera_      = nullptr;
 
     // Parameter
     int32_t hp_;
@@ -120,7 +121,7 @@ private:
     // 補正時の自動操作
     bool isAutoRotateByCollision = false;
     float autoRotateDirection_   = 0.0f; 
-
+  
     // roll
     float targetRoll_;
     float currentRoll_;
@@ -146,5 +147,6 @@ public:
     const SpeedParam& GetSpeedParam() const { return speedParam_; }
     const float& GetRollRotateLimit() const { return rollRotateLimit_; }
 
+    void SetGameCamera(GameCamera* camera);
     void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
 };

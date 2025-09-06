@@ -1,4 +1,5 @@
 #include "Player.h"
+#include"Actor/GameCamera/GameCamera.h"
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/NPC/Navigation/RectXZWithGatesConstraint.h"
 #include "Frame/Frame.h"
@@ -288,6 +289,9 @@ void Player::ReboundByBoundary() {
             isAutoRotateByCollision = false;
             autoRotateDirection_    = 0.0f;
         }
+
+        // カメラシェイク
+        pGameCamera_->PlayShake("PlayerHitBoundaryShake");
     }
 
     // 跳ね返り速度の減衰処理
@@ -525,3 +529,7 @@ void Player::AdjustParam() {
 
 #endif // _DEBUG
 }
+
+void Player::SetGameCamera(GameCamera* camera) {
+    pGameCamera_ = camera;  
+ }
