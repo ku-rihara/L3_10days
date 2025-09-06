@@ -25,6 +25,7 @@ public:
         float pitchSpeed;
         float yawSpeed;
         float rollSpeed;
+        float autoRotateSpeed;
     };
 
     struct BoundaryHoleSource : IHoleSource {
@@ -61,7 +62,7 @@ public:
     float GetRollDegree() const;
 
     // 逆さ判定
-    bool GetIsUpsideDown() const;
+    bool GetIsUpsideDown();
 
     // Behavior management
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
@@ -90,7 +91,6 @@ private:
     int32_t hp_;
 
     // speed
-    Easing<float> speedEase_;
     SpeedParam speedParam_;
 
     // 物理パラメータ
@@ -109,6 +109,7 @@ private:
 
     //  逆さ補正中かのフラグ
     bool isAutoRecovering_ = false;
+    float upDot_;
 
     // 境界反発
     bool isRebound_ = false;
@@ -121,6 +122,7 @@ private:
     // 補正時の自動操作
     bool isAutoRotateByCollision = false;
     float autoRotateDirection_   = 0.0f; 
+    float autoUnLockTime_;
   
     // roll
     float targetRoll_;

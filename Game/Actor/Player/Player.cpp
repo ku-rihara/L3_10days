@@ -1,6 +1,6 @@
 #include "Player.h"
-#include"Actor/GameCamera/GameCamera.h"
 #include "Actor/Boundary/Boundary.h"
+#include "Actor/GameCamera/GameCamera.h"
 #include "Actor/NPC/Navigation/RectXZWithGatesConstraint.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
@@ -50,7 +50,6 @@ void Player::Init() {
 
     // Speed Init
     SpeedInit();
-
     ChangeSpeedBehavior(std::make_unique<PlayerAccelUnattended>(this));
 }
 
@@ -143,7 +142,12 @@ void Player::HandleInput() {
     float deltaTime = Frame::DeltaTime();
 
     // ピッチ
-    angleInput_.x = -stickL.y * (speedParam_.pitchSpeed * deltaTime);
+    float pitchSpeed = speedParam_.pitchSpeed;
+    if (isAutoRotateByCollision) {
+        pitchSpeed = speedParam_.autoRotateSpeed;
+    }
+
+    angleInput_.x = -stickL.y * (pitchSpeed * deltaTime);
 
     // ヨー
     angleInput_.y = pawInputValue * (speedParam_.yawSpeed * deltaTime);
@@ -208,6 +212,7 @@ void Player::RotateUpdate() {
     obj3d_->transform_.quaternion_ = visualRoll;
     obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
 }
+
 void Player::CorrectionHorizon() {
     float deltaTime = Frame::DeltaTime();
 
@@ -285,10 +290,7 @@ void Player::ReboundByBoundary() {
         } else if (reboundVelocityY <= -0.1f) {
             isAutoRotateByCollision = true;
             autoRotateDirection_    = -1.0f;
-        } else {
-            isAutoRotateByCollision = false;
-            autoRotateDirection_    = 0.0f;
-        }
+        } 
 
         // カメラシェイク
         pGameCamera_->PlayShake("PlayerHitBoundaryShake");
@@ -299,13 +301,16 @@ void Player::ReboundByBoundary() {
         // 減衰を適用
         reboundVelocity_.y = reboundVelocity_.y * reboundDecay_;
     } else {
-        // 十分小さくなったら停止
+        // 減衰おわり
         reboundVelocity_ = Vector3::ZeroVector();
-        // 跳ね返り回転も停止
+        isAutoRotateByCollision = false;
+    }
+
+    // upDotが1.0f付近になったら自動回転終わり
+    if (upDot_ >= 0.95f) {
         isAutoRotateByCollision = false;
     }
 }
-
 
 Vector3 Player::CalculateCollisionNormal(const Vector3& from, const Vector3& to) {
     // プレイヤーの現在の水平方向を取得
@@ -317,7 +322,6 @@ Vector3 Player::CalculateCollisionNormal(const Vector3& from, const Vector3& to)
     horizontalMovement.y       = 0.0f;
 
     if (horizontalMovement.Length() < 0.001f) {
-        // 移動がほぼない場合はプレイヤーの前方を基準とする
         return -playerForward;
     }
 
@@ -361,17 +365,17 @@ Vector3 Player::CalculateCollisionNormal(const Vector3& from, const Vector3& to)
     return -horizontalMovement;
 }
 
-bool Player::GetIsUpsideDown() const {
+bool Player::GetIsUpsideDown() {
     // 機体の上方向ベクトルを取得
     Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
     Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
 
     // 機体の上方向とワールドの上方向の内積を計算
     Vector3 worldUp = Vector3::ToUp();
-    float upDot     = Vector3::Dot(targetUpVector, worldUp);
+    upDot_          = Vector3::Dot(targetUpVector, worldUp);
 
     // 機体が逆さまかどうかを判定
-    bool isUpsideDown = upDot < reverseDecisionValue_;
+    bool isUpsideDown = upDot_ < reverseDecisionValue_;
 
     return isUpsideDown;
 }
@@ -444,6 +448,7 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "reboundPower", &reboundPower_);
     globalParameter_->Bind(groupName_, "reboundDecay", &reboundDecay_);
     globalParameter_->Bind(groupName_, "minReboundVelocity", &minReboundVelocity_);
+    globalParameter_->Bind(groupName_, "autoRotateSpeed", &speedParam_.autoRotateSpeed);
 }
 
 void Player::AdjustParam() {
@@ -464,12 +469,13 @@ void Player::AdjustParam() {
         ImGui::DragFloat("Pitch Speed", &speedParam_.pitchSpeed, 0.01f);
         ImGui::DragFloat("Yaw Speed", &speedParam_.yawSpeed, 0.01f);
         ImGui::DragFloat("Roll Speed", &speedParam_.rollSpeed, 0.01f);
+        ImGui::DragFloat("Roll AutoRotateSpeed", &speedParam_.autoRotateSpeed, 0.01f);
 
         ImGui::SeparatorText("rebound");
         ImGui::DragFloat("rebound Power", &reboundPower_, 0.01f);
         ImGui::DragFloat("rebound Decay", &reboundDecay_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("min Rebound Velocity", &minReboundVelocity_, 0.01f, 0.0f, 10.0f);
-
+     
         ImGui::SeparatorText("etc");
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
@@ -499,6 +505,7 @@ void Player::AdjustParam() {
         ImGui::Text("Euler (deg): P=%.1f, Y=%.1f, R=%.1f",
             ToDegree(euler.x), ToDegree(euler.y), ToDegree(euler.z));
 
+        ImGui::Text("upDot= %.1f", upDot_);
         if (GetIsUpsideDown()) {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "STATUS: UPSIDE DOWN!");
         } else {
@@ -531,5 +538,5 @@ void Player::AdjustParam() {
 }
 
 void Player::SetGameCamera(GameCamera* camera) {
-    pGameCamera_ = camera;  
- }
+    pGameCamera_ = camera;
+}
