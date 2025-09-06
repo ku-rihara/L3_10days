@@ -44,6 +44,12 @@ void TitleScene::Init() {
 	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
 	audio_->PlayBGM(soundId, 0.1f);
 
+
+	fade_ = std::make_unique<Fade>();
+	fade_->Init();
+
+
+	Frame::ResetDeltaTime();
 }
 
 void TitleScene::Update() {
@@ -58,6 +64,11 @@ void TitleScene::Update() {
 	}
 
 	titleSprite_->Update();
+	fade_->Update();
+
+	if(input_->TrrigerKey(DIK_F)) {
+		fade_->FadeOut(0.02f);
+	}
 
 	Object3DRegistry::GetInstance()->UpdateAll();
 	ParticleManager::GetInstance()->Update();
@@ -105,6 +116,8 @@ void TitleScene::SkyBoxDraw() {}
 /// ===================================================
 void TitleScene::SpriteDraw() {
 	titleSprite_->Draw();
+
+	fade_->Draw();
 }
 
 /// ===================================================

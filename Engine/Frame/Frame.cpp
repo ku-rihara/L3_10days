@@ -68,3 +68,7 @@ void Frame::SetTimeScale(float scale) {
 float Frame::GetTimeScale() {
     return timeScale_;
 }
+
+void Frame::ResetDeltaTime() {
+	deltaTime_ = 0.0f;
+}

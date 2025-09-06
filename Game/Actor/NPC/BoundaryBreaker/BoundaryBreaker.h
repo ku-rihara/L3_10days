@@ -6,6 +6,8 @@
 #include "Actor/Station/Base/BaseStation.h"
 #include "BaseObject/BaseObject.h"
 
+class FireController;
+
 // 境界を壊す専用のnpc
 class BoundaryBreaker : public BaseObject {
 public:
@@ -13,7 +15,7 @@ public:
 	//		public functions
 	//===================================================================*/
 	BoundaryBreaker() = default;
-	~BoundaryBreaker() override = default;
+	~BoundaryBreaker() override;
 
 	void Init() override;
 	void Update() override;
@@ -22,7 +24,6 @@ public:
 	void SetFactionType(FactionType type);
 	void SetAnchorPoint(const Vector3& point);
 	void SetRivalStation(const BaseStation* station);
-	void SetFireController(NpcFireController* controller);
 	// 均等配置のためのパラメータ
 	void SetPhase(float rad);     //< 初期位相（ラジアン）
 	void SetRadius(float r);      //< 回転半径
@@ -60,7 +61,7 @@ private:
 	FactionType faction_{};
 	const BaseStation* pRivalStation_ = nullptr;
 	GlobalParameter* globalParam_ = nullptr;
-	NpcFireController* pFireController_ = nullptr;
+	std::unique_ptr<NpcFireController> fireController_;
 
 	// 移動制御
 	std::unique_ptr<IMoveConstraint> moveConstraint_ = nullptr;

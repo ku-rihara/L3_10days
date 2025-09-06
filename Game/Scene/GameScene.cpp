@@ -69,7 +69,7 @@ void GameScene::Init(){
 
 	const Vector3 enemyStaitonPos = stations_[FactionType::Enemy]->GetWorldPosition();
 	Installer::InstallBoundaryBreakers(boundaryBreakers_,
-									   stations_[FactionType::Enemy].get(),
+									   stations_[FactionType::Ally].get(),
 									   stations_[FactionType::Enemy].get(),
 									   2);
 

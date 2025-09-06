@@ -12,6 +12,7 @@
 #include "TitleActor/TitleSprite/TitleSprite.h"
 
 #include "Actor/GameCamera/CameraRendition.h"
+#include "Fade/Fade.h"
 
 /// <summary>
 /// タイトルシーン
@@ -23,6 +24,8 @@ private:
 	std::vector<Object> object3ds_;
 
 	std::unique_ptr<TitleSprite> titleSprite_ = nullptr;
+
+	std::unique_ptr<Fade> fade_ = nullptr;
 
 public:
 	///========================================================

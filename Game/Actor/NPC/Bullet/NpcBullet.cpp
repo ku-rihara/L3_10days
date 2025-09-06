@@ -3,8 +3,6 @@
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include "Frame/Frame.h"
 #include "Box.h"
-#include "Actor/Boundary/Boundary.h"
-#include "Physics/SweepAabb.h"
 
 /// ===================================================
 /// 初期化
@@ -37,22 +35,9 @@ void NpcBullet::Update() {
 	if (!isActive_) return;
 
 	prevPos_ = baseTransform_.translation_;
-	Move(); // 速度 * dt
+	Move();
 
-	auto boundary = Boundary::GetInstance();
-
-	if (boundary) {
-		const AABB box = boundary->GetWorldAabb();
-		auto hit = Sweep::SegmentSphereVsAabb(prevPos_, baseTransform_.translation_, radius_, box);
-		if (hit) {
-			// 穴内なら無効
-			if (!boundary->IsInHoleXZ(hit->point, radius_)) {
-				// 破壊通知（AddCrack 内部呼び出し）
-				boundary->OnBulletImpact(*hit, damage_);
-				Deactivate();
-			}
-		}
-	}
+	Hit();
 
 	lifeRemain_ -= Frame::DeltaTime();
 	if (lifeRemain_ <= 0.0f) Deactivate();
@@ -60,11 +45,14 @@ void NpcBullet::Update() {
 	BaseObject::Update();
 }
 
-
-
+/// ===================================================
+/// 移動
+/// ===================================================
 void NpcBullet::Move() {
 	baseTransform_.translation_ += dir_ * speed_ * Frame::DeltaTime();
 }
+
+void NpcBullet::Hit() {}
 
 /// ===================================================
 /// パラメータ同期

@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.cpp" />
+    <ClCompile Include="Game\Fade\Fade.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcHomingBullet.cpp" />
@@ -200,6 +202,8 @@
     <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.h" />
+    <ClInclude Include="Game\Fade\Fade.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcHomingBullet.h" />
@@ -575,6 +579,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Game\Actor\NPC\Bullet\Targeting.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
