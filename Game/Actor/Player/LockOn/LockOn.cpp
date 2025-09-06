@@ -14,7 +14,7 @@
 
 void LockOn::Init() {
 
-     ///* グローバルパラメータ
+    ///* グローバルパラメータ
     globalParameter_ = GlobalParameter::GetInstance();
     globalParameter_->CreateGroup(groupName_, false);
     BindParams();
@@ -24,7 +24,7 @@ void LockOn::Init() {
     int TextureHandle = TextureManager::GetInstance()->LoadTexture("Resources/Texture/UI/Reticle.png");
     lockOnMark_.reset(Sprite::Create(TextureHandle, Vector2{0, 0}, Vector4(1, 1, 1, 1)));
     lockOnMark_->SetAnchorPoint(Vector2(0.5f, 0.5f));
- 
+
     lerpTime_        = 0.0f;
     spriteRotation_  = 0.0f;
     autoSearchTimer_ = 0.0f;
@@ -60,7 +60,7 @@ void LockOn::Update(const std::vector<LockOnVariant>& targets, const ViewProject
     }
 
     // UI更新
-    UpdateLockOnUI(viewProjection);
+    UpdateUI(viewProjection);
 }
 
 void LockOn::HandleTargetSwitching(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction) {
@@ -180,19 +180,24 @@ std::vector<LockOn::LockOnVariant> LockOn::GetValidTargets(const std::vector<Loc
     return validTargets;
 }
 
-void LockOn::UpdateLockOnUI(const ViewProjection& viewProjection) {
+void LockOn::UpdateUI(const ViewProjection& viewProjection) {
     if (!currentTarget_.has_value())
         return;
 
     // ターゲットの座標取得
     Vector3 positionWorld = GetPosition(currentTarget_.value());
+
     // ワールド座標からスクリーン座標に変換
-    Vector3 positionScreen = ScreenTransform(positionWorld, viewProjection); 
+    Vector3 positionScreen = ScreenTransform(positionWorld, viewProjection);
+
     // Vector2に格納
     Vector2 positionScreenV2(positionScreen.x, positionScreen.y);
 
+    // スケール
+    lockOnMark_->SetScale(spriteScale_);
+
     // 線形補間の計算
-    LerpTimeIncrement(0.1f);
+    LerpTimeIncrement(targetChangeSpeed_);
     lockOnMarkPos_ = Lerp(prePos_, positionScreenV2, lerpTime_);
 
     // スプライトの座標と回転を設定
@@ -248,24 +253,24 @@ Vector3 LockOn::GetPosition(const LockOnVariant& target) const {
         target);
 }
 
-//bool LockOn::IsDead(const LockOnVariant& target) const {
-//    target;
-//    return false;
-//}
+// bool LockOn::IsDead(const LockOnVariant& target) const {
+//     target;
+//     return false;
+// }
 //
-//FactionType LockOn::GetFaction(const LockOnVariant& target) const {
-//    target;
-//    return FactionType::Enemy;
-//}
+// FactionType LockOn::GetFaction(const LockOnVariant& target) const {
+//     target;
+//     return FactionType::Enemy;
+// }
 
 bool LockOn::IsLockable(const LockOnVariant& target, FactionType playerFaction) const {
-   /* return !IsDead(target) && GetFaction(target) != playerFaction;*/
+    /* return !IsDead(target) && GetFaction(target) != playerFaction;*/
     target;
-   playerFaction;
+    playerFaction;
     return true;
 }
 
-bool LockOn::IsTargetRange(const LockOnVariant& target, const ViewProjection& viewProjection, Vector3& positionView)const {
+bool LockOn::IsTargetRange(const LockOnVariant& target, const ViewProjection& viewProjection, Vector3& positionView) const {
     // ターゲットの座標を取得
     Vector3 positionWorld = GetPosition(target);
 
@@ -292,7 +297,6 @@ void LockOn::LerpTimeIncrement(float incrementTime) {
     }
 }
 
-
 ///=========================================================
 /// バインド
 ///==========================================================
@@ -300,9 +304,10 @@ void LockOn::BindParams() {
     globalParameter_->Bind(groupName_, "minDistance", &minDistance_);
     globalParameter_->Bind(groupName_, "maxDistance", &maxDistance_);
     globalParameter_->Bind(groupName_, "angleRange", &angleRange_);
+    globalParameter_->Bind(groupName_, "spriteScale", &spriteScale_);
+    globalParameter_->Bind(groupName_, "targetChangeSpeed", &targetChangeSpeed_);
 }
-
-///=========================================================
+    ///=========================================================
 /// パラメータ調整
 ///==========================================================
 void LockOn::AdjustParam() {
@@ -314,6 +319,8 @@ void LockOn::AdjustParam() {
         ImGui::DragFloat("minDistance", &minDistance_, 0.1f);
         ImGui::DragFloat("maxDistance", &maxDistance_, 0.1f);
         ImGui::DragFloat("angleRange", &angleRange_, 0.1f);
+        ImGui::DragFloat("targetChangeSpeed", &targetChangeSpeed_, 0.1f);
+        ImGui::DragFloat2("spriteScale", &spriteScale_.x, 0.1f);
 
         // セーブ・ロード
         globalParameter_->ParamSaveForImGui(groupName_);

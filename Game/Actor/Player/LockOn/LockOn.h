@@ -52,21 +52,26 @@ private:
     void SortTargetsByAngle(std::vector<std::pair<float, LockOnVariant>>& validTargets) const;
 
     // UI更新
-    void UpdateLockOnUI(const ViewProjection& viewProjection);
+    void UpdateUI(const ViewProjection& viewProjection);
     void LerpTimeIncrement(float incrementTime);
 
 private:
 
+    // global parameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "LockOn"; 
 
+    // Sprite
     std::unique_ptr<Sprite> lockOnMark_;
+
+    // ターゲット
     std::optional<LockOnVariant> currentTarget_;
     std::vector<LockOnVariant> validTargets_;
     size_t currentTargetIndex_ = 0;
 
-    float lerpTime_;
+    // Sprite Param
     Vector2 prePos_;
+    Vector2 spriteScale_;
     Vector2 lockOnMarkPos_;
     float spriteRotation_;
 
@@ -75,8 +80,10 @@ private:
     float autoSearchInterval_ = 0.1f; 
     float autoSearchTimer_    = 0.0f;
 
-    // 切り替え入力
+    // 切り替え
+    float lerpTime_;
     bool prevSwitchInput_ = false;
+    float targetChangeSpeed_;
 
     // パラメータ
     float minDistance_; //< 最小距離
