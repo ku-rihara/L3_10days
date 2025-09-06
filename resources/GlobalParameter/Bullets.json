@@ -2,7 +2,7 @@
     "Bullets": {
         "intervalTime1": 0.009999999776482582,
         "intervalTime2": 0.2800000011920929,
-        "lifeTime1": 1.0,
+        "lifeTime1": 0.4300000071525574,
         "lifeTime2": 10.0,
         "maxBulletNum1": 21,
         "maxBulletNum2": 2,

@@ -1,4 +1,5 @@
 #include "PlayerMissile.h"
+#include "Actor/Player/Player.h"
 #include "Frame/Frame.h"
 #include "MathFunction.h"
 #include "Matrix4x4.h"
@@ -48,7 +49,7 @@ void PlayerMissile::Update() {
 }
 
 void PlayerMissile::UpdateMissileMovement(float deltaTime) {
-  
+
     if (enableTracking_ && hasTarget_) {
         UpdateTargetTracking(deltaTime);
     }
@@ -104,17 +105,16 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
     baseTransform_.quaternion_ = QuaternionFromMatrix(lookMatrix);
 }
 
-void PlayerMissile::Fire(const Vector3& position, const Vector3& direction, const Quaternion& rotation) {
-    // 発射位置と向きを設定
-    baseTransform_.translation_ = position;
-    baseTransform_.quaternion_  = rotation;
+void PlayerMissile::Fire(const Player& player) {
+    // 発射位置を設定
+    baseTransform_.translation_ = player.GetWorldPosition();
+
+    // プレイヤーの回転
+    baseTransform_.quaternion_     = player.GetBaseQuaternion();
+    obj3d_->transform_.quaternion_ = player.GetObjQuaternion();
 
     // 速度を設定
-    velocity_ = direction.Normalize() * param_.speed;
-
-    // ミサイルを進行方向に向ける
-    Matrix4x4 lookMatrix       = MakeRootAtMatrix(Vector3::ZeroVector(), direction, Vector3::ToUp());
-    baseTransform_.quaternion_ = QuaternionFromMatrix(lookMatrix);
+    velocity_ = player.GetForwardVector().Normalize() * param_.speed;
 
     // 初期化
     currentLifeTime_ = 0.0f;
@@ -142,5 +142,4 @@ Vector3 PlayerMissile::GetPosition() const {
 void PlayerMissile::SetMissileParameters(const MissileParameter& params) {
     trackingStrength_ = params.trackingStrength;
     maxTurnRate_      = params.maxTurnRate;
- 
 }

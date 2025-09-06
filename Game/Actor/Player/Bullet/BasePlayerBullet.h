@@ -12,14 +12,13 @@ struct BulletParameter {
     float speed;
 };
 
+class Player;
 class BasePlayerBullet : public BaseObject {
 public:
     virtual ~BasePlayerBullet() = default;
 
-  
-    virtual void Update()                                                                            = 0;
-    virtual void Fire(const Vector3& position, const Vector3& direction, const Quaternion& rotation) = 0;
-
+    virtual void Update()                   = 0;
+    virtual void Fire(const Player& player) = 0;
 
     virtual void Deactivate()           = 0;
     virtual Vector3 GetPosition() const = 0;
