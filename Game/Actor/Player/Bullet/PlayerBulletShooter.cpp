@@ -4,6 +4,7 @@
 #include "Frame/Frame.h"
 #include "input/Input.h"
 #include "PlayerMissile.h"
+#include "Actor/Player/LockOn/LockOn.h"
 #undef max
 #include <algorithm>
 #include <imgui.h>
@@ -18,10 +19,6 @@ void PlayerBulletShooter::Init() {
     // 名前セット
     typeNames_[static_cast<int32_t>(BulletType::NORMAL)]  = "Normal";
     typeNames_[static_cast<int32_t>(BulletType::MISSILE)] = "Missile";
-
-    // LockOn
-    lockOn_ = std::make_unique<LockOn>();
-    lockOn_->Init();
 
     // 初期弾数設定
     InitializeAmmo();

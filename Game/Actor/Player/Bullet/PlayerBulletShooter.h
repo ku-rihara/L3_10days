@@ -1,6 +1,5 @@
 #pragma once
 #include "BasePlayerBullet.h"
-#include "Actor/Player/LockOn/LockOn.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <array>
 #include <cstdint>
@@ -8,6 +7,7 @@
 #include <string>
 #include <vector>
 
+class LockOn;
 class BasePlayerBullet;
 class Player;
 class ViewProjection;
@@ -89,7 +89,7 @@ private:
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Bullets";
-    std::unique_ptr<LockOn> lockOn_;
+    LockOn* lockOn_;
     const ViewProjection* viewProjection_ = nullptr;
 
     // パラメータ
@@ -132,4 +132,5 @@ public:
     /// Setter
     /// -----------------------------------------------------------------
     void SetViewProjection(const ViewProjection* vp) { viewProjection_ = vp; }
+    void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; }
 };

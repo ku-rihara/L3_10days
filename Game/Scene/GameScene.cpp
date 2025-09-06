@@ -31,6 +31,8 @@
 #include "Option/GameOption.h"
 
 #include <imgui.h>
+#include <vector>
+#include "Actor/NPC/EnemyNPC.h"
 
 GameScene::GameScene() {}
 GameScene::~GameScene() {}
@@ -51,6 +53,7 @@ void GameScene::Init() {
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
 	gameCamera_ = std::make_unique<GameCamera>();
 
+	lockOn_ = std::make_unique<LockOn>();
 
 	UnitDirectorConfig cfg;
 	cfg.squadSize = 4; // 攻撃小隊の目安
@@ -69,6 +72,8 @@ void GameScene::Init() {
 	//====================================初期化===================================================
 	skyDome_->Init();
 	player_->Init();
+    lockOn_->Init();
+
 	Installer::InstallStations(stations_[FactionType::Ally].get(),
 		stations_[FactionType::Enemy].get(),
 		director_.get());
@@ -193,6 +198,24 @@ void GameScene::GameUpdate() {
 	for (auto& kv : stations_) { kv.second->Update(); }
 	for (auto& bb : boundaryBreakers_)bb->Update();
 	skyDome_->Update();
+
+	//----- それぞれのLockOn対象を取得 -----
+	// EnemyNPCs
+    std::vector<LockOn::LockOnVariant> targets;
+    auto enemyStation = static_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
+    auto enemyNPCs    = enemyStation->GetLiveNpcs();
+	for (auto* npc : enemyNPCs) {
+        targets.emplace_back(static_cast<EnemyNPC*>(npc));
+	}
+    // boundaryBreakers
+    for (auto& bb : boundaryBreakers_) {
+        if (bb /*&&生きてたら*/) {
+			targets.emplace_back(bb.get());
+		}
+    }
+
+	// lockOn更新
+	lockOn_->Update(targets, viewProjection_, FactionType::Enemy);
 
 	miniMap_->Update();
 	uis_->Update(player_.get());
