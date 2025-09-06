@@ -55,10 +55,11 @@ void GameOption::Init() {
 
 
 	background_.reset(Sprite::Create(
-		TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png"),
+		TextureManager::GetInstance()->LoadTexture("./resources/Texture/Option/Frame.png"),
 		startPos, { 0.302f, 0.302f, 0.302f, 0.5f }
 	));
-	background_->SetScale({ 256.0f, 256.0f });
+	//Vector2 texSize = { 256.0f, 256.0f };
+	//background_->SetScale(texSize / Vector2{ 512.0f, 512.0f });
 	background_->anchorPoint_ = { 0.0f, 0.5f };
 
 	/// サウンドオプションの生成

@@ -16,6 +16,7 @@ void SoundOption::Init() {
 	};
 
 	std::string backgroundPath = "./resources/Texture/Option/VolumeBackground.png";
+	std::string sliderBGPath = "./resources/Texture/Option/VolumeSliderBackground.png";
 	std::string volumeBarPath = "./resources/Texture/Option/VolumeBar.png";
 	std::string sliderPath = "./resources/Texture/Option/VolumeSlider.png";
 
@@ -54,6 +55,16 @@ void SoundOption::Init() {
 			soundItems_[i].background->SetScale(scale);
 		}
 
+		/// sliderBG
+		if (!soundItems_[i].sliderBG) {
+			uint32_t bgTexHandle = TextureManager::GetInstance()->LoadTexture(sliderBGPath);
+			soundItems_[i].sliderBG.reset(Sprite::Create(
+				bgTexHandle, pos, { 1.0f, 1.0f, 1.0f, 1.0f }
+			));
+			soundItems_[i].sliderBG->anchorPoint_ = { 0.5f, 0.5f };
+			soundItems_[i].sliderBG->SetScale(scale);
+		}
+
 		if (!soundItems_[i].volumeBar) {
 			uint32_t volumeBarTexHandle = TextureManager::GetInstance()->LoadTexture(volumeBarPath);
 			soundItems_[i].volumeBar.reset(Sprite::Create(
@@ -73,6 +84,18 @@ void SoundOption::Init() {
 			));
 			soundItems_[i].slider->anchorPoint_ = { 0.5f, 0.5f };
 			soundItems_[i].slider->SetScale(scale);
+		}
+
+		/// numDraw
+		if (!soundItems_[i].volumeNum) {
+			soundItems_[i].volumeNum = std::make_unique<NumDraw>();
+			soundItems_[i].volumeNum->Init(3);
+			soundItems_[i].volumeNum->SetBasePosition(pos + Vector2{ 192.0f, 0.0f });
+			soundItems_[i].volumeNum->SetDigitSpacing(16.0f);
+			soundItems_[i].volumeNum->SetMaxNumDigit(3);
+			soundItems_[i].volumeNum->SetNumber(static_cast<int32_t>(soundItems_[i].volume * 100.0f));
+			soundItems_[i].volumeNum->SetScale({ 2.0f, 2.0f });
+			soundItems_[i].volumeNum->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 		}
 	}
 
@@ -111,6 +134,10 @@ void SoundOption::Update(size_t _currentIndex) {
 		/// volumeBarの大きさを変更
 		float scaleY = item.volumeBar->transform_.scale.y;
 		item.volumeBar->SetScale({ 0.5f * volume, scaleY });
+
+		/// volumeNumの更新
+		item.volumeNum->SetNumber(static_cast<int32_t>(item.volume * 100.0f));
+		item.volumeNum->Update();
 	}
 
 
@@ -150,8 +177,15 @@ void SoundOption::Update(size_t _currentIndex) {
 void SoundOption::Draw() {
 
 	for (auto& item : soundItems_) {
-		item.textSprite_->Draw();
+		/// 背景
 		item.background->Draw();
+
+		/// text
+		item.textSprite_->Draw();
+		item.volumeNum->Draw();
+
+		/// slider
+		item.sliderBG->Draw();
 		item.volumeBar->Draw();
 		item.slider->Draw();
 	}

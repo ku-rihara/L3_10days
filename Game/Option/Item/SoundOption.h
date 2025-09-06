@@ -2,6 +2,7 @@
 
 /// base
 #include "GameOptionItem.h"
+#include "Actor/UI/NumDraw/NumDraw.h"
 
 class SoundOption : public IGameOptionItem {
 public:
@@ -19,8 +20,11 @@ public:
 
 		std::unique_ptr<Sprite> textSprite_ = nullptr;
 		std::unique_ptr<Sprite> background = nullptr;
+		std::unique_ptr<Sprite> sliderBG = nullptr;
 		std::unique_ptr<Sprite> volumeBar = nullptr;
 		std::unique_ptr<Sprite> slider = nullptr;
+
+		std::unique_ptr<NumDraw> volumeNum = nullptr;
 	};
 
 	enum ItemName {

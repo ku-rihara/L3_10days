@@ -21,6 +21,9 @@ public:
 	void SetDigitSpacing(float _spacing);
 	void SetMaxNumDigit(size_t _maxNumDigit);
 
+	void SetColor(const Vector4& _color);
+	void SetScale(const Vector2& _scale);
+
 private:
 
 	std::vector<std::unique_ptr<Sprite>> numSprites_;
@@ -34,7 +37,8 @@ private:
 	int32_t digitNum_ = 0;
 	int32_t previousNum_ = -1;
 
-
+	Vector2 texSize_;
+	Vector2 size_;
 
 };
 
