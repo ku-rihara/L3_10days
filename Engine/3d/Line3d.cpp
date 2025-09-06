@@ -35,7 +35,7 @@ void Line3D::Init(const size_t& lineMaxNum) {
     vertexBufferView_.SizeInBytes    = static_cast<UINT>(bufferSize);
     vertexBufferView_.StrideInBytes  = sizeof(Vertex);
 
-    // ★ Mapして保持（vectorは使わない）
+    // Mapして保持（vectorは使わない）
     vertexBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 
     // 定数バッファ

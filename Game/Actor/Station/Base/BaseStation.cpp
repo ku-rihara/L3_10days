@@ -165,8 +165,15 @@ std::vector<NPC*> BaseStation::GetLiveNpcs() const {
 	return out;
 }
 
-void BaseStation::CleanupSpawnedList() {
-	spawned_.erase(std::remove_if(spawned_.begin(), spawned_.end(),
-								  [](const NpcHandle& npc) { return !npc || !npc->GetIsAlive(); }),
-				   spawned_.end());
+void BaseStation::CollectTargets(std::vector<const BaseObject*>& out) const {
+	out.clear();
+
+	if (pRivalStation_) {
+		for (NPC* npc : pRivalStation_->GetLiveNpcs()) {
+			if (!npc) continue;
+			out.push_back(static_cast<const BaseObject*>(npc));
+		}
+
+		out.push_back(static_cast<const BaseObject*>(pRivalStation_));
+	}
 }
