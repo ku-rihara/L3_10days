@@ -184,6 +184,8 @@ void GameScene::ViewProssess() {
 
 void GameScene::GameUpdate() {
 
+	Debug();
+
 	// class Update
 	boundary_->Update();
 	player_->Update();

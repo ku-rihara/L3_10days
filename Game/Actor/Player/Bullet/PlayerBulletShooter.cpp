@@ -19,6 +19,10 @@ void PlayerBulletShooter::Init() {
     typeNames_[static_cast<int32_t>(BulletType::NORMAL)]  = "Normal";
     typeNames_[static_cast<int32_t>(BulletType::MISSILE)] = "Missile";
 
+    // LockOn
+    lockOn_ = std::make_unique<LockOn>();
+    lockOn_->Init();
+
     // 初期弾数設定
     InitializeAmmo();
 }
@@ -230,7 +234,6 @@ void PlayerBulletShooter::BindParams() {
     // ミサイル専用パラメータ
     globalParameter_->Bind(groupName_, "missileTrackingStrength", &typeSpecificParams_.missile.trackingStrength);
     globalParameter_->Bind(groupName_, "missileMaxTurnRate", &typeSpecificParams_.missile.maxTurnRate);
-  
 }
 
 void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
@@ -249,7 +252,7 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
     if (type == BulletType::MISSILE) {
         ImGui::SeparatorText("MissileParameter");
         ImGui::DragFloat("TrackingStrength", &typeSpecificParams_.missile.trackingStrength, 0.01f);
-        ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f); 
+        ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f);
     }
 }
 

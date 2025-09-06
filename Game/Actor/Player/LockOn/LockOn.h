@@ -7,15 +7,15 @@
 #include <memory>
 #include <variant>
 #include <vector>
+#include <optional>
 
 // 前方宣言
 class EnemyNPC;
 class BoundaryBreaker;
 
-// サポートされる型をvariantで管理
-using LockOnVariant = std::variant<EnemyNPC*, BoundaryBreaker*>;
-
 class LockOn {
+public:
+    using LockOnVariant = std::variant<EnemyNPC*, BoundaryBreaker*>;
 public:
     LockOn()  = default;
     ~LockOn() = default;
@@ -49,7 +49,7 @@ private:
     float spriteRotation_ = 0.0f;
 
     // パラメータ
-    float minDistance_;
-    float maxDistance_;
-    float angleRange_;
+    float minDistance_; //< 最小距離
+    float maxDistance_; //< 最大距離
+    float angleRange_;  //< 角度範囲
 };

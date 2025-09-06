@@ -149,5 +149,5 @@ public:
     const float& GetRollRotateLimit() const { return rollRotateLimit_; }
 
     void SetGameCamera(GameCamera* camera);
-    void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
+    void SetViewProjection(const ViewProjection* viewProjection);
 };

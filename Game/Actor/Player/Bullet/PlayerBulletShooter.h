@@ -1,5 +1,6 @@
 #pragma once
 #include "BasePlayerBullet.h"
+#include "Actor/Player/LockOn/LockOn.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <array>
 #include <cstdint>
@@ -9,6 +10,7 @@
 
 class BasePlayerBullet;
 class Player;
+class ViewProjection;
 
 struct ShooterParameter {
     float intervalTime;
@@ -65,7 +67,7 @@ private:
     // 入力処理
     void HandleInput();
 
-    // 発射処理 - 弾種別に分離
+    // 発射処理
     void UpdateNormalBulletShooting(const Player* player);
     void UpdateMissileShooting(const Player* player);
 
@@ -87,6 +89,8 @@ private:
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Bullets";
+    std::unique_ptr<LockOn> lockOn_;
+    const ViewProjection* viewProjection_ = nullptr;
 
     // パラメータ
     std::array<BulletParameter, static_cast<int32_t>(BulletType::COUNT)> bulletParameters_;
@@ -127,4 +131,5 @@ public:
     /// -----------------------------------------------------------------
     /// Setter
     /// -----------------------------------------------------------------
+    void SetViewProjection(const ViewProjection* vp) { viewProjection_ = vp; }
 };
