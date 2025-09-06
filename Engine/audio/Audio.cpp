@@ -1,8 +1,14 @@
 #include "Audio.h"
+
 #include<fstream>
 #include<assert.h>
+
+/// game option
+#include "Option/GameOption.h"
+
 #define ATTENUATION_TIME_MS 50
 #define ATTENUATION_FACTOR 0.01f // 音量を0.5%にする
+
 #pragma comment(lib,"xaudio2.lib")
 
 
@@ -109,7 +115,9 @@ void Audio::PlayWave(const int& soundId, const float& volume) {
     }
     lastPlayTimes_[soundId] = now; // 最新の再生時間を記録
 
-    result = pSourceVoice->SetVolume(adjustedVolume);
+	GameOption* option = GameOption::GetInstance();
+    float volumeScale = option->GetMasterVolume() * option->GetSEVolume();
+    result = pSourceVoice->SetVolume(adjustedVolume * volumeScale);
     assert(SUCCEEDED(result));
 
     XAUDIO2_BUFFER buf{};
@@ -157,7 +165,9 @@ int Audio::PlayBGM(const int& soundId, const float& volume) {
     }
     lastPlayTimes_[soundId] = now; // 最新の再生時間を記録
 
-    result = pSourceVoice->SetVolume(adjustedVolume);
+    GameOption* option = GameOption::GetInstance();
+    float volumeScale = option->GetMasterVolume() * option->GetBGMVolume();
+    result = pSourceVoice->SetVolume(adjustedVolume * volumeScale);
     assert(SUCCEEDED(result));
 
     XAUDIO2_BUFFER buf{};
