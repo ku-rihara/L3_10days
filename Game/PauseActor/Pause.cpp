@@ -3,6 +3,7 @@
 /// engine
 #include "input/Input.h"
 #include "base/TextureManager.h"
+#include "Scene/Manager/SceneManager.h"
 
 void Pause::Init() {
 	isPause_ = false;
@@ -58,6 +59,22 @@ void Pause::Update() {
 		}
 	}
 
+	/// 決定
+	if (input->TrrigerKey(DIK_SPACE)) {
+		switch (currentIndex_) {
+		case Resume: // Resume
+			isPause_ = false;
+			break;
+		case ReturnTitle: // Return Title
+			/// タイトルに戻る処理
+			isSceneChange_ = true;
+			break;
+		case OpenOption: // Open Option
+			/// オプションを開く処理
+			break;
+		}
+	}
+
 	
 	/// メニュー更新
 	for(auto& item : menuItems_) {
@@ -75,4 +92,8 @@ void Pause::Draw() {
 
 bool Pause::IsPause() const {
 	return isPause_;
+}
+
+bool Pause::IsSceneChange() const {
+	return isSceneChange_;
 }

@@ -12,6 +12,15 @@
 /// ///////////////////////////////////////////////////////////
 class Pause {
 public:
+
+	enum MenuItem {
+		Resume = 0,
+		ReturnTitle,
+		OpenOption,
+		Max
+	};
+
+public:
 	/// =========================================================
 	/// public : methods
 	/// =========================================================
@@ -24,6 +33,7 @@ public:
 	void Draw();
 
 	bool IsPause() const;
+	bool IsSceneChange() const;
 
 private:
 	/// =========================================================
@@ -31,6 +41,7 @@ private:
 	/// =========================================================
 
 	bool isPause_ = false;
+	bool isSceneChange_ = false;
 	size_t currentIndex_ = 0;
 
 	using Item = std::unique_ptr<PauseMenuItem>;

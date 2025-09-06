@@ -202,6 +202,10 @@ void GameScene::GameUpdate() {
 
 void GameScene::PauseUpdate() {
 	pause_->Update();
+	if (pause_->IsSceneChange()) {
+		SceneManager::GetInstance()->ChangeScene("TITLE");
+		return;
+	}
 }
 
 void GameScene::GameModelDraw() {
