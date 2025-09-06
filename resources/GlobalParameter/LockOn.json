@@ -1,0 +1,7 @@
+{
+    "LockOn": {
+        "angleRange": 40.0,
+        "maxDistance": 500.0,
+        "minDistance": 300.0
+    }
+}
