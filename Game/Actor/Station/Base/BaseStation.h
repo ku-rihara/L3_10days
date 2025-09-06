@@ -12,14 +12,16 @@
 #include "Actor/Station/UnitDirector/IUnitDirector.h"
 #include "AI/Station/StationAI.h"
 
+// targeting
+#include "../../NPC/Bullet/Targeting.h"
+
 // std
 #include <string>
 #include <vector>
 
 class NPC;
-class NpcFireController;
 
-class BaseStation : public BaseObject {
+class BaseStation : public BaseObject, public ITargetProvider {
 public:
 	BaseStation(const std::string& name = "UnnamedStation");
 	virtual ~BaseStation() override;
@@ -38,7 +40,6 @@ public:
 	// ---- accessor ----
 	void SetRivalStation(BaseStation* rival);
 	BaseStation* GetRivalStation() const;
-	NpcFireController* GetNpcFireController() const;
 	void SetFaction(FactionType type);
 	FactionType GetFactionType() const;
 
@@ -56,9 +57,13 @@ public:
 		for (auto& h : spawned_) if (h) fn(*h.get());
 	}
 
+	// ===== ITargetProvider 実装 =====
+	// この Station にとっての「敵候補」を out に詰める（Rival 側の NPC / Station 本体など）
+	void CollectTargets(std::vector<const BaseObject*>& out) const override;
+
 protected:
 	virtual void SpawnNPC(const Vector3& pos) = 0;   //< npcをスポーン
-	void CleanupSpawnedList();     //< リストの掃除
+	void CleanupSpawnedList();                       //< リストの掃除
 
 protected:
 	// 調整用
@@ -72,14 +77,13 @@ protected:
 	float   spawnInterbal_ = 5.0f;
 	int     maxConcurrentUnits_ = 20;
 	int		initialSpawnCount_ = 20;
-	float initialSpawnDistanceFromThis_ = 1500.0f;	//< 初期配置用 この距離分までのランダムで初期配置(仮
+	float initialSpawnDistanceFromThis_ = 1500.0f;	//< 初期配置用
 
 	// ---- game ----
 	FactionType faction_{};
 	float   hp_ = 100.0f;
 	float   currentTime_ = 0.0f;
 
-	std::unique_ptr< NpcFireController> fireController_ = nullptr;
 	std::vector<NpcHandle> spawned_;
 	BaseStation* pRivalStation_ = nullptr; //< ライバル拠点
 

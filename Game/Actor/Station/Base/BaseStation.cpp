@@ -31,10 +31,6 @@ void BaseStation::Init() {
 	ai_.Initialize(this, unitDirector_);
 	ai_.SetConfig(aiCfg_);
 
-	//npcの弾制御
-	fireController_ = std::make_unique< NpcFireController>();
-	fireController_->Init();
-
 	this->Update();
 
 	StartupSpawn();
@@ -42,7 +38,6 @@ void BaseStation::Init() {
 
 void BaseStation::Update() {
 	BaseObject::Update();
-	fireController_->Tick();
 	// === AI 更新 ===
 	const float dt = Frame::DeltaTime(); 
 	ai_.SetRivalCached(pRivalStation_);
@@ -160,7 +155,6 @@ void BaseStation::SaveData() {
 // accessor
 void BaseStation::SetRivalStation(BaseStation* rival) { pRivalStation_ = rival; }
 BaseStation* BaseStation::GetRivalStation() const { return pRivalStation_; }
-NpcFireController* BaseStation::GetNpcFireController() const{return fireController_.get();}
 void BaseStation::SetFaction(FactionType type) { faction_ = type; }
 FactionType BaseStation::GetFactionType() const { return faction_; }
 
@@ -171,8 +165,15 @@ std::vector<NPC*> BaseStation::GetLiveNpcs() const {
 	return out;
 }
 
-void BaseStation::CleanupSpawnedList() {
-	spawned_.erase(std::remove_if(spawned_.begin(), spawned_.end(),
-								  [](const NpcHandle& npc) { return !npc || !npc->GetIsAlive(); }),
-				   spawned_.end());
+void BaseStation::CollectTargets(std::vector<const BaseObject*>& out) const {
+	out.clear();
+
+	if (pRivalStation_) {
+		for (NPC* npc : pRivalStation_->GetLiveNpcs()) {
+			if (!npc) continue;
+			out.push_back(static_cast<const BaseObject*>(npc));
+		}
+
+		out.push_back(static_cast<const BaseObject*>(pRivalStation_));
+	}
 }

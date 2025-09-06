@@ -21,7 +21,6 @@ void Installer::InstallBoundaryBreakers(std::vector<std::unique_ptr<BoundaryBrea
 		Vector3 stationPosition = allyStation->GetWorldPosition();
 		boundaryBreaker->SetAnchorPoint(stationPosition);
 		boundaryBreaker->SetRivalStation(rivalStation);
-		boundaryBreaker->SetFireController(allyStation->GetNpcFireController());
 
 		boundaryBreaker->SetPhase(angle);
 		boundaryBreaker->SetRadius(r);

@@ -57,9 +57,12 @@ void PlayerStation::SpawnNPC(const Vector3& spawnPos) {
 	npc->Init();
 	npc->SetFaction(FactionType::Ally);
 
+	if (auto* rival = this->GetRivalStation()){
+		npc->SetTargetProvider(this);
+	}
+
 	npc->SetWorldPosition(spawnPos);
 	npc->SetTarget(GetRivalStation());
-	npc->SetFireControl(fireController_.get());
 
 	spawned_.push_back(std::move(npc));
 	currentTime_ = 0.0f;
