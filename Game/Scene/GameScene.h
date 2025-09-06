@@ -18,6 +18,9 @@
 #include "Actor/Effects/GameScreenEffect/GameScreenEffect.h"
 #include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
 
+/// pause
+#include "PauseActor/Pause.h"
+
 #include<map>
 #include "Actor/Spline/Spline.h"
 
@@ -25,6 +28,11 @@ class GameScene : public BaseScene {
 private:
 	///========================================================
 	/// Private variants
+	///========================================================
+
+	
+	///========================================================
+	/// game objects
 	///========================================================
 
 	std::unique_ptr<SkyDome> skyDome_ = nullptr;
@@ -46,8 +54,12 @@ private:
 	std::unique_ptr<QuotaUnitDirector> director_;
 
 
-	/// debug
-	Spline spline_;
+
+	///========================================================
+	/// pause objects
+	///========================================================
+
+	std::unique_ptr<Pause> pause_ = nullptr;
 
 public:
 	///========================================================
@@ -71,4 +83,16 @@ public:
 	void Debug() override; /// debug
 	void ViewProjectionUpdate() override;
 	void ViewProssess() override;
+
+
+	void GameUpdate();
+	void PauseUpdate();
+
+	/// DrawMethods
+	void GameModelDraw();
+	void GameSpriteDraw();
+
+	void PauseModelDraw();
+	void PauseSpriteDraw();
+
 };
