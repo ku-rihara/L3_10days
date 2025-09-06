@@ -47,8 +47,9 @@ private:
 	/// ==================================
 
 	std::vector<SoundItem> soundItems_;
+	size_t selectedIndex_ = 0;
 
-
+	std::unique_ptr<Sprite> selectedFrame_ = nullptr;
 
 };
 

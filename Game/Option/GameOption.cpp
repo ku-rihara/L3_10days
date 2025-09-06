@@ -6,6 +6,10 @@
 /// json
 #include <json.hpp>
 
+/// engine
+#include "base/TextureManager.h"
+#include "input/Input.h"
+
 /// option
 #include "Item/SoundOption.h"
 
@@ -46,8 +50,16 @@ void GameOption::Init() {
 	}
 
 	isOpen_ = false;
-	Vector2 startPos = { 640.0f, 200.0f };
-	Vector2 offset = { 0.0f, 100.0f };
+	Vector2 startPos = { 640.0f, 360.0f };
+	//Vector2 offset = { 0.0f, 100.0f };
+
+
+	background_.reset(Sprite::Create(
+		TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png"),
+		startPos, { 1.0f, 1.0f, 1.0f, 0.5f }
+	));
+	background_->SetScale({ 256.0f, 256.0f });
+	background_->anchorPoint_ = { 0.0f, 0.5f };
 
 	/// サウンドオプションの生成
 	std::unique_ptr<SoundOption> soundOption = std::make_unique<SoundOption>();
@@ -59,9 +71,20 @@ void GameOption::Init() {
 
 void GameOption::Update() {
 
-	if (!isOpen_) { return; }
+	/// Close
+	Input* input = Input::GetInstance();
+	if (input->TrrigerKey(DIK_ESCAPE)) {
+		if (GetIsOpen()) {
+			Close();
+		}
+	}
+
+	if (!isOpen_) {
+		return;
+	}
+
 	for (size_t i = 0; i < menuItems_.size(); i++) {
-		menuItems_[i]->Update(i);
+		menuItems_[i]->Update(currentIndex_);
 	}
 
 }
@@ -70,6 +93,8 @@ void GameOption::Draw() {
 	if (!isOpen_) {
 		return;
 	}
+
+	background_->Draw();
 
 	for (auto& item : menuItems_) {
 		item->Draw();
@@ -97,6 +122,15 @@ void GameOption::Open() {
 
 void GameOption::Close() {
 	isOpen_ = false;
+
+	/// save
+	const std::string path = "./resources/Option/GameOption.json";
+	nlohmann::json json;
+	json["masterVolume"] = GetMasterVolume();
+	json["bgmVolume"] = GetBGMVolume();
+	json["seVolume"] = GetSEVolume();
+	std::ofstream ofs(path);
+	ofs << json.dump(4);
 }
 
 bool GameOption::GetIsOpen() const {

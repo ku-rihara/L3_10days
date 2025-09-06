@@ -38,14 +38,18 @@ void Pause::Init() {
 
 void Pause::Update() {
 	Input* input = Input::GetInstance();
-	if (input->TrrigerKey(DIK_ESCAPE)) {
-		isPause_ = !isPause_;
+	GameOption* option = GameOption::GetInstance();
+
+	if (!option->GetIsOpen()) {
+		if (input->TrrigerKey(DIK_ESCAPE)) {
+			isPause_ = !isPause_;
+		}
 	}
 
 	if (!isPause_) { return; }
 
 	/// メニュー操作
-	if (!GameOption::GetInstance()->GetIsOpen()) {
+	if (!option->GetIsOpen()) {
 		if (input->TrrigerKey(DIK_UP)) {
 			if (currentIndex_ == 0) {
 				currentIndex_ = menuItems_.size() - 1;

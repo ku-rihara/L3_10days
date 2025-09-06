@@ -213,7 +213,6 @@ void GameScene::PauseUpdate() {
 
 	GameOption::GetInstance()->Update();
 
-
 	if (pause_->IsSceneChange()) {
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;

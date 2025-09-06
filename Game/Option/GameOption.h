@@ -52,5 +52,7 @@ private:
 	size_t currentIndex_ = 0;
 	bool isOpen_ = false;
 
+	std::unique_ptr<Sprite> background_;
+
 };
 
