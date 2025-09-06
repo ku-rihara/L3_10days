@@ -224,6 +224,9 @@
     <ClCompile Include="Game\Fade\Fade.cpp" />
     <ClCompile Include="Game\PauseActor\Item\PauseMenuItem.cpp" />
     <ClCompile Include="Game\PauseActor\Pause.cpp" />
+    <ClCompile Include="Game\Option\GameOption.cpp" />
+    <ClCompile Include="Game\Option\Item\GameOptionItem.cpp" />
+    <ClCompile Include="Game\Option\Item\SoundOption.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -446,6 +449,9 @@
     <ClInclude Include="Game\Fade\Fade.h" />
     <ClInclude Include="Game\PauseActor\Item\PauseMenuItem.h" />
     <ClInclude Include="Game\PauseActor\Pause.h" />
+    <ClInclude Include="Game\Option\GameOption.h" />
+    <ClInclude Include="Game\Option\Item\GameOptionItem.h" />
+    <ClInclude Include="Game\Option\Item\SoundOption.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

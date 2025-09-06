@@ -27,12 +27,20 @@
 
 #include "Actor/Spline/Spline.h"
 
+/// option
+#include "Option/GameOption.h"
+
 #include <imgui.h>
 
 GameScene::GameScene() {}
 GameScene::~GameScene() {}
 
 void GameScene::Init() {
+
+	// option load
+	GameOption::GetInstance()->Init();
+	GameOption::GetInstance()->Load();
+
 
 	BaseScene::Init();
 	// 生成
@@ -202,6 +210,10 @@ void GameScene::GameUpdate() {
 
 void GameScene::PauseUpdate() {
 	pause_->Update();
+
+	GameOption::GetInstance()->Update();
+
+
 	if (pause_->IsSceneChange()) {
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
@@ -271,4 +283,7 @@ void GameScene::PauseSpriteDraw() {
 
 	Sprite::PreDraw(commandList);
 	pause_->Draw();
+
+	GameOption::GetInstance()->Draw();
+
 }
