@@ -75,8 +75,6 @@ private:
     void MoveUpdate();
     void ReboundByBoundary();
 
-    Vector3 CalculateCollisionNormal(const Vector3& from, const Vector3& to);
-
 private:
     // ブースト
     bool isLBPressed_;
