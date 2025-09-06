@@ -72,8 +72,9 @@ void GameOption::Init() {
 	/// 背景
 	uint32_t bgTexHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png");
 	background_.reset(Sprite::Create(
-		bgTexHandle, {}, { 0.1f, 0.1f, 0.1f, 0.5f }));
-	background_->SetScale({ 1280.0f, 720.0f });
+		bgTexHandle, { 640.0f, 360.0f }, { 0.25098f, 0.25098f, 0.25098f, 1.0f }));
+	background_->anchorPoint_ = { 0.5f, 0.5f };
+	background_->SetScale(Vector2{ 1280.0f, 720.0f } *0.4f);
 
 	/// SelectedFrameの生成
 	selectedFrame_.reset(Sprite::Create(
@@ -131,7 +132,7 @@ void GameOption::Update() {
 		if (input->TrrigerKey(DIK_DOWN) ||
 			input->TrrigerKey(DIK_S) ||
 			input->IsTriggerPad(0, Gamepad::DPadDown)) {
-		
+
 			if (currentIndex_ < menuItems_.size() - 1) {
 				currentIndex_++;
 			}

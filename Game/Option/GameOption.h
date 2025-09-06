@@ -57,7 +57,6 @@ private:
 	bool isOpen_ = false;
 
 
-	//std::unique_ptr<Sprite> frame_;
 	std::unique_ptr<Sprite> background_;
 	std::unique_ptr<Sprite> selectedFrame_;
 
