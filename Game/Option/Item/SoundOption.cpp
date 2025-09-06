@@ -16,12 +16,13 @@ void SoundOption::Init() {
 	};
 
 	std::string backgroundPath = "./resources/Texture/Option/VolumeBackground.png";
+	std::string volumeBarPath = "./resources/Texture/Option/VolumeBar.png";
 	std::string sliderPath = "./resources/Texture/Option/VolumeSlider.png";
 
 	Vector2 startPos = { 640.0f + 240.0f, 360.0f - 100.0f };
-	Vector2 offset   = { 0.0f, 100.0f };
-	Vector2 scale    = { 0.5f, 0.5f };
-	Vector2 size     = Vector2{ 512, 64 } * scale;
+	Vector2 offset = { 0.0f, 100.0f };
+	Vector2 scale = { 0.5f, 0.5f };
+	Vector2 size = Vector2{ 512, 64 } *scale;
 
 	soundItems_.resize(MAX);
 	for (size_t i = 0; i < soundItems_.size(); ++i) {
@@ -32,7 +33,6 @@ void SoundOption::Init() {
 		/// text
 		if (!soundItems_[i].textSprite_) {
 			uint32_t textTexHandle = TextureManager::GetInstance()->LoadTexture(paths[i]);
-			soundItems_[i].textSprite_ = std::make_unique<Sprite>();
 			soundItems_[i].textSprite_.reset(Sprite::Create(
 				textTexHandle,
 				pos + soundItems_[i].textOffset,
@@ -46,23 +46,30 @@ void SoundOption::Init() {
 		/// background
 		if (!soundItems_[i].background) {
 			uint32_t bgTexHandle = TextureManager::GetInstance()->LoadTexture(backgroundPath);
-			soundItems_[i].background = std::make_unique<Sprite>();
 			soundItems_[i].background.reset(Sprite::Create(
 				bgTexHandle, pos, { 1.0f, 1.0f, 1.0f, 1.0f }
 			));
-			soundItems_[i].background->SetScale(soundItems_[i].size);
 			soundItems_[i].background->anchorPoint_ = { 0.5f, 0.5f };
 			soundItems_[i].background->SetScale(scale);
+		}
+
+		if (!soundItems_[i].volumeBar) {
+			uint32_t volumeBarTexHandle = TextureManager::GetInstance()->LoadTexture(volumeBarPath);
+			soundItems_[i].volumeBar.reset(Sprite::Create(
+				volumeBarTexHandle,
+				pos - Vector2(size.x / 2.0f, 0.0f),
+				{ 1.0f, 1.0f, 1.0f, 1.0f }
+			));
+			soundItems_[i].volumeBar->anchorPoint_ = { 0.0f, 0.5f };
+			soundItems_[i].volumeBar->SetScale(scale);
 		}
 
 		/// slider
 		if (!soundItems_[i].slider) {
 			uint32_t sliderTexHandle = TextureManager::GetInstance()->LoadTexture(sliderPath);
-			soundItems_[i].slider = std::make_unique<Sprite>();
 			soundItems_[i].slider.reset(Sprite::Create(
 				sliderTexHandle, pos, { 1.0f, 1.0f, 1.0f, 1.0f }
 			));
-			soundItems_[i].slider->SetScale({ 20.0f, 50.0f });
 			soundItems_[i].slider->anchorPoint_ = { 0.5f, 0.5f };
 			soundItems_[i].slider->SetScale(scale);
 		}
@@ -94,11 +101,16 @@ void SoundOption::Update(size_t _currentIndex) {
 
 
 	/// volumeに合わせてsliderの位置を変更
-	for(auto& item : soundItems_){
+	for (auto& item : soundItems_) {
 		float volume = item.volume;
 		Vector2 framePos = item.pos;
 		framePos.x += (volume - 0.5f) * item.size.x;
 		item.slider->SetPosition(framePos);
+
+		/// volumeBarの大きさを変更
+		float scaleY = item.volumeBar->transform_.scale.y;
+		item.volumeBar->SetScale({ 0.5f * volume, scaleY });
+
 	}
 
 
@@ -140,6 +152,7 @@ void SoundOption::Draw() {
 	for (auto& item : soundItems_) {
 		item.textSprite_->Draw();
 		item.background->Draw();
+		item.volumeBar->Draw();
 		item.slider->Draw();
 	}
 

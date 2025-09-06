@@ -19,6 +19,7 @@ public:
 
 		std::unique_ptr<Sprite> textSprite_ = nullptr;
 		std::unique_ptr<Sprite> background = nullptr;
+		std::unique_ptr<Sprite> volumeBar = nullptr;
 		std::unique_ptr<Sprite> slider = nullptr;
 	};
 
