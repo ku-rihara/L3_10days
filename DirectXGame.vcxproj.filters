@@ -206,8 +206,8 @@
     <ClCompile Include="Game\Actor\UI\GameUIs.cpp" />
     <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBrake.cpp" />
-    <ClCompile Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.cpp" />
-    <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.cpp" />
+    <ClCompile Include="Game\Actor\Effects\GameScreenEffect\GameScreenEffect.cpp" />
+    <ClCompile Include="Game\Pipeline\EffectPipelines\GameScreenEffectPipeline.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.cpp" />
     <ClCompile Include="Game\Actor\Spline\Spline.cpp" />
@@ -224,6 +224,11 @@
     <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
     <ClCompile Include="Game\Fade\Fade.cpp" />
     <ClCompile Include="Game\Actor\Player\LockOn\LookOn.cpp" />
+    <ClCompile Include="Game\PauseActor\Item\PauseMenuItem.cpp" />
+    <ClCompile Include="Game\PauseActor\Pause.cpp" />
+    <ClCompile Include="Game\Option\Item\SoundOption.cpp" />
+    <ClCompile Include="Game\Option\Item\GameOptionItem.cpp" />
+    <ClCompile Include="Game\Option\GameOption.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -428,8 +433,8 @@
     <ClInclude Include="Game\Actor\UI\GameUIs.h" />
     <ClInclude Include="Game\Actor\SkyDome\SkyDome.h" />
     <ClInclude Include="Game\Actor\Player\Behavior\PlayerBrake.h" />
-    <ClInclude Include="Game\Actor\Effects\PlayerOutsideWarning\PlayerOutsideWarning.h" />
-    <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutsideWarningPipeline.h" />
+    <ClInclude Include="Game\Actor\Effects\GameScreenEffect\GameScreenEffect.h" />
+    <ClInclude Include="Game\Pipeline\EffectPipelines\GameScreenEffectPipeline.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.h" />
     <ClInclude Include="Game\Actor\Spline\Spline.h" />
@@ -446,6 +451,11 @@
     <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
     <ClInclude Include="Game\Fade\Fade.h" />
     <ClInclude Include="Game\Actor\Player\LockOn\LookOn.h" />
+    <ClInclude Include="Game\PauseActor\Item\PauseMenuItem.h" />
+    <ClInclude Include="Game\PauseActor\Pause.h" />
+    <ClInclude Include="Game\Option\Item\SoundOption.h" />
+    <ClInclude Include="Game\Option\Item\GameOptionItem.h" />
+    <ClInclude Include="Game\Option\GameOption.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

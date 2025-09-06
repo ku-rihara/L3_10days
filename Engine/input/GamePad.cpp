@@ -18,7 +18,11 @@ bool Gamepad::Init(Microsoft::WRL::ComPtr<IDirectInput8> directInput, DWORD padN
 		statePre_.xi = state;
 		return true;
 	}
-
+	type_ = PadType::XInput;
+	deadZoneL_ = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+	deadZoneR_ = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+	state_.xi = state;
+	statePre_.xi = state;
 	
 	return false;
 }
