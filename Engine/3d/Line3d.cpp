@@ -9,6 +9,8 @@
 #include <numbers>
 #include <cstdint>
 
+Line3D::~Line3D() = default;
+
 // 初期化
 void Line3D::Init(const size_t& lineMaxNum) {
     auto dxCommon = DirectXCommon::GetInstance();

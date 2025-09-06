@@ -2,6 +2,7 @@
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Frame/Frame.h"
 #include "Actor/NPC/NPC.h"
+#include "3d/ViewProjection.h"
 #include "random.h"
 #include <algorithm>
 #include "imgui.h"
@@ -46,6 +47,10 @@ void BaseStation::Update() {
 		/*pos*/   baseTransform_.translation_,
 		/*rival*/ pRivalStation_,
 		/*H*/     homeThreatDebug_);
+}
+
+void BaseStation::DrawDebug(const ViewProjection& vp) {
+	for (auto& h : spawned_) h->DebugDraw(vp);
 }
 
 void BaseStation::ShowGui() {
