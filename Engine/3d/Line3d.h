@@ -19,6 +19,7 @@ struct CBuffer {
 
 class Line3D {
 public:
+    ~Line3D();
     void Init(const size_t& lineMaxNum);
     void SetLine(const Vector3& start, const Vector3& end, const Vector4& color);
     void Draw( const ViewProjection& viewProj);

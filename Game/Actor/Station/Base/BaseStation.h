@@ -28,6 +28,7 @@ public:
 
 	virtual void Init() override;
 	virtual void Update() override;
+	void DrawDebug(const class ViewProjection&);
 	virtual void ShowGui();
 
 	virtual void StartupSpawn();

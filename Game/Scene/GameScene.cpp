@@ -140,6 +140,8 @@ void GameScene::ModelDraw(){
 	line3dPipeline->PreDraw(commandList);
 	spline_.DebugDraw(viewProjection_);
 
+	for (auto& stations : stations_)stations.second->DrawDebug(viewProjection_);
+
 	/// 天球を描画
 	Object3DPiprline::GetInstance()->PreDraw(commandList);
 	skyDome_->Draw(viewProjection_);
