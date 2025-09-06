@@ -8,9 +8,16 @@
 #include "Navigation/NpcNavigator.h"
 #include "Navigation/MoveConstraint.h"
 
+// targeting
+#include "Bullet/Targeting.h"
+
+#include <vector>
+#include <string>
+#include <memory>
+
 class BaseStation;
 class Boundary;
-class NpcFireController;
+class NpcFireController;   // 前方宣言
 struct Hole;
 
 class NPC : public BaseObject {
@@ -19,14 +26,15 @@ public:
 	///  public func
 	/// ===================================================
 	NPC() = default;
-	~NPC() override;
+	~NPC() override;               // 定義は .cpp 側
 
 	void Init() override;
 	void Update() override;
 
 	// --------- accessor --------------------------------
 	void SetTarget(const BaseStation* target);
-	void SetFaction(FactionType faction);
+	void SetFaction(FactionType faction) { faction_ = faction; }
+	FactionType GetFaction() const { return faction_; }
 	bool GetIsAlive() const { return isActive_; }
 
 	void Activate();
@@ -35,6 +43,14 @@ public:
 	// 防衛アンカー（防衛時の旋回中心）を指定/解除
 	void SetDefendAnchor(const Vector3& p);
 	void ClearDefendAnchor();
+
+	// 射撃モード（直進/ホーミング）
+	enum class FireMode { Straight, Homing };
+	void SetFireMode(FireMode m) noexcept { fireMode_ = m; }
+	FireMode GetFireMode() const noexcept { return fireMode_; }
+
+	// ターゲット供給元の差し込み（Station/Directory等で実装して渡す）
+	void SetTargetProvider(const ITargetProvider* p) noexcept { targetProvider_ = p; }
 
 	// ---- 調整項目 ----
 	virtual void BindParms();
@@ -49,11 +65,16 @@ private:
 	void Move();
 	void StartOrbit(const Vector3& center);
 
+	// 視錐台チェック & 視錐台から最適ターゲットを選ぶ
+	bool IsInFiringFrustum_(const Vector3& worldPt) const;
+	const BaseObject* PickFrustumTarget_() const;
+
 protected:
 	/// ===================================================
 	///  protected-like variable
 	/// ===================================================
 	std::unique_ptr<NpcFireController> fireController_ = nullptr;
+
 	// ---- param ----
 	GlobalParameter* globalParam_ = nullptr;   //< 調整項目用
 	std::string groupName_;                    //< 調整項目グループ名
@@ -61,13 +82,23 @@ protected:
 
 	// パラメータ
 	float maxHP_ = 10.0f;      //< 最大hp
-	float speed_ = 5.0f;       //< 基本移動速度（Navigator に渡す
+	float speed_ = 5.0f;       //< 基本移動速度（Navigator に渡す）
 	float shootInterval_ = 5.0f;
 	float shootCooldown_ = 1.0f;
-	// ---- game ----
-	const BaseStation* target_ = nullptr;
-	FactionType faction_{};
 
+	// ---- firing cone（前方視錐台）----
+	float fireConeNear_    = 2.0f;    // 最短距離
+	float fireConeFar_     = 120.0f;  // 射程（遠）
+	float fireConeHFovDeg_ = 25.0f;   // 水平ハーフFOV（度）
+	float fireConeVFovDeg_ = 15.0f;   // 垂直ハーフFOV（度）
+	bool  fireConeDebug_   = false;   // デバッグ可視化（必要なら使用）
+
+	// ---- game ----
+	const BaseStation* target_ = nullptr;      // 航法上の目標（既存）
+	const ITargetProvider* targetProvider_ = nullptr; // ★ 敵候補の供給元
+	FireMode fireMode_ = FireMode::Straight;  // 射撃モード
+
+	FactionType faction_{};
 	bool isActive_ = true;
 	bool isInitialized_ = false;
 
