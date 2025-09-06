@@ -1,4 +1,6 @@
 #include "Player.h"
+#include "Actor/Boundary/Boundary.h"
+#include "Actor/NPC/Navigation/RectXZWithGatesConstraint.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
 #include "MathFunction.h"
@@ -7,6 +9,11 @@
 #include "Behavior/PlayerAcceleUnattended.h"
 #include <imgui.h>
 #include <numbers>
+
+const std::vector<Hole>& Player::BoundaryHoleSource::GetHoles() const {
+    static const std::vector<Hole> kEmpty;
+    return boundary ? boundary->GetHoles() : kEmpty;
+}
 
 void Player::Init() {
 
@@ -34,6 +41,12 @@ void Player::Init() {
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
 
+    // moveConstraint
+    Boundary* boundary   = Boundary::GetInstance();
+    holeSource_.boundary = boundary;
+    RectXZ rect{-1500.0f, 1500.0f, -1500.0f, 1500.0f};
+    moveConstraint_ = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, rect, 0.01f);
+
     // Speed Init
     SpeedInit();
 
@@ -48,8 +61,11 @@ void Player::Update() {
     UpdateSpeedBehavior();
     speedBehavior_->Update();
 
-    // 物理計算
+    // 回転更新
     RotateUpdate();
+
+    // 移動更新
+    MoveUpdate();
 
     // レティクル
     reticle_->Update(this, viewProjection_);
@@ -61,6 +77,20 @@ void Player::Update() {
 
     // トランスフォーム更新
     BaseObject::Update();
+}
+
+void Player::MoveUpdate() {
+
+    float deltaTime = Frame::DeltaTime();
+
+    ReboundByBoundary();
+
+    // 前方速度
+    Vector3 forwardVelocity = GetForwardVector() * speedParam_.currentForwardSpeed * deltaTime;
+    velocity_               = forwardVelocity;
+
+    // 跳ね返りの分を加えて適応
+    baseTransform_.translation_ += velocity_ + reboundVelocity_;
 }
 
 void Player::HandleInput() {
@@ -88,6 +118,11 @@ void Player::HandleInput() {
         if (input->PushKey(DIK_D)) {
             stickL.x = 1.0f;
         }
+    }
+
+    // 自動処理による入力
+    if (isAutoRotateByCollision) {
+        stickL.y = autoRotateDirection_;
     }
 
     // コントローラ処理
@@ -131,7 +166,7 @@ void Player::HandleInput() {
 void Player::RotateUpdate() {
     float deltaTime = Frame::DeltaTime();
 
-    // ---- ピッチ・ヨー ---- //
+    // ---- 通常のピッチ・ヨー回転処理 ----
     Vector3 targetAngularVelocity = angleInput_;
     const float damping           = 0.95f;
     if (angleInput_.Length() < 0.001f) {
@@ -157,7 +192,7 @@ void Player::RotateUpdate() {
         baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
 
-    // ---- ロールを補間 ---- //
+    // ---- ロールを補間 ----
     currentRoll_ = Lerp(currentRoll_, targetRoll_, speedParam_.rollSpeed * deltaTime);
 
     float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
@@ -167,17 +202,11 @@ void Player::RotateUpdate() {
         baseTransform_.quaternion_     = baseTransform_.quaternion_.Normalize();
     }
 
-    // ---- obj3dのTransformのみロール適応 ----
+    // ---- obj3dのTransformのみロール適用 ----
     Quaternion visualRoll          = Quaternion::MakeRotateAxisAngle(Vector3::ToForward(), currentRoll_);
     obj3d_->transform_.quaternion_ = visualRoll;
     obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
-
-    // ---- 移動 ---- //
-    Vector3 forwardVelocity = GetForwardVector() * speedParam_.currentForwardSpeed * deltaTime;
-    velocity_               = forwardVelocity;
-    baseTransform_.translation_ += velocity_;
 }
-
 void Player::CorrectionHorizon() {
     float deltaTime = Frame::DeltaTime();
 
@@ -210,6 +239,122 @@ void Player::CorrectionHorizon() {
     if (fabs(currentEuler.x) < 0.01f) {
         isAutoRecovering_ = false;
     }
+}
+
+void Player::ReboundByBoundary() {
+
+    // from,toを計算
+    Vector3 from = baseTransform_.translation_;
+    Vector3 to   = baseTransform_.translation_ + velocity_;
+
+    // FilterMove
+    if (moveConstraint_) {
+        moveConstraint_->FilterMove(from, to);
+    }
+
+    // ブロック判定
+    if (RectXZWithGatesConstraint* rectConstraint = dynamic_cast<RectXZWithGatesConstraint*>(moveConstraint_.get())) {
+        isRebound_ = rectConstraint->WasBlocked();
+    }
+
+    // 跳ね返り処理
+    if (ImGui::Button("is")) {
+        // 衝突面の法線を計算
+        Vector3 collisionNormal = CalculateCollisionNormal(from, to);
+
+        // 入射ベクトル（移動方向）
+        Vector3 incidentVector = velocity_.Normalize();
+
+        // 反射ベクトルを計算
+        float dotProduct         = Vector3::Dot(incidentVector, collisionNormal);
+        Vector3 reflectionVector = incidentVector - collisionNormal * (2.0f * dotProduct);
+
+        // 跳ね返り速度を設定
+        reboundVelocity_.y = reflectionVector.y * -reboundPower_;
+
+        // 最後の衝突法線を記録
+        lastCollisionNormal_ = collisionNormal;
+
+        float reboundVelocityY = reboundVelocity_.y;
+
+        // 自動入力を開始
+        if (reboundVelocityY >= 0.1f) {
+            isAutoRotateByCollision = true;
+            autoRotateDirection_    = 1.0f;
+        } else if (reboundVelocityY <= -0.1f) {
+            isAutoRotateByCollision = true;
+            autoRotateDirection_    = -1.0f;
+        } else {
+            isAutoRotateByCollision = false;
+            autoRotateDirection_    = 0.0f;
+        }
+    }
+
+    // 跳ね返り速度の減衰処理
+    if (reboundVelocity_.Length() > minReboundVelocity_) {
+        // 減衰を適用
+        reboundVelocity_.y = reboundVelocity_.y * reboundDecay_;
+    } else {
+        // 十分小さくなったら停止
+        reboundVelocity_ = Vector3::ZeroVector();
+        // 跳ね返り回転も停止
+        isAutoRotateByCollision = false;
+    }
+}
+
+
+Vector3 Player::CalculateCollisionNormal(const Vector3& from, const Vector3& to) {
+    // プレイヤーの現在の水平方向を取得
+    Vector3 playerForward = GetForwardVector();
+    Vector3 playerRight   = GetRightVector();
+
+    // 水平面での移動方向
+    Vector3 horizontalMovement = to - from;
+    horizontalMovement.y       = 0.0f;
+
+    if (horizontalMovement.Length() < 0.001f) {
+        // 移動がほぼない場合はプレイヤーの前方を基準とする
+        return -playerForward;
+    }
+
+    horizontalMovement = horizontalMovement.Normalize();
+
+    // 境界との衝突方向を推定
+    RectXZWithGatesConstraint* rectConstraint = dynamic_cast<RectXZWithGatesConstraint*>(moveConstraint_.get());
+    if (rectConstraint) {
+        // 矩形の中心を計算（
+        Vector3 playerPos = baseTransform_.translation_;
+
+        // 最も近い境界面を特定
+        Vector3 normal = Vector3::ZeroVector();
+
+        // X方向の境界チェック
+        if (std::abs(playerPos.x - (-1500.0f)) < std::abs(playerPos.x - 1500.0f)) {
+            // 左の境界に近い
+            normal = Vector3(1.0f, 0.0f, 0.0f); // 右向きの法線
+        } else {
+            // 右の境界に近い
+            normal = Vector3(-1.0f, 0.0f, 0.0f); // 左向きの法線
+        }
+
+        // Z方向の境界チェック
+        float xDistance = std::min(std::abs(playerPos.x - (-1500.0f)), std::abs(playerPos.x - 1500.0f));
+        float zDistance = std::min(std::abs(playerPos.z - (-1500.0f)), std::abs(playerPos.z - 1500.0f));
+
+        if (zDistance < xDistance) {
+            // Z方向の境界の方が近い
+            if (std::abs(playerPos.z - (-1500.0f)) < std::abs(playerPos.z - 1500.0f)) {
+                normal = Vector3(0.0f, 0.0f, 1.0f); // 前向きの法線
+            } else {
+                normal = Vector3(0.0f, 0.0f, -1.0f); // 後ろ向きの法線
+            }
+        }
+
+        return normal;
+    }
+
+    // 移動方向の逆
+    return -horizontalMovement;
 }
 
 bool Player::GetIsUpsideDown() const {
@@ -276,9 +421,6 @@ void Player::ReticleDraw() {
     reticle_->Draw();
 }
 
-///========================================================================
-/// バインド
-///========================================================================
 void Player::BindParams() {
     globalParameter_->Bind(groupName_, "hp", &hp_);
     globalParameter_->Bind(groupName_, "forwardSpeed", &speedParam_.startForwardSpeed);
@@ -295,11 +437,11 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "pitchReturnThreshold", &pitchReturnThreshold_);
     globalParameter_->Bind(groupName_, "reverseDecisionValue", &reverseDecisionValue_);
     globalParameter_->Bind(groupName_, "bankRate", &bankRate_);
+    globalParameter_->Bind(groupName_, "reboundPower", &reboundPower_);
+    globalParameter_->Bind(groupName_, "reboundDecay", &reboundDecay_);
+    globalParameter_->Bind(groupName_, "minReboundVelocity", &minReboundVelocity_);
 }
 
-///=========================================================
-/// パラメータ調整
-///==========================================================
 void Player::AdjustParam() {
 #ifdef _DEBUG
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
@@ -310,6 +452,7 @@ void Player::AdjustParam() {
         // EditParameter
         ImGui::Separator();
         ImGui::Text("Fighter Controls");
+        ImGui::SeparatorText("Speed");
         ImGui::DragFloat("StartForward Speed", &speedParam_.startForwardSpeed, 0.01f);
         ImGui::DragFloat("minForward Speed", &speedParam_.minForwardSpeed, 0.01f);
         ImGui::DragFloat("maxForward Speed", &speedParam_.maxForwardSpeed, 0.01f);
@@ -317,6 +460,13 @@ void Player::AdjustParam() {
         ImGui::DragFloat("Pitch Speed", &speedParam_.pitchSpeed, 0.01f);
         ImGui::DragFloat("Yaw Speed", &speedParam_.yawSpeed, 0.01f);
         ImGui::DragFloat("Roll Speed", &speedParam_.rollSpeed, 0.01f);
+
+        ImGui::SeparatorText("rebound");
+        ImGui::DragFloat("rebound Power", &reboundPower_, 0.01f);
+        ImGui::DragFloat("rebound Decay", &reboundDecay_, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("min Rebound Velocity", &minReboundVelocity_, 0.01f, 0.0f, 10.0f);
+
+        ImGui::SeparatorText("etc");
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
@@ -333,6 +483,10 @@ void Player::AdjustParam() {
             baseTransform_.translation_.y,
             baseTransform_.translation_.z);
         ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
+        ImGui::Text("Rebound Velocity: (%.2f, %.2f, %.2f)",
+            reboundVelocity_.x, reboundVelocity_.y, reboundVelocity_.z);
+        ImGui::Text("Collision Normal: (%.2f, %.2f, %.2f)",
+            lastCollisionNormal_.x, lastCollisionNormal_.y, lastCollisionNormal_.z);
 
         // 機体姿勢のデバッグ
         ImGui::Separator();
@@ -346,6 +500,11 @@ void Player::AdjustParam() {
         } else {
             ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "STATUS: Normal");
         }
+
+        if (isRebound_) {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "REBOUNDING!");
+        }
+
         ImGui::Text("currentSpeed:%.3f", speedParam_.currentForwardSpeed);
 
         // セーブ・ロード
