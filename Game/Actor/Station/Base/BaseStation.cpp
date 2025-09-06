@@ -183,7 +183,7 @@ void BaseStation::CollectTargets(std::vector<const BaseObject*>& out) const {
 	}
 }
 
-void BaseStation::OnCollisionEnter(BaseCollider* other) {
+void BaseStation::OnCollisionEnter(BaseCollider* /*other*/) {
 	/// TODO: 衝突した相手が弾ならダメージを受ける
 
 }
