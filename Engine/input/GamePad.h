@@ -6,7 +6,28 @@
 #include<wrl.h>
 #include <cstdint>
 
+
+
 class Gamepad {
+public:
+
+	enum Button : int32_t {
+		DPadUp = XINPUT_GAMEPAD_DPAD_UP,
+		DPadDown = XINPUT_GAMEPAD_DPAD_DOWN,
+		DPadLeft = XINPUT_GAMEPAD_DPAD_LEFT,
+		DPadRight = XINPUT_GAMEPAD_DPAD_RIGHT,
+		Start = XINPUT_GAMEPAD_START,
+		Back = XINPUT_GAMEPAD_BACK,
+		LeftThumb = XINPUT_GAMEPAD_LEFT_THUMB,
+		RightThumb = XINPUT_GAMEPAD_RIGHT_THUMB,
+		LeftShoulder = XINPUT_GAMEPAD_LEFT_SHOULDER,
+		RightShoulder = XINPUT_GAMEPAD_RIGHT_SHOULDER,
+		A = XINPUT_GAMEPAD_A,
+		B = XINPUT_GAMEPAD_B,
+		X = XINPUT_GAMEPAD_X,
+		Y = XINPUT_GAMEPAD_Y
+	};
+
 private:
 	enum class PadType {
 		DirectInput,
@@ -31,7 +52,7 @@ private:
 public:
 	Gamepad() = default;
 	~Gamepad() = default;
-	
+
 
 	bool Init(Microsoft::WRL::ComPtr<IDirectInput8> directInput, DWORD padNo);
 	void Update();
