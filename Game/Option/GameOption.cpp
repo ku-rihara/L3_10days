@@ -49,6 +49,9 @@ void GameOption::Init() {
 		return;
 	}
 
+	isInitialized_ = true;
+
+
 	isOpen_ = false;
 	Vector2 startPos = { 640.0f, 360.0f };
 	//Vector2 offset = { 0.0f, 100.0f };
@@ -72,6 +75,7 @@ void GameOption::Init() {
 	soundOption->Init();
 	menuItems_.emplace_back(std::move(soundOption));
 
+	Load();
 }
 
 void GameOption::Update() {
