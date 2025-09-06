@@ -1,16 +1,18 @@
 #pragma once
 
+#include "Actor/NPC/Navigation/MoveConstraint.h"
 #include "BaseObject/BaseObject.h"
-#include "Reticle/PlayerReticle.h"
-#include "Bullet/PlayerBulletShooter.h"
 #include "Behavior/BasePlayerSpeedBehavior.h"
+#include "Bullet/PlayerBulletShooter.h"
 #include "Easing/Easing.h"
+#include "Reticle/PlayerReticle.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <cstdint>
 #include <memory>
+#include <vector>
 
-class PlayerBulletShooter;
-class PlayerReticle;
+class Boundary;
+struct Hole;
 class Player : public BaseObject {
 public:
     struct SpeedParam {
@@ -22,6 +24,11 @@ public:
         float pitchSpeed;
         float yawSpeed;
         float rollSpeed;
+    };
+
+    struct BoundaryHoleSource : IHoleSource {
+        const Boundary* boundary = nullptr;
+        const std::vector<Hole>& GetHoles() const override;
     };
 
 public:
@@ -37,6 +44,8 @@ public:
     // Move
     void HandleInput();
     void RotateUpdate();
+    void MoveUpdate();
+    void ReboundByBoundary();
 
     // speed
     void SpeedInit();
@@ -56,6 +65,7 @@ public:
     // ロール所得
     float GetRollDegree() const;
 
+    // 逆さ判定
     bool GetIsUpsideDown() const;
 
     // Behavior management
@@ -63,12 +73,10 @@ public:
     void UpdateSpeedBehavior();
 
 private:
-    // other class
-    const ViewProjection* viewProjection_                   = nullptr;
-    std::unique_ptr<PlayerReticle> reticle_                 = nullptr;
-    std::unique_ptr<PlayerBulletShooter> bulletShooter_     = nullptr;
-    std::unique_ptr<BasePlayerSpeedBehavior> speedBehavior_ = nullptr;
+    void SetupReboundRotation(const Vector3& reflectionDirection);
+    Vector3 CalculateCollisionNormal(const Vector3& from, const Vector3& to);
 
+private:
     // ブースト
     bool isLBPressed_;
     bool wasLBPressed_;
@@ -101,6 +109,18 @@ private:
     //  逆さ補正中かのフラグ
     bool isAutoRecovering_ = false;
 
+    // 境界反発
+    bool isRebound_ = false;
+    float reboundPower_;
+    Vector3 reboundVelocity_;
+    float reboundDecay_;
+    float minReboundVelocity_;
+    Vector3 lastCollisionNormal_ = Vector3::ZeroVector();
+
+    // 補正時の自動操作
+    bool isAutoRotateByCollision = false;
+    float autoRotateDirection_   = 0.0f; 
+
     // roll
     float targetRoll_;
     float currentRoll_;
@@ -108,6 +128,15 @@ private:
     float rotationSmoothness_;
     float rollRotateLimit_;
     float currentMaxRoll_;
+
+    // other class
+    const ViewProjection* viewProjection_                   = nullptr;
+    std::unique_ptr<PlayerReticle> reticle_                 = nullptr;
+    std::unique_ptr<PlayerBulletShooter> bulletShooter_     = nullptr;
+    std::unique_ptr<BasePlayerSpeedBehavior> speedBehavior_ = nullptr;
+    std::unique_ptr<IMoveConstraint> moveConstraint_        = nullptr;
+
+    BoundaryHoleSource holeSource_;
 
 public:
     // ゲッター

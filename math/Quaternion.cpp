@@ -3,6 +3,7 @@
 #include <cfloat>
 #include <cmath>
 #include <numbers>
+#include <algorithm>
 
 
 Quaternion Quaternion::operator-() const {
@@ -241,4 +242,20 @@ Vector3 Quaternion::ToEuler() const {
     euler.z    = std::atan2(sinr, cosr);
 
     return euler;
+}
+
+float Quaternion::Angle(const Quaternion& a, const Quaternion& b) {
+    // 2つのクォータニオン間の角度差を計算
+    float dot = Quaternion::Dot(a.Normalize(), b.Normalize());
+
+    // 数値誤差を防ぐためにクランプ
+    dot = std::clamp(dot, -1.0f, 1.0f);
+
+    // 最短経路の角度を計算
+    // 内積が負の場合は補角を使用
+    dot = std::abs(dot);
+
+    // アークコサインで角度を求める
+    // 2倍するのは、クォータニオンが半角を表すため
+    return 2.0f * std::acos(dot);
 }
