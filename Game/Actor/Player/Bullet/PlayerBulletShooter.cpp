@@ -3,10 +3,12 @@
 #include "BulletFactory.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
+#include "audio/Audio.h"
 #include "PlayerMissile.h"
 #undef max
 #include <algorithm>
 #include <imgui.h>
+
 
 void PlayerBulletShooter::Init() {
     /// グローバルパラメータ
@@ -56,10 +58,10 @@ void PlayerBulletShooter::HandleInput() {
     Input* input = Input::GetInstance();
 
     // 通常弾発射
-    normalBulletInput_ = input->PushKey(DIK_J) || Input::IsPressPad(0, XINPUT_GAMEPAD_A);
+    normalBulletInput_ = input->PushKey(DIK_J) || Input::IsPressPad(0, XINPUT_GAMEPAD_A) || input->IsPressMouse(0);
 
     // ミサイル発射
-    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_X);
+    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_X) || input->IsPressMouse(1);
 
     // 手動リロード
     if (input->TrrigerKey(DIK_R)) {
@@ -82,6 +84,9 @@ void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
     // 通常弾の発射処理
     if (normalBulletInput_ && CanShoot(BulletType::NORMAL) && state.intervalTimer <= 0.0f) {
         FireBullets(player, BulletType::NORMAL);
+		// 発射SE再生
+		int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/BulletFire.wav");
+		Audio::GetInstance()->PlayWave(handle, 0.05f);
 
         // 発射間隔をリセット
         state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
@@ -109,6 +114,10 @@ void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
     // 通常弾の発射処理
     if (missileInput_ && CanShoot(BulletType::MISSILE) && state.intervalTimer <= 0.0f) {
         FireBullets(player, BulletType::MISSILE);
+
+		// 発射SE再生
+		int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/MissileFire.wav");
+		Audio::GetInstance()->PlayWave(handle, 0.1f);
 
         // 発射間隔をリセット
         state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
