@@ -29,6 +29,7 @@ void SoundOption::Init() {
 		Vector2 pos = startPos + offset * static_cast<float>(i);
 		soundItems_[i].pos = pos;
 		soundItems_[i].size = size;
+		soundItems_[i].textOffset = { -192.0f, 0.0f };
 
 		/// text
 		if (!soundItems_[i].textSprite_) {
@@ -38,8 +39,8 @@ void SoundOption::Init() {
 				pos + soundItems_[i].textOffset,
 				{ 1.0f, 1.0f, 1.0f, 1.0f }
 			));
-			soundItems_[i].textSprite_->anchorPoint_ = { 0.0f, 0.5f };
-			soundItems_[i].textSprite_->SetScale(scale);
+			soundItems_[i].textSprite_->anchorPoint_ = { 0.5f, 0.5f };
+			soundItems_[i].textSprite_->SetScale(scale / 2.0f);
 		}
 
 
@@ -110,7 +111,6 @@ void SoundOption::Update(size_t _currentIndex) {
 		/// volumeBarの大きさを変更
 		float scaleY = item.volumeBar->transform_.scale.y;
 		item.volumeBar->SetScale({ 0.5f * volume, scaleY });
-
 	}
 
 
@@ -138,7 +138,7 @@ void SoundOption::Update(size_t _currentIndex) {
 	}
 
 
-	/// indexの位置にframeを表示
+	/// indexの位置にFrameを表示
 	Vector2 framePos = soundItems_[selectedIndex_].pos;
 	float volume = soundItems_[selectedIndex_].volume;
 	framePos.x += (volume - 0.5f) * soundItems_[selectedIndex_].size.x;

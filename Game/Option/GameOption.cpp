@@ -56,7 +56,7 @@ void GameOption::Init() {
 
 	background_.reset(Sprite::Create(
 		TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png"),
-		startPos, { 1.0f, 1.0f, 1.0f, 0.5f }
+		startPos, { 0.302f, 0.302f, 0.302f, 0.5f }
 	));
 	background_->SetScale({ 256.0f, 256.0f });
 	background_->anchorPoint_ = { 0.0f, 0.5f };
