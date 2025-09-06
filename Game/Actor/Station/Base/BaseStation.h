@@ -2,6 +2,7 @@
 
 // engine
 #include "utility/ParameterEditor/GlobalParameter.h"
+#include "Collider/AABBCollider.h"
 
 // game
 #include "BaseObject/BaseObject.h"
@@ -21,7 +22,7 @@
 
 class NPC;
 
-class BaseStation : public BaseObject, public ITargetProvider {
+class BaseStation : public BaseObject, public ITargetProvider, public AABBCollider {
 public:
 	BaseStation(const std::string& name = "UnnamedStation");
 	virtual ~BaseStation() override;
@@ -60,6 +61,12 @@ public:
 	// ===== ITargetProvider 実装 =====
 	// この Station にとっての「敵候補」を out に詰める（Rival 側の NPC / Station 本体など）
 	void CollectTargets(std::vector<const BaseObject*>& out) const override;
+
+
+	/// ===== Collider =====
+	void OnCollisionEnter(BaseCollider* other) override;
+	//void OnCollisionStay(BaseCollider* other) override;
+	//void OnCollisionExit(BaseCollider* other) override;
 
 protected:
 	virtual void SpawnNPC(const Vector3& pos) = 0;   //< npcをスポーン
