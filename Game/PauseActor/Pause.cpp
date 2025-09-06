@@ -19,7 +19,7 @@ void Pause::Init() {
 	};
 
 	Vector2 offset = { 0.0f, 120.0f };
-	Vector2 startPos = { 640.0f, 360.0f - offset.y };
+	Vector2 startPos = { 360.0f, 360.0f - offset.y };
 
 	for (size_t i = 0; i < paths.size(); ++i) {
 		Item newItem = std::make_unique<PauseMenuItem>(paths[i], i);
@@ -29,11 +29,12 @@ void Pause::Init() {
 
 	uint32_t texHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png");
 	background_.reset(Sprite::Create(
-		texHandle, {},
-		{ 1.0f, 1.0f, 1.0f, 0.5f }
+		texHandle, { 640.0f, 360.0f },
+		{ 0.25098f, 0.25098f, 0.25098f, 1.0f }
 	));
 
-	background_->SetScale({ 1280.0f, 720.0f });
+	background_->anchorPoint_ = { 0.5f, 0.5f };
+	background_->SetScale(Vector2{ 1280.0f, 720.0f } * 0.4f);
 
 }
 

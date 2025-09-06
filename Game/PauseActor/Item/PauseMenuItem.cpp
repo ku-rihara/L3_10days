@@ -16,8 +16,8 @@ PauseMenuItem::PauseMenuItem(const std::string& _texFilePath, size_t _thisIndex)
 
 	sprite_->anchorPoint_ = { 0.5f, 0.5f };
 
-	maxScale_ = 0.5f;
-	minScale_ = 0.3f;
+	maxScale_ = 0.3f;
+	minScale_ = 0.25f;
 	scale_ = minScale_;
 	sprite_->SetScale({ scale_, scale_ });
 }

@@ -14,6 +14,7 @@ class GameOption {
 	GameOption() = default;
 
 	enum {
+		OPERATION_OPTION,
 		SOUND_OPTION,
 	};
 
@@ -25,6 +26,7 @@ public:
 	static GameOption* GetInstance();
 
 	void Load();
+	void Save();
 
 	void Init();
 	void Update();
@@ -50,10 +52,14 @@ private:
 	std::vector<Item> menuItems_;
 
 	size_t currentIndex_ = 0;
+	bool isSelectedItem_; 
+
 	bool isOpen_ = false;
 
-	std::unique_ptr<Sprite> frame_;
+
+	//std::unique_ptr<Sprite> frame_;
 	std::unique_ptr<Sprite> background_;
+	std::unique_ptr<Sprite> selectedFrame_;
 
 };
 
