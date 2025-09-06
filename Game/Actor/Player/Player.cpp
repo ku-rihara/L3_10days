@@ -2,6 +2,7 @@
 #include "Frame/Frame.h"
 #include "input/Input.h"
 #include "MathFunction.h"
+
 // behavior
 #include "Behavior/PlayerAcceleUnattended.h"
 #include <imgui.h>
@@ -25,6 +26,10 @@ void Player::Init() {
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
 
+    // レティクル
+    reticle_ = std::make_unique<PlayerReticle>();
+    reticle_->Init();
+
     // 弾初期化
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
@@ -39,11 +44,15 @@ void Player::Update() {
     // 入力処理
     HandleInput();
 
+    // スピード
     UpdateSpeedBehavior();
     speedBehavior_->Update();
 
     // 物理計算
     RotateUpdate();
+
+    // レティクル
+    reticle_->Update(this, viewProjection_);
 
     // 弾丸システム更新
     if (bulletShooter_) {
@@ -263,6 +272,10 @@ float Player::GetRollDegree() const {
     return ToDegree(currentEuler.z);
 }
 
+void Player::ReticleDraw() {
+    reticle_->Draw();
+}
+
 ///========================================================================
 /// バインド
 ///========================================================================
@@ -342,8 +355,14 @@ void Player::AdjustParam() {
 
         ImGui::PopID();
     }
+    // 弾
     if (bulletShooter_) {
         bulletShooter_->AdjustParam();
     }
+    // レティクル
+    if (reticle_) {
+        reticle_->AdjustParam();
+    }
+
 #endif // _DEBUG
 }

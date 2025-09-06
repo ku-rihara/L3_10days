@@ -2,6 +2,8 @@
 #include "BaseObject/BaseObject.h"
 #include "BasePlayerBullet.h"
 
+struct MissileParameter;
+
 class PlayerMissile : public BasePlayerBullet {
 public:
     PlayerMissile()  = default;
@@ -15,9 +17,12 @@ public:
     void Deactivate() override;
     Vector3 GetPosition() const override;
 
-    // ミサイル特有の機能
+    // ターゲット
     void SetTarget(const Vector3& targetPosition);
     void ClearTarget();
+
+    // パラメータ設定メソッド
+    void SetMissileParameters(const MissileParameter& params);
 
 private:
     // ミサイル特有の更新処理
@@ -28,9 +33,9 @@ private:
     float currentLifeTime_ = 0.0f;
     Vector3 velocity_;
 
-    // ミサイル特有のパラメータ
     Vector3 targetPosition_;
-    bool hasTarget_         = false;
-    float trackingStrength_ = 2.0f;
-    float maxTurnRate_      = 3.0f;
+    bool hasTarget_ = false;
+    float trackingStrength_;
+    float maxTurnRate_;
+    bool enableTracking_ = true;
 };

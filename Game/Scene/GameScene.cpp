@@ -178,21 +178,24 @@ void GameScene::SkyBoxDraw(){}
 /// ======================================================
 /// スプライト描画
 /// ======================================================
-void GameScene::SpriteDraw(){
-	uis_->Draw();
+void GameScene::SpriteDraw() {
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	
+	/// random noise + vignette
+	PlayerOutsideWarningPipeline* outsideWarning = PlayerOutsideWarningPipeline::GetInstance();
+	outsideWarning->PreDraw(commandList);
+	outsideWarning->Draw(commandList, outsideWarning_.get());
 
+	Sprite::PreDraw(commandList);
+	uis_->Draw();
+    player_->ReticleDraw();
 	/// ミニマップ描画
 	miniMap_->DrawMiniMap();
 
-	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 	/// UI用に
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
 	miniMapIconPipeline->Draw(commandList,miniMap_.get());
-
-	PlayerOutsideWarningPipeline* outsideWarning = PlayerOutsideWarningPipeline::GetInstance();
-	outsideWarning->PreDraw(commandList);
-	outsideWarning->Draw(commandList,outsideWarning_.get());
 }
 
 /// ======================================================

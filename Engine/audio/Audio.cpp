@@ -124,6 +124,67 @@ void Audio::PlayWave(const int& soundId, const float& volume) {
     assert(SUCCEEDED(result));
 }
 
+int Audio::PlayBGM(const int& soundId, const float& volume) {
+    if (soundId < 0 || soundId >= soundDatas_.size()) {
+        return -1;
+    }
+
+	/// すでに同じBGMが再生されている場合は停止
+	auto it = bgmVoices_.find(soundId);
+    if (it != bgmVoices_.end()) {
+		StopBGM(soundId);
+    }
+
+    const SoundData& soundData = soundDatas_[soundId];
+
+    HRESULT result;
+    IXAudio2SourceVoice* pSourceVoice = nullptr;
+
+    result = xAudio2_->CreateSourceVoice(&pSourceVoice, &soundData.wfex);
+    assert(SUCCEEDED(result));
+
+    // **ボリューム調整**
+    float adjustedVolume = volume; // デフォルトはそのまま
+    auto now = std::chrono::steady_clock::now();
+
+    if (lastPlayTimes_.find(soundId) != lastPlayTimes_.end()) {
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastPlayTimes_[soundId]).count();
+        if (elapsed < ATTENUATION_TIME_MS) {
+            // **直前に同じ音が鳴った場合、ボリュームを下げる**
+            float factor = 1.0f - (1.0f - ATTENUATION_FACTOR) * (1.0f - float(elapsed) / ATTENUATION_TIME_MS);
+            adjustedVolume *= factor; // 重なり具合に応じてボリュームを調整
+        }
+    }
+    lastPlayTimes_[soundId] = now; // 最新の再生時間を記録
+
+    result = pSourceVoice->SetVolume(adjustedVolume);
+    assert(SUCCEEDED(result));
+
+    XAUDIO2_BUFFER buf{};
+    buf.pAudioData = soundData.pBuffer;
+    buf.AudioBytes = soundData.bufferSize;
+    buf.Flags = XAUDIO2_END_OF_STREAM;
+	buf.LoopCount = XAUDIO2_LOOP_INFINITE; // ループ再生
+
+    result = pSourceVoice->SubmitSourceBuffer(&buf);
+    assert(SUCCEEDED(result));
+
+    result = pSourceVoice->Start();
+    assert(SUCCEEDED(result));
+
+	bgmVoices_[soundId] = pSourceVoice; // BGMのボイスを保存
+	return soundId;
+}
+
+void Audio::StopBGM(const int& soundId) {
+	auto it = bgmVoices_.find(soundId);
+    if (it != bgmVoices_.end()) {
+        it->second->Stop();
+        it->second->DestroyVoice();
+        bgmVoices_.erase(it);
+	}
+}
+
 void Audio::Unload(const int& soundId) {
     if (soundId >= 0 && soundId < soundDatas_.size()) {
         SoundData& soundData = soundDatas_[soundId];

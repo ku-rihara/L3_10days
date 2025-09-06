@@ -2,6 +2,7 @@
 #include "Frame/Frame.h"
 #include "MathFunction.h"
 #include "Matrix4x4.h"
+#include "PlayerBulletShooter.h"
 #include <numbers>
 
 void PlayerMissile::Init() {
@@ -47,8 +48,8 @@ void PlayerMissile::Update() {
 }
 
 void PlayerMissile::UpdateMissileMovement(float deltaTime) {
-    // ターゲット追跡がある場合
-    if (hasTarget_) {
+  
+    if (enableTracking_ && hasTarget_) {
         UpdateTargetTracking(deltaTime);
     }
 
@@ -88,10 +89,14 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
 
         Quaternion rotation  = Quaternion::MakeRotateAxisAngle(axis, maxAngleChange);
         Vector3 newDirection = rotation.RotateVector(currentDirection);
-        velocity_            = newDirection * param_.speed;
+
+        // 追跡強度を適用
+        Vector3 finalDirection = Lerp(currentDirection, newDirection, trackingStrength_ * deltaTime);
+        velocity_              = finalDirection.Normalize() * param_.speed;
     } else {
         // 直接ターゲット方向に向ける
-        velocity_ = desiredDirection * param_.speed;
+        Vector3 finalDirection = Lerp(currentDirection, desiredDirection, trackingStrength_ * deltaTime);
+        velocity_              = finalDirection.Normalize() * param_.speed;
     }
 
     // ミサイルの向きを移動方向に合わせる
@@ -104,7 +109,7 @@ void PlayerMissile::Fire(const Vector3& position, const Vector3& direction, cons
     baseTransform_.translation_ = position;
     baseTransform_.quaternion_  = rotation;
 
-    // 速度を設定（方向 × 速度）
+    // 速度を設定
     velocity_ = direction.Normalize() * param_.speed;
 
     // ミサイルを進行方向に向ける
@@ -131,4 +136,11 @@ void PlayerMissile::Deactivate() {
 
 Vector3 PlayerMissile::GetPosition() const {
     return baseTransform_.GetWorldPos();
+}
+
+// パラメータ設定
+void PlayerMissile::SetMissileParameters(const MissileParameter& params) {
+    trackingStrength_ = params.trackingStrength;
+    maxTurnRate_      = params.maxTurnRate;
+ 
 }

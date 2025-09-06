@@ -12,12 +12,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.cpp" />
+    <ClCompile Include="Game\Fade\Fade.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.cpp" />
     <ClCompile Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcHomingBullet.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcStraightBullet.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.cpp" />
     <ClCompile Include="Game\Actor\Player\Behavior\PlayerBrake.cpp" />
+    <ClCompile Include="Game\Actor\Player\Reticle\PlayerReticle.cpp" />
     <ClCompile Include="Game\Actor\SkyDome\SkyDome.cpp" />
     <ClCompile Include="Game\Actor\Spline\Spline.cpp" />
     <ClCompile Include="Game\Actor\Station\UnitDirector\QuotaUnitDirector.cpp" />
@@ -172,6 +174,7 @@
     <ClCompile Include="Game\Scene\TitleScene.cpp" />
     <ClCompile Include="Game\SkyBox\SkyBox.cpp" />
     <ClCompile Include="Game\TitleActor\FighterAircraft\FighterAircraft.cpp" />
+    <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math\Box.cpp" />
     <ClCompile Include="math\MathFunction.cpp" />
@@ -200,6 +203,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.h" />
+    <ClInclude Include="Game\Fade\Fade.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\BoundaryBreaker.h" />
     <ClInclude Include="Game\Actor\NPC\BoundaryBreaker\Installer\BoundaryBreakerInstaller.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcHomingBullet.h" />
@@ -219,6 +223,7 @@
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerBulletShooter.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerMissile.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\PlayerNormalBullet.h" />
+    <ClInclude Include="Game\Actor\Player\Reticle\PlayerReticle.h" />
     <ClInclude Include="Game\Actor\SkyDome\SkyDome.h" />
     <ClInclude Include="Game\Actor\Spline\Spline.h" />
     <ClInclude Include="Game\Actor\Station\UnitDirector\IUnitDirector.h" />
@@ -383,6 +388,7 @@
     <ClInclude Include="Game\Scene\TitleScene.h" />
     <ClInclude Include="Game\SkyBox\SkyBox.h" />
     <ClInclude Include="Game\TitleActor\FighterAircraft\FighterAircraft.h" />
+    <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
     <ClInclude Include="math\Box.h" />
     <ClInclude Include="math\MathFunction.h" />
     <ClInclude Include="math\Matrix3x3.h" />

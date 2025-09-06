@@ -29,4 +29,5 @@ public:
     static void SetTimeScale(float scale); 
     static float GetTimeScale();          
 
+    static void ResetDeltaTime();
 };

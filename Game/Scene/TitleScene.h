@@ -9,8 +9,10 @@
 #include "BaseScene.h"
 #include "utility/ParticleEditor/ParticleEmitter.h"
 #include "BaseObject/BaseObject.h"
+#include "TitleActor/TitleSprite/TitleSprite.h"
 
 #include "Actor/GameCamera/CameraRendition.h"
+#include "Fade/Fade.h"
 
 /// <summary>
 /// タイトルシーン
@@ -21,7 +23,9 @@ private:
 	using Object = std::unique_ptr<BaseObject>;
 	std::vector<Object> object3ds_;
 
-	std::unique_ptr<CameraRendition> cameraRendition_;
+	std::unique_ptr<TitleSprite> titleSprite_ = nullptr;
+
+	std::unique_ptr<Fade> fade_ = nullptr;
 
 public:
 	///========================================================
