@@ -60,7 +60,7 @@ void GameOption::Init() {
 	));
 	//Vector2 texSize = { 256.0f, 256.0f };
 	//background_->SetScale(texSize / Vector2{ 512.0f, 512.0f });
-	background_->anchorPoint_ = { 0.0f, 0.5f };
+	background_->anchorPoint_ = { 0.1f, 0.5f };
 
 	/// サウンドオプションの生成
 	std::unique_ptr<SoundOption> soundOption = std::make_unique<SoundOption>();

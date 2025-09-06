@@ -92,7 +92,6 @@ void SoundOption::Init() {
 			soundItems_[i].volumeNum->Init(3);
 			soundItems_[i].volumeNum->SetBasePosition(pos + Vector2{ 192.0f, 0.0f });
 			soundItems_[i].volumeNum->SetDigitSpacing(16.0f);
-			soundItems_[i].volumeNum->SetMaxNumDigit(3);
 			soundItems_[i].volumeNum->SetNumber(static_cast<int32_t>(soundItems_[i].volume * 100.0f));
 			soundItems_[i].volumeNum->SetScale({ 2.0f, 2.0f });
 			soundItems_[i].volumeNum->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
@@ -100,15 +99,15 @@ void SoundOption::Init() {
 	}
 
 
-	/// selected frame
-	selectedFrame_.reset(Sprite::Create(
-		TextureManager::GetInstance()->LoadTexture("./resources/Texture/Option/SelectedFrame.png"),
-		{ 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }
-	));
+	///// selected frame
+	//selectedFrame_.reset(Sprite::Create(
+	//	TextureManager::GetInstance()->LoadTexture("./resources/Texture/Option/SelectedFrame.png"),
+	//	{ 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }
+	//));
 
-	selectedFrame_->SetScale({ 150.0f, 150.0f });
-	selectedFrame_->anchorPoint_ = { 0.5f, 0.5f };
-	selectedFrame_->SetScale(scale);
+	//selectedFrame_->SetScale({ 150.0f, 150.0f });
+	//selectedFrame_->anchorPoint_ = { 0.5f, 0.5f };
+	//selectedFrame_->SetScale(scale);
 
 }
 
@@ -166,10 +165,10 @@ void SoundOption::Update(size_t _currentIndex) {
 
 
 	/// indexの位置にFrameを表示
-	Vector2 framePos = soundItems_[selectedIndex_].pos;
-	float volume = soundItems_[selectedIndex_].volume;
-	framePos.x += (volume - 0.5f) * soundItems_[selectedIndex_].size.x;
-	selectedFrame_->SetPosition(framePos);
+	//Vector2 framePos = soundItems_[selectedIndex_].pos;
+	//float volume = soundItems_[selectedIndex_].volume;
+	//framePos.x += (volume - 0.5f) * soundItems_[selectedIndex_].size.x;
+	//selectedFrame_->SetPosition(framePos);
 
 }
 
@@ -190,7 +189,7 @@ void SoundOption::Draw() {
 		item.slider->Draw();
 	}
 
-	selectedFrame_->Draw();
+	//selectedFrame_->Draw();
 }
 
 void SoundOption::SetVolume(ItemName _name, float _volume) {
