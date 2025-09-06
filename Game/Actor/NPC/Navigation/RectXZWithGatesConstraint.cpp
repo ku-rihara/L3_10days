@@ -97,44 +97,78 @@ bool RectXZWithGatesConstraint::SegmentInsidePassesThroughAnyHole2D(const Vector
 /// from → to の移動を制約する。
 /// 穴を通らずに矩形を横切ろうとした場合、矩形に入る直前で停止させる。
 /// </summary>
-Vector3 RectXZWithGatesConstraint::FilterMove(const Vector3& from, const Vector3& to) const{
-	// 毎回フラグをリセット
-	blocked_ = false;
+Vector3 RectXZWithGatesConstraint::FilterMove(const Vector3& from, const Vector3& to) const {
+    blocked_ = false;
 
-	const bool fromInside = IsPointInsideRectXZ(from);
-	const bool toInside = IsPointInsideRectXZ(to);
+    // === プレーン定義 ===
+    const float planeY = 0.0f;
 
-	// 内→内, 内→外 は制約なし
-	if (fromInside && toInside) return to;
-	if (fromInside && !toInside) return to;
+    // from/to のプレーンに対する符号付き距離
+    const float d0 = from.y - planeY;
+    const float d1 = to.y - planeY;
 
-	// 外→外, 外→内 の場合は矩形との交差を調べる
-	float tEnter = 0, tExit = 0;
-	Vector3 pEnter, pExit;
-	if (!SegmentIntersectRect2D(from,to,tEnter,tExit,pEnter,pExit)){
-		return to; // 矩形に触れていない
-	}
+    const float epsParallel = 1e-8f;
+    if (std::fabs(d0 - d1) <= epsParallel || (d0 * d1) > 0.0f) {
+        // ほぼ平行 or 同じ側 → 面を貫通していない
+        return to;
+    }
 
-	// 矩形内部区間が穴を通っていれば通過許可
-	if (SegmentInsidePassesThroughAnyHole2D(pEnter,pExit)){ return to; }
+    const float denom = (to.y - from.y);
+    if (std::fabs(denom) <= epsParallel) {
+        // ほぼ平行（ただし上の条件で弾かれているはず）→ 安全側で通す
+        return to;
+    }
+    float tCross = (planeY - from.y) / denom;
+    tCross = std::clamp(tCross, 0.0f, 1.0f);
 
-	// 穴を通らなかった
-	blocked_ = true;
+    // 交点
+    const Vector3 crossP = {
+        from.x + (to.x - from.x) * tCross,
+        planeY, // by definition
+        from.z + (to.z - from.z) * tCross
+    };
 
-	// 矩形に入る直前で停止させる
-	float back = (std::max)(0.0f,tEnter - 1e-4f);
-	Vector3 halted = {
-				from.x + (to.x - from.x) * back,
-				from.y + (to.y - from.y) * back,
-				from.z + (to.z - from.z) * back
-			};
+    // 交点の (x,z) が矩形内かチェック（面の有効領域）
+    const bool insideRect =
+        (crossP.x >= rect_.minX && crossP.x <= rect_.maxX &&
+         crossP.z >= rect_.minZ && crossP.z <= rect_.maxZ);
 
-	// 誤差で食い込まないように押し戻す
-	Vector3 step = halted - from;
-	float len = step.Length();
-	if (len > 1e-6f){
-		Vector3 dir = step * (1.0f / len);
-		halted = halted - dir * eps_;
-	}
-	return halted;
+    if (!insideRect) {
+        return to;
+    }
+
+    //  穴を通過していれば OK
+    const auto& holes = holeSrc_->GetHoles();
+    for (const auto& h : holes) {
+        if (h.radius <= 0.0f) continue;
+        const float dx = crossP.x - h.position.x;
+        const float dz = crossP.z - h.position.z;
+        const float dist = std::sqrt(dx * dx + dz * dz);
+        if (dist <= h.radius) {
+            // ゲートを通って面を横切った
+            return to;
+        }
+    }
+
+    //  穴を通らない → プレーンの直前で停止（面に衝突）
+    blocked_ = true;
+
+    // 進行方向
+    const Vector3 move = to - from;
+    const float   mlen = move.Length();
+    Vector3 dir = (mlen > 1e-6f) ? (move * (1.0f / mlen)) : Vector3{ 0,0,0 };
+
+    // ほんの少し手前（交点の tCross - 1e-4）で止める
+    float tStop = (std::max)(0.0f, tCross - 1e-4f);
+    Vector3 halted = {
+        from.x + (to.x - from.x) * tStop,
+        from.y + (to.y - from.y) * tStop,
+        from.z + (to.z - from.z) * tStop
+    };
+
+    // 数値誤差で食い込まないよう、元側へ微小押し戻し
+    if (mlen > 1e-6f) {
+        halted = halted - dir * eps_;
+    }
+    return halted;
 }
