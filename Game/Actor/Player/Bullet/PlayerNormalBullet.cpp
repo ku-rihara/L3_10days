@@ -3,15 +3,18 @@
 #include "MathFunction.h"
 #include "Matrix4x4.h"
 #include <numbers>
+#include "Actor/Player/Player.h"
 
 void PlayerNormalBullet::Init() {
     // モデル作成
-    obj3d_.reset(Object3d::CreateModel("cube.obj"));
+    obj3d_.reset(Object3d::CreateModel("Bullet.obj"));
 
     // transformの初期化
     baseTransform_.Init();
     baseTransform_.rotateOder_ = RotateOder::Quaternion;
     baseTransform_.quaternion_ = Quaternion::Identity();
+
+    obj3d_->transform_.rotateOder_ = RotateOder::Quaternion;
     obj3d_->transform_.parent_ = &baseTransform_;
 
     // 初期値設定
@@ -47,23 +50,21 @@ void PlayerNormalBullet::UpdateNormalBullet(float deltaTime) {
     deltaTime;
 }
 
-void PlayerNormalBullet::Fire(const Vector3& position, const Vector3& direction, const Quaternion& rotation) {
-    // 発射位置と向きを設定
-    baseTransform_.translation_ = position;
-    baseTransform_.quaternion_  = rotation;
+void PlayerNormalBullet::Fire(const Player& player) {
+    // 発射位置を設定
+    baseTransform_.translation_ = player.GetWorldPosition();
 
-    // 速度を設定（方向 × 速度）
-    velocity_ = direction.Normalize() * param_.speed;
+    // プレイヤーの回転
+    baseTransform_.quaternion_ = player.GetBaseQuaternion();
+    obj3d_->transform_.quaternion_ = player.GetObjQuaternion();
 
-    // 弾丸を進行方向に向ける
-    Matrix4x4 lookMatrix       = MakeRootAtMatrix(Vector3::ZeroVector(),direction, Vector3::ToUp());
-    baseTransform_.quaternion_ = QuaternionFromMatrix(lookMatrix);
+    // 速度を設定
+    velocity_ = player.GetForwardVector().Normalize() * param_.speed;
 
     // 初期化
     currentLifeTime_ = 0.0f;
     isActive_        = true;
 }
-
 void PlayerNormalBullet::Deactivate() {
     isActive_ = false;
 }

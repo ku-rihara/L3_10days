@@ -142,7 +142,8 @@ private:
 public:
     // ゲッター
     const Vector3& GetPosition() const { return baseTransform_.translation_; }
-    const Quaternion& GetBaseTQuaternion() const { return baseTransform_.quaternion_; }
+    const Quaternion& GetBaseQuaternion() const { return baseTransform_.quaternion_; }
+    const Quaternion& GetObjQuaternion() const { return obj3d_->transform_.quaternion_; }
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
     const SpeedParam& GetSpeedParam() const { return speedParam_; }
     const float& GetRollRotateLimit() const { return rollRotateLimit_; }

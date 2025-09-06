@@ -13,7 +13,7 @@ public:
     void Init();
     void Update() override;
 
-    void Fire(const Vector3& position, const Vector3& direction, const Quaternion& rotation) override;
+    void Fire(const Player& player) override;
     void Deactivate() override;
     Vector3 GetPosition() const override;
 

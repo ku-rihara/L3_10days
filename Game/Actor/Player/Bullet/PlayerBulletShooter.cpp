@@ -126,10 +126,6 @@ void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
 void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
     size_t typeIndex = static_cast<size_t>(type);
 
-    Vector3 playerPos    = player->GetPosition();
-    Vector3 forwardDir   = player->GetForwardVector();
-    Quaternion playerRot = player->GetBaseTQuaternion();
-
     // 新しい弾丸を生成
     auto bullet = BulletFactory::CreateBullet(type);
     if (bullet) {
@@ -144,11 +140,8 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
             }
         }
 
-        // 発射位置決定
-        Vector3 firePos = playerPos + forwardDir;
-
         // 発射
-        bullet->Fire(firePos, forwardDir, playerRot);
+        bullet->Fire(*player);
 
         // 弾丸リストに追加
         activeBullets_.push_back(std::move(bullet));
@@ -256,8 +249,7 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
     if (type == BulletType::MISSILE) {
         ImGui::SeparatorText("MissileParameter");
         ImGui::DragFloat("TrackingStrength", &typeSpecificParams_.missile.trackingStrength, 0.01f);
-        ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f);
-    
+        ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f); 
     }
 }
 

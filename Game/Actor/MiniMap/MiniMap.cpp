@@ -76,7 +76,7 @@ void MiniMap::Update() {
 	if (player) {
 		/// playerの位置、回転を取得
 		const Vector3& playerPos = player->GetWorldPosition();
-		const Quaternion& playerRot = player->GetBaseTQuaternion();
+		const Quaternion& playerRot = player->GetBaseQuaternion();
 		float playerRotY = -std::atan2(
 			2.0f * (playerRot.w * playerRot.y + playerRot.x * playerRot.z),
 			1.0f - 2.0f * (playerRot.y * playerRot.y + playerRot.z * playerRot.z)
