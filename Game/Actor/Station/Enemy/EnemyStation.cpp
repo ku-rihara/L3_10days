@@ -58,7 +58,7 @@ void EnemyStation::SpawnNPC(const Vector3& pos) {
 	npc->SetFaction(FactionType::Enemy);
 
 	if (auto* rival = this->GetRivalStation()) {
-		npc->SetTargetProvider(rival);
+		npc->SetTargetProvider(this);
 	}
 
 	npc->SetWorldPosition(pos);

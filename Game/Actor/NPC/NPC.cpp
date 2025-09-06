@@ -32,11 +32,6 @@ inline Vector3 SafeNormalize(const Vector3& v, const Vector3& fb = {0,0,1}) {
 	return (L > 1e-6f) ? (v * (1.0f/L)) : fb;
 }
 
-// 内積・外積（Vector3 に静的関数がない前提で用意）
-inline float DotV(const Vector3& a, const Vector3& b){ return a.x*b.x + a.y*b.y + a.z*b.z; }
-inline Vector3 CrossV(const Vector3& a, const Vector3& b){
-	return { a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x };
-}
 
 // 回転(x=pitch, y=yaw, z=roll) から前方ベクトルを得る
 inline Vector3 ForwardFromPitchYaw_(const Vector3& rot){
@@ -90,6 +85,8 @@ void NPC::Init(){
 	isInitialized_ = true;
 
 	shootCooldown_ = Random::Range(0.0f,shootInterval_);
+
+	BaseObject::Update();	//transformの更新を挟む
 }
 
 /// ===================================================
@@ -98,7 +95,7 @@ void NPC::Init(){
 void NPC::Update(){
 	if (fireController_) fireController_->Tick();
 	Move();
-	TryFire();
+	TryFire();//座標などを更新してから
 	BaseObject::Update();
 }
 
@@ -173,16 +170,16 @@ bool NPC::IsInFiringFrustum_(const Vector3& worldPt) const {
 
 	// 右・上ベクトル（ワールドUpを使って直交基底を作る）
 	Vector3 worldUp = {0,1,0};
-	if (std::fabs(DotV(fwd, worldUp)) > 0.98f) worldUp = {0,0,1}; // 平行回避
+	if (std::fabs(Vector3::Dot(fwd, worldUp)) > 0.98f) worldUp = {0,0,1}; // 平行回避
 
-	const Vector3 right = SafeNormalize(CrossV(worldUp, fwd));
-	const Vector3 up    = SafeNormalize(CrossV(fwd, right));
+	const Vector3 right = SafeNormalize(Vector3::Cross(worldUp, fwd));
+	const Vector3 up    = SafeNormalize(Vector3::Cross(fwd, right));
 
 	// ターゲットをNPCローカルへ投影
 	const Vector3 to = worldPt - npcPos;
-	const float x = DotV(to, right);
-	const float y = DotV(to, up);
-	const float z = DotV(to, fwd);   // 前方正
+	const float x = Vector3::Dot(to, right);
+	const float y = Vector3::Dot(to, up);
+	const float z = Vector3::Dot(to, fwd);   // 前方正
 
 	// Z（距離）チェック
 	if (z < fireConeNear_ || z > fireConeFar_) return false;
@@ -208,13 +205,14 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 	targetProvider_->CollectTargets(candidates);
 	if (candidates.empty()) return nullptr;
 
+
 	// 射出座標系基底
 	const Vector3 npcPos = GetWorldPosition();
 	const Vector3 fwd = ForwardFromPitchYaw_(baseTransform_.rotation_);
 	Vector3 worldUp = {0,1,0};
-	if (std::fabs(DotV(fwd, worldUp)) > 0.98f) worldUp = {0,0,1};
-	const Vector3 right = SafeNormalize(CrossV(worldUp, fwd));
-	const Vector3 up    = SafeNormalize(CrossV(fwd, right));
+	if (std::fabs(Vector3::Dot(fwd, worldUp)) > 0.98f) worldUp = {0,0,1};
+	const Vector3 right = SafeNormalize(Vector3::Cross(worldUp, fwd));
+	const Vector3 up    = SafeNormalize(Vector3::Cross(fwd, right));
 
 	const float tanHx = std::tan(fireConeHFovDeg_ * 3.14159265f / 180.0f);
 	const float tanHy = std::tan(fireConeVFovDeg_ * 3.14159265f / 180.0f);
@@ -227,9 +225,9 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 
 		// 視錐台内か？
 		const Vector3 to = obj->GetWorldPosition() - npcPos;
-		const float x = DotV(to, right);
-		const float y = DotV(to, up);
-		const float z = DotV(to, fwd);
+		const float x = Vector3::Dot(to, right);
+		const float y = Vector3::Dot(to, up);
+		const float z = Vector3::Dot(to, fwd);
 		if (z < fireConeNear_ || z > fireConeFar_) continue;
 		if (std::fabs(x) > z * tanHx) continue;
 		if (std::fabs(y) > z * tanHy) continue;
@@ -261,6 +259,7 @@ void NPC::TryFire(){
 
 	// 視錐台からターゲットを選ぶ
 	const BaseObject* chosen = PickFrustumTarget_();
+
 	if (!chosen) return;
 
 	// 発射位置と向き：NPC の現在向き
