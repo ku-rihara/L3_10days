@@ -214,6 +214,7 @@
     <ClCompile Include="Game\TitleActor\FighterAircraft\FighterAircraft.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcHomingBullet.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\NpcStraightBullet.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -426,6 +427,7 @@
     <ClInclude Include="Game\TitleActor\FighterAircraft\FighterAircraft.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcHomingBullet.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\NpcStraightBullet.h" />
+    <ClInclude Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
