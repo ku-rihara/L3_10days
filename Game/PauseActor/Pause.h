@@ -36,5 +36,7 @@ private:
 	using Item = std::unique_ptr<PauseMenuItem>;
 	std::vector<Item> menuItems_;
 
+	std::unique_ptr<Sprite> background_ = nullptr;
+
 };
 

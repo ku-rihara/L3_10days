@@ -1,6 +1,8 @@
 #include "Pause.h"
 
+/// engine
 #include "input/Input.h"
+#include "base/TextureManager.h"
 
 void Pause::Init() {
 	isPause_ = false;
@@ -20,6 +22,14 @@ void Pause::Init() {
 		newItem->SetPosition(startPos + offset * static_cast<float>(i));
 		menuItems_.emplace_back(std::move(newItem));
 	}
+
+	uint32_t texHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png");
+	background_.reset(Sprite::Create(
+		texHandle, {}, 
+		{ 1.0f, 1.0f, 1.0f, 0.5f }
+	));
+
+	background_->SetScale({1280.0f, 720.0f});
 
 }
 
@@ -57,6 +67,7 @@ void Pause::Update() {
 }
 
 void Pause::Draw() {
+	background_->Draw();
 	for(auto& item : menuItems_) {
 		item->Draw();
 	}

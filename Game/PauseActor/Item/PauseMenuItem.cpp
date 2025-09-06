@@ -39,7 +39,9 @@ void PauseMenuItem::Update(size_t _currentIndex) {
 	sprite_->SetAlpha(alpha_);
 }
 
-void PauseMenuItem::Draw() {}
+void PauseMenuItem::Draw() {
+	sprite_->Draw();
+}
 
 
 bool PauseMenuItem::GetIsSelected() const {

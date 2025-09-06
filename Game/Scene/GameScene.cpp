@@ -263,5 +263,8 @@ void GameScene::GameSpriteDraw() {
 void GameScene::PauseModelDraw() {}
 
 void GameScene::PauseSpriteDraw() {
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+
+	Sprite::PreDraw(commandList);
 	pause_->Draw();
 }
