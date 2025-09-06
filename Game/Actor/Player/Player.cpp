@@ -256,7 +256,7 @@ void Player::ReboundByBoundary() {
 
     // FilterMove
     if (moveConstraint_) {
-        moveConstraint_->FilterMove(from, to);
+        to = moveConstraint_->FilterMove(from, to);
     }
 
     // ブロック判定
@@ -300,7 +300,6 @@ void Player::ReboundByBoundary() {
         isAutoRotateByCollision = false;
     }
 }
-
 
 bool Player::GetIsUpsideDown() {
     // 機体の上方向ベクトルを取得
