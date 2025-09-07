@@ -3,6 +3,7 @@
 // class
 #include "3d/Object3DRegistry.h"
 #include "utility/ParticleEditor/ParticleManager.h"
+#include "Collider/CollisionManager.h"
 
 // math
 #include "Frame/Frame.h"
@@ -240,6 +241,7 @@ void GameScene::GameModelDraw() {
 	Object3DPiprline::GetInstance()->PreDraw(commandList);
 	Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
 	ParticleManager::GetInstance()->Draw(viewProjection_);
+	//CollisionManager::GetInstance()->Draw(viewProjection_);
 
 
 	/// 境界の破片の描画

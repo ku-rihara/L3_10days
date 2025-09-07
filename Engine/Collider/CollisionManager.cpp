@@ -15,7 +15,7 @@ void CollisionManager::Init() {
 	const char* groupName = "CollisionManager";
 
 	// グループを追加
-	globalParameter_->CreateGroup(groupName,false);
+	globalParameter_->CreateGroup(groupName,true);
 	globalParameter_->AddSeparatorText("Collider");
 	globalParameter_->AddItem(groupName, "isColliderVisible", isColliderVisible_, GlobalParameter::WidgetType::Checkbox);
 	globalParameter_->AddTreePoP();

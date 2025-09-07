@@ -46,6 +46,8 @@ void PlayerMissile::Update() {
 
     // トランスフォーム更新
     BaseObject::Update();
+	cTransform_.translation_ = GetWorldPosition();
+	cTransform_.UpdateMatrix();
 }
 
 void PlayerMissile::UpdateMissileMovement(float deltaTime) {
