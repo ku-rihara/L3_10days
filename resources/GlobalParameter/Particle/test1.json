@@ -1,7 +1,7 @@
 {
     "test1": {
         "AdaptRotateIsX": false,
-        "AdaptRotateIsY": false,
+        "AdaptRotateIsY": true,
         "AdaptRotateIsZ": false,
         "BaseColor": [
             0.6196078658103943,
@@ -10,15 +10,15 @@
             0.0
         ],
         "Color Max": [
-            0.0,
-            0.0,
-            0.0,
+            0.6225490570068359,
+            0.15563726425170898,
+            0.15563726425170898,
             0.0
         ],
         "Color Min": [
-            0.0,
-            0.0,
-            0.0,
+            0.46718811988830566,
+            0.4950980544090271,
+            0.45383989810943604,
             0.0
         ],
         "Direction Max": [
@@ -27,14 +27,14 @@
             0.0
         ],
         "Direction Min": [
-            0.9800000190734863,
+            1.0,
             -1.0,
             0.0
         ],
-        "Gravity": 0.0,
+        "Gravity": -113.30000305175781,
         "IntervalTime": 1.0,
         "LifeTime": 0.6299999952316284,
-        "Particle Count": 30,
+        "Particle Count": 60,
         "Position Base": [
             0.0,
             0.0,
@@ -67,12 +67,12 @@
         ],
         "RotateSpeed Max": [
             0.0,
-            0.0,
+            42.900001525878906,
             0.0
         ],
         "RotateSpeed Min": [
             0.0,
-            0.0,
+            56.0,
             0.0
         ],
         "Scale Max": 14.100000381469727,
@@ -87,7 +87,7 @@
             0.0,
             0.0
         ],
-        "Speed Max": 16.200000762939453,
+        "Speed Max": 169.1999969482422,
         "Speed Min": 14.399999618530273,
         "SpeedV3 Max": [
             0.0,
