@@ -78,6 +78,8 @@ public:
 
 	bool IsInHoleXZ(const Vector3& p, float radius)const;
 
+
+
 	/// ----- おそらく大野(Boundary内部で)しか使わないであろう関数 ----- ///
 
 	RectXZ GetRectXZWorld()const;

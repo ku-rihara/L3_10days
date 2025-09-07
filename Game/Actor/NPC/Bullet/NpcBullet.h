@@ -59,5 +59,5 @@ protected:
 	bool isInitialized_ = false;	//< 初期化したか
 
 	Vector3 prevPos_{};
-	float damage_ = 6.0f;
+	float damage_ = 50.0f;
 };
