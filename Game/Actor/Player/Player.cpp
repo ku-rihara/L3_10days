@@ -73,6 +73,9 @@ void Player::Update() {
     UpdateSpeedBehavior();
     speedBehavior_->Update();
 
+    // 逆さ判定
+    CheckIsUpsideDown();
+
     // 回転更新
     RotateUpdate();
 
@@ -115,7 +118,7 @@ void Player::PartsUpdate() {
     Vector3 wingInputRotation = Vector3::ZeroVector();
 
     // 上下入力をX回転に変換
-    wingInputRotation.x = angleInput_.x * 0.2f;
+    wingInputRotation.x = -angleInput_.x * 0.2f;
 
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
         backWing->SetInputRotation(wingInputRotation);
@@ -126,6 +129,7 @@ void Player::PartsUpdate() {
 
 void Player::HandleInput() {
     Input* input = Input::GetInstance();
+    input->SetJoystickDeadZone(0, 20000, 9000);
 
     // 入力値をリセット
     Vector2 stickL      = Vector2::ZeroVector();
@@ -151,9 +155,14 @@ void Player::HandleInput() {
         }
     }
 
-    // 自動処理による入力
-    if (isAutoRotateByCollision) {
-        stickL.y = autoRotateDirection_;
+    // 逆さ時の自動操作
+    if (invCorrectionParam_.isAutoRotate) {
+        stickL.y = invCorrectionParam_.autoRotateDirection_;
+    }
+
+    // 跳ね返りによる自動操作
+    if (reboundCorrectionParam_.isAutoRotate) {
+        stickL.y = reboundCorrectionParam_.autoRotateDirection_;
     }
 
     // コントローラ処理
@@ -174,8 +183,12 @@ void Player::HandleInput() {
 
     // ピッチの回転スピードきめる
     float pitchSpeed = speedParam_.pitchSpeed;
-    if (isAutoRotateByCollision) {
-        pitchSpeed = speedParam_.autoRotateSpeed;
+    // リバウンドによる速度
+    if (reboundCorrectionParam_.isAutoRotate) {
+        pitchSpeed = reboundCorrectionParam_.autoRotateSpeed_;
+        // 逆さによるリカバーの速度
+    } else if (invCorrectionParam_.isAutoRotate) {
+        pitchSpeed = invCorrectionParam_.autoRotateSpeed_;
     }
 
     // ピッチ
@@ -188,6 +201,9 @@ void Player::HandleInput() {
     float rollInput = -stickL.x;
 
     // 目標ロール角を更新
+    if (upDot_ < 0.0f) {
+        rollInput = -rollInput;
+    }
     targetRoll_ += rollInput * speedParam_.rollSpeed * deltaTime;
 
     // 制限
@@ -197,6 +213,7 @@ void Player::HandleInput() {
         angleInput_.y   = 0.0f;
         currentMaxRoll_ = ToRadian(rollRotateLimit_);
     }
+
     targetRoll_ = std::clamp(targetRoll_, -currentMaxRoll_, currentMaxRoll_);
 }
 
@@ -246,36 +263,30 @@ void Player::RotateUpdate() {
 }
 
 void Player::CorrectionHorizon() {
-    float deltaTime = Frame::DeltaTime();
 
     // 補正開始フラグ
-    if (!isAutoRecovering_ && GetIsUpsideDown() && angleInput_.Length() < 0.001f) {
-        isAutoRecovering_ = true;
+    if (!invCorrectionParam_.isAutoRotate && isUpsideDown_ && angleInput_.Length() < 0.001f) {
+        invCorrectionParam_.isAutoRotate = true;
+
+        // 向きを決める
+        float currentVelocityY = velocity_.y;
+
+        // yの速度によって自動操作の向きを決める
+        if (currentVelocityY > 0.0f) {
+            invCorrectionParam_.autoRotateDirection_ = -1.0f;
+        } else {
+            invCorrectionParam_.autoRotateDirection_ = 1.0f;
+        }
     }
 
     // 補正処理
-    if (!isAutoRecovering_) {
+    if (!invCorrectionParam_.isAutoRotate) {
         return;
     }
 
-    Vector3 currentEuler = targetRotation_.ToEuler();
-    float currentYaw     = currentEuler.y;
-
-    // 水平の状態
-    Quaternion horizontalRotation = Quaternion::EulerToQuaternion(
-        Vector3(0.0f, currentYaw, 0.0f));
-
-    // 補正中の値
-    Quaternion adjustedCurrent = Quaternion::EulerToQuaternion(
-        Vector3(currentEuler.x, currentEuler.y, 0.0f));
-
-    // 補正する
-    targetRotation_ = Quaternion::Slerp(
-        adjustedCurrent, horizontalRotation, 3.5f * deltaTime);
-
-    // --- 補正終了判定 ---
-    if (fabs(currentEuler.x) < 0.01f) {
-        isAutoRecovering_ = false;
+    // 自動操作終了
+    if (upDot_ >= 0.5f) {
+        invCorrectionParam_.isAutoRotate = false;
     }
 }
 
@@ -305,12 +316,13 @@ void Player::ReboundByBoundary() {
         float reboundVelocityY = reboundVelocity_.y;
 
         // 自動入力を開始
-        if (reboundVelocityY >= 0.1f) {
-            isAutoRotateByCollision = true;
-            autoRotateDirection_    = 1.0f;
-        } else if (reboundVelocityY <= -0.1f) {
-            isAutoRotateByCollision = true;
-            autoRotateDirection_    = -1.0f;
+        if (reboundVelocityY > 0.0f) { // 上向き
+            reboundCorrectionParam_.isAutoRotate         = true;
+            reboundCorrectionParam_.autoRotateDirection_ = 1.0f;
+
+        } else if (reboundVelocityY <= -0.0f) { // 下向き
+            reboundCorrectionParam_.isAutoRotate         = true;
+            reboundCorrectionParam_.autoRotateDirection_ = -1.0f;
         }
 
         // カメラシェイク
@@ -322,17 +334,17 @@ void Player::ReboundByBoundary() {
         reboundVelocity_.y *= reboundDecay_;
     } else {
         // 減衰おわり
-        reboundVelocity_.y      = 0.0f;
-        isAutoRotateByCollision = false;
+        reboundVelocity_.y                   = 0.0f;
+        reboundCorrectionParam_.isAutoRotate = false;
     }
 
     // upDotが1.0f付近になったら自動回転終わり
     if (upDot_ >= 0.95f) {
-        isAutoRotateByCollision = false;
+        reboundCorrectionParam_.isAutoRotate = false;
     }
 }
 
-bool Player::GetIsUpsideDown() {
+void Player::CheckIsUpsideDown() {
     // 機体の上方向ベクトルを取得
     Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
     Vector3 targetUpVector = TransformNormal(Vector3::ToUp(), targetMatrix);
@@ -342,9 +354,7 @@ bool Player::GetIsUpsideDown() {
     upDot_          = Vector3::Dot(targetUpVector, worldUp);
 
     // 機体が逆さまかどうかを判定
-    bool isUpsideDown = upDot_ < reverseDecisionValue_;
-
-    return isUpsideDown;
+    isUpsideDown_ = upDot_ < reverseDecisionValue_;
 }
 
 Vector3 Player::GetForwardVector() const {
@@ -369,6 +379,7 @@ void Player::ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavi
     }
     speedBehavior_ = std::move(behavior);
 }
+
 void Player::UpdateSpeedBehavior() {
 
     auto newBehavior = speedBehavior_->CheckForBehaviorChange();
@@ -415,7 +426,8 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "reboundPower", &reboundPower_);
     globalParameter_->Bind(groupName_, "reboundDecay", &reboundDecay_);
     globalParameter_->Bind(groupName_, "minReboundVelocity", &minReboundVelocity_);
-    globalParameter_->Bind(groupName_, "autoRotateSpeed", &speedParam_.autoRotateSpeed);
+    globalParameter_->Bind(groupName_, "autoRotateSpeed", &reboundCorrectionParam_.autoRotateSpeed_);
+    globalParameter_->Bind(groupName_, "autoRecoverSpeed", &invCorrectionParam_.autoRotateSpeed_);
 }
 
 void Player::AdjustParam() {
@@ -436,7 +448,10 @@ void Player::AdjustParam() {
         ImGui::DragFloat("Pitch Speed", &speedParam_.pitchSpeed, 0.01f);
         ImGui::DragFloat("Yaw Speed", &speedParam_.yawSpeed, 0.01f);
         ImGui::DragFloat("Roll Speed", &speedParam_.rollSpeed, 0.01f);
-        ImGui::DragFloat("Roll AutoRotateSpeed", &speedParam_.autoRotateSpeed, 0.01f);
+
+        ImGui::SeparatorText("AutoOperator");
+        ImGui::DragFloat("AutoRotateReboundSpeed", &reboundCorrectionParam_.autoRotateSpeed_, 0.01f);
+        ImGui::DragFloat("AutoRotateInvSpeed", &invCorrectionParam_.autoRotateSpeed_, 0.01f);
 
         ImGui::SeparatorText("rebound");
         ImGui::DragFloat("rebound Power", &reboundPower_, 0.01f);
@@ -473,7 +488,7 @@ void Player::AdjustParam() {
             ToDegree(euler.x), ToDegree(euler.y), ToDegree(euler.z));
 
         ImGui::Text("upDot= %.1f", upDot_);
-        if (GetIsUpsideDown()) {
+        if (isUpsideDown_) {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "STATUS: UPSIDE DOWN!");
         } else {
             ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "STATUS: Normal");

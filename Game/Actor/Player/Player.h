@@ -28,7 +28,13 @@ public:
         float pitchSpeed;
         float yawSpeed;
         float rollSpeed;
-        float autoRotateSpeed;
+    };
+
+    struct AutoCorrectionParam {
+        bool isAutoRotate;
+        float autoRotateDirection_;
+        float currentAutoSpeed_;
+        float autoRotateSpeed_;
     };
 
     struct BoundaryHoleSource : IHoleSource {
@@ -67,7 +73,7 @@ public:
     float GetRollDegree() const;
 
     // 逆さ判定
-    bool GetIsUpsideDown();
+    void CheckIsUpsideDown();
 
     // Behavior management
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
@@ -79,19 +85,19 @@ private:
     void RotateUpdate();
     void MoveUpdate();
     void ReboundByBoundary();
-    
+
 private:
     // ブースト
     bool isLBPressed_;
     bool wasLBPressed_;
 
-    //Parts
-    std::array<std::unique_ptr<PlayerBackWing>,2> backWings_;
+    // Parts
+    std::array<std::unique_ptr<PlayerBackWing>, 2> backWings_;
 
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Player";
-    GameCamera* pGameCamera_      = nullptr;
+    GameCamera* pGameCamera_     = nullptr;
 
     // Parameter
     int32_t hp_;
@@ -113,10 +119,6 @@ private:
     float bankRate_;
     float reverseDecisionValue_;
 
-    //  逆さ補正中かのフラグ
-    bool isAutoRecovering_ = false;
-    float upDot_;
-
     // 境界反発
     bool isRebound_ = false;
     float reboundPower_;
@@ -126,10 +128,12 @@ private:
     Vector3 lastCollisionNormal_ = Vector3::ZeroVector();
 
     // 補正時の自動操作
-    bool isAutoRotateByCollision = false;
-    float autoRotateDirection_   = 0.0f; 
-    float autoUnLockTime_;
-  
+    AutoCorrectionParam reboundCorrectionParam_;
+    AutoCorrectionParam invCorrectionParam_;
+
+    float upDot_;
+    bool isUpsideDown_;
+
     // roll
     float targetRoll_;
     float currentRoll_;
