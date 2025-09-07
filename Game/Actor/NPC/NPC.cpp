@@ -17,39 +17,39 @@
 
 namespace {
 
-inline float WrapPi(float a){
-	while (a > std::numbers::pi_v<float>) a -= 2.0f * std::numbers::pi_v<float>;
-	while (a < -std::numbers::pi_v<float>) a += 2.0f * std::numbers::pi_v<float>;
-	return a;
-}
+	inline float WrapPi(float a) {
+		while (a > std::numbers::pi_v<float>) a -= 2.0f * std::numbers::pi_v<float>;
+		while (a < -std::numbers::pi_v<float>) a += 2.0f * std::numbers::pi_v<float>;
+		return a;
+	}
 
-inline float MoveTowardsAngle(float current, float target, float maxStep){
-	float d = WrapPi(target - current);
-	if (std::fabs(d) <= maxStep) return current + d;
-	return current + std::copysign(maxStep,d);
-}
+	inline float MoveTowardsAngle(float current, float target, float maxStep) {
+		float d = WrapPi(target - current);
+		if (std::fabs(d) <= maxStep) return current + d;
+		return current + std::copysign(maxStep, d);
+	}
 
-// 安全正規化
-inline Vector3 SafeNormalize(const Vector3& v, const Vector3& fb = {0,0,1}) {
-	float L = v.Length();
-	return (L > 1e-6f) ? (v * (1.0f/L)) : fb;
-}
+	// 安全正規化
+	inline Vector3 SafeNormalize(const Vector3& v, const Vector3& fb = { 0, 0, 1 }) {
+		float L = v.Length();
+		return (L > 1e-6f) ? (v * (1.0f / L)) : fb;
+	}
 
 
-// 回転(x=pitch, y=yaw, z=roll) から前方ベクトルを得る
-inline Vector3 ForwardFromPitchYaw_(const Vector3& rot){
-	const float pitch = rot.x; // 上下
-	const float yaw   = rot.y; // 左右
-	const float cp = std::cos(pitch), sp = std::sin(pitch);
-	const float cy = std::cos(yaw),   sy = std::sin(yaw);
-	// 既存の yaw/pitch の使い方と整合する前方
-	return SafeNormalize({ sy * cp, -sp, cy * cp });
-}
+	// 回転(x=pitch, y=yaw, z=roll) から前方ベクトルを得る
+	inline Vector3 ForwardFromPitchYaw_(const Vector3& rot) {
+		const float pitch = rot.x; // 上下
+		const float yaw = rot.y; // 左右
+		const float cp = std::cos(pitch), sp = std::sin(pitch);
+		const float cy = std::cos(yaw), sy = std::sin(yaw);
+		// 既存の yaw/pitch の使い方と整合する前方
+		return SafeNormalize({ sy * cp, -sp, cy * cp });
+	}
 
 } // namespace
 
 // ===== BoundaryHoleSource 実装 =====
-const std::vector<Hole>& NPC::BoundaryHoleSource::GetHoles() const{
+const std::vector<Hole>& NPC::BoundaryHoleSource::GetHoles() const {
 	static const std::vector<Hole> kEmpty;
 	return boundary ? boundary->GetHoles() : kEmpty;
 }
@@ -61,12 +61,12 @@ NPC::~NPC() = default;
 /// ===================================================
 /// 初期化
 /// ===================================================
-void NPC::Init(){
+void NPC::Init() {
 	globalParam_ = GlobalParameter::GetInstance();
 
-	if (groupName_.empty()){ groupName_ = "UnnamedNPC"; }
+	if (groupName_.empty()) { groupName_ = "UnnamedNPC"; }
 
-	globalParam_->CreateGroup(groupName_,true);
+	globalParam_->CreateGroup(groupName_, true);
 	globalParam_->ClearBindingsForGroup(groupName_);
 	BindParms();
 	globalParam_->SyncParamForGroup(groupName_);
@@ -84,12 +84,12 @@ void NPC::Init(){
 	// --- 通行制約（XZ 長方形＋穴ゲート）---
 	Boundary* boundary = Boundary::GetInstance();
 	holeSource_.boundary = boundary;
-	RectXZ rect{-1500.0f, 1500.0f, -1500.0f, 1500.0f};
-	moveConstraint_ = std::make_unique<RectXZWithGatesConstraint>(&holeSource_,rect,0.01f);
+	RectXZ rect{ -1500.0f, 1500.0f, -1500.0f, 1500.0f };
+	moveConstraint_ = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, rect, 0.01f);
 
 	isInitialized_ = true;
 
-	shootCooldown_ = Random::Range(0.0f,shootInterval_);
+	shootCooldown_ = Random::Range(0.0f, shootInterval_);
 
 	BaseObject::Update();	//transformの更新を挟む
 
@@ -100,13 +100,13 @@ void NPC::Init(){
 
 	/// collision 
 	cTransform_.Init();
-	AABBCollider::SetCollisionScale(Vector3{1, 1, 1} *100.0f);
+	AABBCollider::SetCollisionScale(Vector3{ 1, 1, 1 } *100.0f);
 }
 
 /// ===================================================
 /// 更新
 /// ===================================================
-void NPC::Update(){
+void NPC::Update() {
 	if (fireController_) fireController_->Tick();
 	Move();
 	TryFire();//座標などを更新してから
@@ -115,7 +115,7 @@ void NPC::Update(){
 	cTransform_.UpdateMatrix();
 }
 
-void NPC::DebugDraw(const ViewProjection& vp) {
+void NPC::DebugDraw([[maybe_unused]] const ViewProjection& vp) {
 #ifdef _DEBUG
 	if (!lineDrawer_) return;
 
@@ -126,17 +126,17 @@ void NPC::DebugDraw(const ViewProjection& vp) {
 	const Vector3 f = ForwardFromPitchYaw_(baseTransform_.rotation_);
 
 	// up が f とほぼ平行なら代替Upを使う
-	Vector3 upHint = { 0,1,0 };
-	if (std::fabs(Vector3::Dot(f, upHint)) > 0.98f) upHint = { 0,0,1 };
+	Vector3 upHint = { 0, 1, 0 };
+	if (std::fabs(Vector3::Dot(f, upHint)) > 0.98f) upHint = { 0, 0, 1 };
 
 	// 直交基底 right / up
 	Vector3 r = Vector3::Cross(upHint, f);
 	float rl = r.Length();
-	r = (rl > 1e-6f) ? (r * (1.0f / rl)) : Vector3{ 1,0,0 };
+	r = (rl > 1e-6f) ? (r * (1.0f / rl)) : Vector3{ 1, 0, 0 };
 
 	Vector3 u = Vector3::Cross(f, r);
 	float ul = u.Length();
-	u = (ul > 1e-6f) ? (u * (1.0f / ul)) : Vector3{ 0,1,0 };
+	u = (ul > 1e-6f) ? (u * (1.0f / ul)) : Vector3{ 0, 1, 0 };
 
 	// FOV/距離
 	const float radH = fireConeHFovDeg_ * 3.1415926535f / 180.0f;
@@ -186,10 +186,10 @@ void NPC::DebugDraw(const ViewProjection& vp) {
 	lineDrawer_->SetLine(nBL, fBL, col);
 
 	// 補助線が欲しければ（任意）
-	 lineDrawer_->SetLine(origin, nTL, col);
-	 lineDrawer_->SetLine(origin, nTR, col);
-	 lineDrawer_->SetLine(origin, nBR, col);
-	 lineDrawer_->SetLine(origin, nBL, col);
+	lineDrawer_->SetLine(origin, nTL, col);
+	lineDrawer_->SetLine(origin, nTR, col);
+	lineDrawer_->SetLine(origin, nBR, col);
+	lineDrawer_->SetLine(origin, nBL, col);
 
 	lineDrawer_->Draw(vp);
 #endif
@@ -198,59 +198,59 @@ void NPC::DebugDraw(const ViewProjection& vp) {
 /// ===================================================
 /// 移動（Navigator 出力 → Constraint で検閲 → 反映）
 /// ===================================================
-void NPC::Move(){
+void NPC::Move() {
 	if (!isActive_) return;
 
 	const float dt = Frame::DeltaTime();
 
 	const Vector3 npcPos = GetWorldPosition();
 	const Vector3 tgtPos = (target_)
-		                       ? target_->GetWorldPosition()
-		                       : (hasDefendAnchor_ ? defendAnchor_ : npcPos);
+		? target_->GetWorldPosition()
+		: (hasDefendAnchor_ ? defendAnchor_ : npcPos);
 
 	const Boundary* boundary = Boundary::GetInstance();
 	const std::vector<Hole>& holes = boundary->GetHoles();
 
-	if (speed_ != navConfig_.speed){ navConfig_.speed = speed_; }
+	if (speed_ != navConfig_.speed) { navConfig_.speed = speed_; }
 
-	const Vector3 desiredDelta = navigator_.Tick(dt,npcPos,tgtPos,holes);
+	const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, tgtPos, holes);
 
 	Vector3 from = baseTransform_.translation_;
 	Vector3 to = from + desiredDelta;
 
-	if (moveConstraint_){ to = moveConstraint_->FilterMove(from,to); }
+	if (moveConstraint_) { to = moveConstraint_->FilterMove(from, to); }
 
 	// === 進行方向へ向ける ===
 	const Vector3 v = to - from;
 	const float vLen = v.Length();
-	if (vLen > 1e-6f){
+	if (vLen > 1e-6f) {
 		const Vector3 dir = v * (1.0f / vLen);
 
-		const float targetYaw = std::atan2(dir.x,dir.z);
-		const float targetPitch = std::atan2(-dir.y,std::sqrt(dir.x * dir.x + dir.z * dir.z));
+		const float targetYaw = std::atan2(dir.x, dir.z);
+		const float targetPitch = std::atan2(-dir.y, std::sqrt(dir.x * dir.x + dir.z * dir.z));
 
-		const float turnRateRadPerSec = std::numbers::pi_v<float> * 2.0f;
+		const float turnRateRadPerSec = std::numbers::pi_v<float> *2.0f;
 		const float maxStep = turnRateRadPerSec * dt;
 
 		baseTransform_.rotateOder_ = RotateOder::XYZ;
 
 		Vector3& rot = baseTransform_.rotation_; // (x=pitch, y=yaw, z=roll)
-		rot.y = MoveTowardsAngle(rot.y,targetYaw,maxStep);
-		rot.x = MoveTowardsAngle(rot.x,targetPitch,maxStep);
+		rot.y = MoveTowardsAngle(rot.y, targetYaw, maxStep);
+		rot.x = MoveTowardsAngle(rot.x, targetPitch, maxStep);
 
 		const float bankGain = 0.6f;
-		const float bankMax = std::numbers::pi_v<float> * 0.35f;
+		const float bankMax = std::numbers::pi_v<float> *0.35f;
 		float yawErr = WrapPi(targetYaw - rot.y);
-		float targetBank = std::clamp(-yawErr * bankGain,-bankMax,bankMax);
-		const float bankRate = std::numbers::pi_v<float> * 1.2f;
-		rot.z = MoveTowardsAngle(rot.z,targetBank,bankRate * dt);
+		float targetBank = std::clamp(-yawErr * bankGain, -bankMax, bankMax);
+		const float bankRate = std::numbers::pi_v<float> *1.2f;
+		rot.z = MoveTowardsAngle(rot.z, targetBank, bankRate * dt);
 	}
 
 	// 位置反映
 	baseTransform_.translation_ = to;
 
 	// 防衛待機（ターゲット無し）時は、アンカーがあればアンカー中心に旋回
-	if (!target_){
+	if (!target_) {
 		const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
 		StartOrbit(center);
 	}
@@ -265,11 +265,11 @@ bool NPC::IsInFiringFrustum_(const Vector3& worldPt) const {
 	const Vector3 fwd = ForwardFromPitchYaw_(baseTransform_.rotation_);
 
 	// 右・上ベクトル（ワールドUpを使って直交基底を作る）
-	Vector3 worldUp = {0,1,0};
-	if (std::fabs(Vector3::Dot(fwd, worldUp)) > 0.98f) worldUp = {0,0,1}; // 平行回避
+	Vector3 worldUp = { 0, 1, 0 };
+	if (std::fabs(Vector3::Dot(fwd, worldUp)) > 0.98f) worldUp = { 0, 0, 1 }; // 平行回避
 
 	const Vector3 right = SafeNormalize(Vector3::Cross(worldUp, fwd));
-	const Vector3 up    = SafeNormalize(Vector3::Cross(fwd, right));
+	const Vector3 up = SafeNormalize(Vector3::Cross(fwd, right));
 
 	// ターゲットをNPCローカルへ投影
 	const Vector3 to = worldPt - npcPos;
@@ -305,10 +305,10 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 	// 射出座標系基底
 	const Vector3 npcPos = GetWorldPosition();
 	const Vector3 fwd = ForwardFromPitchYaw_(baseTransform_.rotation_);
-	Vector3 worldUp = {0,1,0};
-	if (std::fabs(Vector3::Dot(fwd, worldUp)) > 0.98f) worldUp = {0,0,1};
+	Vector3 worldUp = { 0, 1, 0 };
+	if (std::fabs(Vector3::Dot(fwd, worldUp)) > 0.98f) worldUp = { 0, 0, 1 };
 	const Vector3 right = SafeNormalize(Vector3::Cross(worldUp, fwd));
-	const Vector3 up    = SafeNormalize(Vector3::Cross(fwd, right));
+	const Vector3 up = SafeNormalize(Vector3::Cross(fwd, right));
 
 	const float tanHx = std::tan(fireConeHFovDeg_ * 3.14159265f / 180.0f);
 	const float tanHy = std::tan(fireConeVFovDeg_ * 3.14159265f / 180.0f);
@@ -316,7 +316,7 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 	const BaseObject* best = nullptr;
 	float bestScore = std::numeric_limits<float>::infinity();
 
-	for (auto* obj : candidates){
+	for (auto* obj : candidates) {
 		if (!obj || obj == this) continue;
 
 		// 視錐台内か？
@@ -332,10 +332,10 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 		const float nx = (tanHx > 1e-6f) ? (x / (z * tanHx)) : 0.0f; // [-1,1] 付近
 		const float ny = (tanHy > 1e-6f) ? (y / (z * tanHy)) : 0.0f;
 		const float centerCost = std::fabs(nx) + std::fabs(ny);
-		const float distCost   = 0.001f * z;       // わずかに距離も加味
+		const float distCost = 0.001f * z;       // わずかに距離も加味
 		const float score = centerCost + distCost;
 
-		if (score < bestScore){
+		if (score < bestScore) {
 			bestScore = score;
 			best = obj;
 		}
@@ -347,8 +347,8 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 void NPC::OnCollisionEnter(BaseCollider* other) {
 	/// 衝突相手はPlayerのBulletならダメージを受ける
 	/// 敵NPCの場合の弾もダメージを受ける
-	
-	if(BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)){
+
+	if (BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)) {
 		int i = 0;
 		i = 1;
 		//hp_ -= bullet->GetPower();
@@ -364,7 +364,7 @@ void NPC::OnCollisionEnter(BaseCollider* other) {
 /// ===================================================
 /// 発砲（視錐台内の相手をターゲットに設定して撃つ）
 /// ===================================================
-void NPC::TryFire(){
+void NPC::TryFire() {
 	if (!fireController_) return;
 
 	shootCooldown_ -= Frame::DeltaTime();
@@ -398,36 +398,36 @@ void NPC::TryFire(){
 /// ===================================================
 /// 旋回開始（Navigator へ委譲）
 /// ===================================================
-void NPC::StartOrbit(const Vector3& center){ navigator_.StartOrbit(center); }
+void NPC::StartOrbit(const Vector3& center) { navigator_.StartOrbit(center); }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //      パラメータ
 /////////////////////////////////////////////////////////////////////////////////////////
-void NPC::BindParms(){
-	globalParam_->Bind(groupName_,"maxHP",&maxHP_);
-	globalParam_->Bind(groupName_,"speed",&speed_);
-	globalParam_->Bind(groupName_,"shootInterval",&shootInterval_);
+void NPC::BindParms() {
+	globalParam_->Bind(groupName_, "maxHP", &maxHP_);
+	globalParam_->Bind(groupName_, "speed", &speed_);
+	globalParam_->Bind(groupName_, "shootInterval", &shootInterval_);
 
 	// 視錐台パラメータ
-	globalParam_->Bind(groupName_,"fireConeNear",&fireConeNear_);
-	globalParam_->Bind(groupName_,"fireConeFar",&fireConeFar_);
-	globalParam_->Bind(groupName_,"fireConeHFovDeg",&fireConeHFovDeg_);
-	globalParam_->Bind(groupName_,"fireConeVFovDeg",&fireConeVFovDeg_);
+	globalParam_->Bind(groupName_, "fireConeNear", &fireConeNear_);
+	globalParam_->Bind(groupName_, "fireConeFar", &fireConeFar_);
+	globalParam_->Bind(groupName_, "fireConeHFovDeg", &fireConeHFovDeg_);
+	globalParam_->Bind(groupName_, "fireConeVFovDeg", &fireConeVFovDeg_);
 }
 
-void NPC::LoadData(){ globalParam_->LoadFile(groupName_,fileDirectory_); }
-void NPC::SaveData(){ globalParam_->SaveFile(groupName_,fileDirectory_); }
+void NPC::LoadData() { globalParam_->LoadFile(groupName_, fileDirectory_); }
+void NPC::SaveData() { globalParam_->SaveFile(groupName_, fileDirectory_); }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //      accessor
 /////////////////////////////////////////////////////////////////////////////////////////
-void NPC::SetTarget(const BaseStation* target){ target_ = target; }
-void NPC::Activate(){ isActive_ = true; }
-void NPC::Deactivate(){ isActive_ = false; }
+void NPC::SetTarget(const BaseStation* target) { target_ = target; }
+void NPC::Activate() { isActive_ = true; }
+void NPC::Deactivate() { isActive_ = false; }
 
-void NPC::SetDefendAnchor(const Vector3& p){
+void NPC::SetDefendAnchor(const Vector3& p) {
 	defendAnchor_ = p;
 	hasDefendAnchor_ = true;
 }
 
-void NPC::ClearDefendAnchor(){ hasDefendAnchor_ = false; }
+void NPC::ClearDefendAnchor() { hasDefendAnchor_ = false; }
