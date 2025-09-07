@@ -1,6 +1,7 @@
 #pragma once
 // engine
 #include "utility/ParameterEditor/GlobalParameter.h"
+#include "Collider/AABBCollider.h"
 
 // game
 #include "BaseObject/BaseObject.h"
@@ -20,7 +21,7 @@ class Boundary;
 class NpcFireController;   // 前方宣言
 struct Hole;
 
-class NPC : public BaseObject {
+class NPC : public BaseObject, public AABBCollider {
 public:
 	/// ===================================================
 	///  public func
@@ -57,6 +58,13 @@ public:
 	virtual void BindParms();
 	virtual void LoadData();
 	virtual void SaveData();
+
+
+	/// ===================================================
+	/// collision methods
+	/// ===================================================
+
+	void OnCollisionEnter(BaseCollider* other) override;
 
 private:
 	/// ===================================================

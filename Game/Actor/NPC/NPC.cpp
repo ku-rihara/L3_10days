@@ -8,6 +8,7 @@
 #include "random.h"
 #include "3d/ViewProjection.h"
 #include "3d/Line3D.h"
+#include "Actor/Player/Bullet/BasePlayerBullet.h"
 
 #include <cmath>
 #include <numbers>
@@ -336,6 +337,21 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 	}
 
 	return best;
+}
+
+void NPC::OnCollisionEnter(BaseCollider* other) {
+	/// 衝突相手はPlayerのBulletならダメージを受ける
+	/// 敵NPCの場合の弾もダメージを受ける
+	
+	if(BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)){
+		//hp_ -= bullet->GetPower();
+		//if(hp_ <= 0.0f){
+		//	hp_ = 0.0f;
+		//	// 死亡処理
+		//	Deactivate();
+		//}
+	}
+
 }
 
 /// ===================================================
