@@ -265,7 +265,7 @@ void Player::ReboundByBoundary() {
     }
 
     // 跳ね返り処理
-    if (isRebound_) {//本来はisRebound_で判定(狩りでImGui::Button("is")を仕様している)
+    if (isRebound_) {
 
         // Y だけ跳ね返す
         const float inVy   = velocity_.y;

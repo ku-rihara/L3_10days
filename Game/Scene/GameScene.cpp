@@ -220,7 +220,7 @@ void GameScene::GameUpdate() {
     }
 
     // lockOn更新
-    lockOn_->Update(targets, viewProjection_, FactionType::Enemy);
+    lockOn_->Update(targets, player_.get(), viewProjection_, FactionType::Enemy);
 
     miniMap_->Update();
     uis_->Update(player_.get());
