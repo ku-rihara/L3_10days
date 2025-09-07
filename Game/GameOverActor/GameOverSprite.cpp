@@ -20,7 +20,7 @@ void GameOverSprite::Init() {
 
 	/// スプライトのサイズを取得、スケールの調整
 	Vector2 spriteSize = sprite_->GetTextureSize();
-	Vector2 renderSize = { 800.0f, 450.0f };
+	Vector2 renderSize = { 1280.0f, 720.0f };
 	sprite_->SetScale(renderSize / spriteSize);
 
 }
