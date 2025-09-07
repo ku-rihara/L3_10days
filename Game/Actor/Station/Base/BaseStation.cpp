@@ -7,154 +7,172 @@
 #include <algorithm>
 #include "imgui.h"
 
+namespace {
+    inline bool NearerTo(const Vector3& p, NPC* a, NPC* b) {
+        const float da = (a->GetPosition() - p).Length();
+        const float db = (b->GetPosition() - p).Length();
+        return da < db;
+    }
+}
+
 BaseStation::BaseStation(const std::string& name)
-	: name_(name) {}
+    : name_(name) {}
 
 BaseStation::~BaseStation() = default;
 
 void BaseStation::Init() {
-	// GlobalParameter 取得
-	globalParam_ = GlobalParameter::GetInstance();
+    // GlobalParameter
+    globalParam_ = GlobalParameter::GetInstance();
 
-	// メイングループの設定～同期
-	globalParam_->CreateGroup(name_, true);
-	globalParam_->ClearBindingsForGroup(name_);
-	BindParms();
-	globalParam_->SyncParamForGroup(name_);
+    // メイングループ設定～同期
+    globalParam_->CreateGroup(name_, true);
+    globalParam_->ClearBindingsForGroup(name_);
+    BindParms();
+    globalParam_->SyncParamForGroup(name_);
 
-	LoadData();
+    LoadData();
 
-	// 初期座標適用
-	baseTransform_.translation_ = initialPosition_;
-	baseTransform_.UpdateMatrix();
+    // 初期座標
+    baseTransform_.translation_ = initialPosition_;
+    baseTransform_.UpdateMatrix();
 
-	// === AI 初期化 ===
-	ai_.Initialize(this, unitDirector_);
-	ai_.SetConfig(aiCfg_);
+    // === AI 初期化 ===
+    ai_.Initialize(this, unitDirector_);
+    ai_.SetConfig(aiCfg_);
 
-	this->Update();
+    // 先に一度UpdateしてAI出力を初期化
+    this->Update();
 
-	StartupSpawn();
+    // 初期スポーン
+    StartupSpawn();
+
+    // 再計画タイマ（起動直後に走らせる）
+    planTimer_ = 0.0f;
 }
 
 void BaseStation::Update() {
-	BaseObject::Update();
-	// === AI 更新 ===
-	const float dt = Frame::DeltaTime();
-	ai_.SetRivalCached(pRivalStation_);
-	ai_.UpdateWeighted(dt,
-		/*self*/  hp_, maxLife_,
-		/*pos*/   baseTransform_.translation_,
-		/*rival*/ pRivalStation_,
-		/*H*/     homeThreatDebug_);
+    BaseObject::Update();
+
+    const float dt = Frame::DeltaTime();
+    currentTime_ += dt;
+
+    // AI 更新
+    ai_.SetRivalCached(pRivalStation_);
+    ai_.UpdateWeighted(dt,
+                       /*self*/  hp_, maxLife_,
+                       /*pos*/   baseTransform_.translation_,
+                       /*rival*/ pRivalStation_,
+                       /*H*/     homeThreatDebug_);
+
+                   // 役割再割当て
+    planTimer_ -= dt;
+    const float replan = ai_.Config().replanInterval; // GUI で編集可
+    if (planTimer_ <= 0.0f) {
+        ReassignRoles();
+        planTimer_ = (replan > 0.05f) ? replan : 0.5f;
+    }
 }
 
 void BaseStation::DrawDebug(const ViewProjection& vp) {
-	for (auto& h : spawned_) h->DebugDraw(vp);
+    for (auto& h : spawned_) h->DebugDraw(vp);
 }
 
 void BaseStation::ShowGui() {
-	const std::string path = fileDirectory_;
-	if (ImGui::CollapsingHeader(name_.c_str())) {
-		ImGui::PushID(name_.c_str());
+    const std::string path = fileDirectory_;
+    if (ImGui::CollapsingHeader(name_.c_str())) {
+        ImGui::PushID(name_.c_str());
 
-		globalParam_->ParamLoadForImGui(name_, path);
-		ImGui::SameLine();
-		globalParam_->ParamSaveForImGui(name_, path);
+        globalParam_->ParamLoadForImGui(name_, path);
+        ImGui::SameLine();
+        globalParam_->ParamSaveForImGui(name_, path);
 
-		// Transform
-		if (ImGui::TreeNode("Transform")) {
-			ImGui::DragFloat3("Scale", &baseTransform_.scale_.x, 0.01f);
-			ImGui::DragFloat3("Rotate", &baseTransform_.rotation_.x, 0.01f);
-			if (ImGui::DragFloat3("Translate", &baseTransform_.translation_.x, 0.01f)) {
-				initialPosition_ = baseTransform_.GetWorldPos();
-			}
-			ImGui::TreePop();
-		}
+        // Transform
+        if (ImGui::TreeNode("Transform")) {
+            ImGui::DragFloat3("Scale", &baseTransform_.scale_.x, 0.01f);
+            ImGui::DragFloat3("Rotate", &baseTransform_.rotation_.x, 0.01f);
+            if (ImGui::DragFloat3("Translate", &baseTransform_.translation_.x, 0.01f)) {
+                initialPosition_ = baseTransform_.GetWorldPos();
+            }
+            ImGui::TreePop();
+        }
 
-		// Station AI
-		if (ImGui::CollapsingHeader("Station AI")) {
-			auto& c = ai_.Config();
-			ImGui::DragFloat("minAttack", &c.minAttack, 0.01f, 0.0f, 1.0f);
-			ImGui::DragFloat("maxAttack", &c.maxAttack, 0.01f, 0.0f, 1.0f);
-			ImGui::DragInt("minDefenders", &c.minDefenders, 1, 0, 999);
-			ImGui::DragFloat("temperature", &c.temperature, 0.01f, 0.05f, 3.0f);
-			ImGui::DragFloat("refAttackRange", &c.refAttackRange, 1.0f, 10.0f, 5000.0f);
-			ImGui::DragFloat("dpsNormSelf", &c.dpsNormSelf, 0.01f, 0.05f, 1.0f);
-			ImGui::DragFloat("dpsNormRival", &c.dpsNormRival, 0.01f, 0.05f, 1.0f);
-			ImGui::DragFloat("smoothingSelf", &c.smoothingSelf, 0.1f, 0.5f, 10.0f);
-			ImGui::DragFloat("smoothingRival", &c.smoothingRival, 0.1f, 0.5f, 10.0f);
-			ImGui::DragFloat("replanInterval", &c.replanInterval, 0.05f, 0.1f, 3.0f);
-			ImGui::DragFloat("ratioDeadband", &c.ratioDeadband, 0.005f, 0.0f, 0.5f);
-			ImGui::SeparatorText("Weights");
-			ImGui::DragFloat("w.selfLowHp", &c.w.selfLowHp, 0.05f, 0.0f, 3.0f);
-			ImGui::DragFloat("w.rivalLowHp", &c.w.rivalLowHp, 0.05f, 0.0f, 3.0f);
-			ImGui::DragFloat("w.selfDmgRate", &c.w.selfDmgRate, 0.05f, 0.0f, 3.0f);
-			ImGui::DragFloat("w.rivalDmgRate", &c.w.rivalDmgRate, 0.05f, 0.0f, 3.0f);
-			ImGui::DragFloat("w.homeThreat", &c.w.homeThreat, 0.05f, 0.0f, 3.0f);
-			ImGui::DragFloat("w.distance", &c.w.distance, 0.05f, 0.0f, 3.0f);
-			ImGui::DragFloat("w.biasAttack", &c.w.biasAttack, 0.05f, -2.0f, 2.0f);
+        // Station AI
+        if (ImGui::CollapsingHeader("Station AI")) {
+            auto& c = ai_.Config();
+            ImGui::DragFloat("minAttack", &c.minAttack, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("maxAttack", &c.maxAttack, 0.01f, 0.0f, 1.0f);
+            ImGui::DragInt("minDefenders", &c.minDefenders, 1, 0, 999);
+            ImGui::DragFloat("temperature", &c.temperature, 0.01f, 0.05f, 3.0f);
+            ImGui::DragFloat("refAttackRange", &c.refAttackRange, 1.0f, 10.0f, 5000.0f);
+            ImGui::DragFloat("dpsNormSelf", &c.dpsNormSelf, 0.01f, 0.05f, 1.0f);
+            ImGui::DragFloat("dpsNormRival", &c.dpsNormRival, 0.01f, 0.05f, 1.0f);
+            ImGui::DragFloat("smoothingSelf", &c.smoothingSelf, 0.1f, 0.5f, 10.0f);
+            ImGui::DragFloat("smoothingRival", &c.smoothingRival, 0.1f, 0.5f, 10.0f);
+            ImGui::DragFloat("replanInterval", &c.replanInterval, 0.05f, 0.1f, 3.0f);
+            ImGui::DragFloat("ratioDeadband", &c.ratioDeadband, 0.005f, 0.0f, 0.5f);
+            ImGui::SeparatorText("Weights");
+            ImGui::DragFloat("w.selfLowHp", &c.w.selfLowHp, 0.05f, 0.0f, 3.0f);
+            ImGui::DragFloat("w.rivalLowHp", &c.w.rivalLowHp, 0.05f, 0.0f, 3.0f);
+            ImGui::DragFloat("w.selfDmgRate", &c.w.selfDmgRate, 0.05f, 0.0f, 3.0f);
+            ImGui::DragFloat("w.rivalDmgRate", &c.w.rivalDmgRate, 0.05f, 0.0f, 3.0f);
+            ImGui::DragFloat("w.homeThreat", &c.w.homeThreat, 0.05f, 0.0f, 3.0f);
+            ImGui::DragFloat("w.distance", &c.w.distance, 0.05f, 0.0f, 3.0f);
+            ImGui::DragFloat("w.biasAttack", &c.w.biasAttack, 0.05f, -2.0f, 2.0f);
 
-			ImGui::Separator();
-			ImGui::SliderFloat("homeThreat (debug)", &homeThreatDebug_, 0.0f, 1.0f);
+            ImGui::Separator();
+            ImGui::SliderFloat("homeThreat (debug)", &homeThreatDebug_, 0.0f, 1.0f);
 
-			const auto& out = ai_.GetLastOutput();
-			ImGui::Text("Attack Ratio     : %.2f", out.attackRatio);
-			ImGui::Text("Desired Defenders: %d", out.desiredDefenders);
-			ImGui::Text("Desired Attackers: %d", out.desiredAttackers);
-		}
+            const auto& out = ai_.GetLastOutput();
+            ImGui::Text("Attack Ratio     : %.2f", out.attackRatio);
+            ImGui::Text("Desired Defenders: %d", out.desiredDefenders);
+            ImGui::Text("Desired Attackers: %d", out.desiredAttackers);
+            ImGui::Text("Next Replan in   : %.2f s", std::max(0.0f, planTimer_));
+        }
 
-		ImGui::PopID();
-	}
+        ImGui::PopID();
+    }
 }
 
 void BaseStation::StartupSpawn() {
-	const int target = std::clamp(initialSpawnCount_, 0, maxConcurrentUnits_);
-	const float R = initialSpawnDistanceFromThis_;
-	const Vector3 c = GetWorldPosition();
+    const int target = std::clamp(initialSpawnCount_, 0, maxConcurrentUnits_);
+    const float R = initialSpawnDistanceFromThis_;
+    const Vector3 c = GetWorldPosition();
 
-	// ==== Y のレンジを決定 ====
-	constexpr float kBoundaryY = 0.0f;
-	constexpr float kMargin = 40.0f;
+    // ==== Yレンジ ====
+    constexpr float kBoundaryY = 0.0f;
+    constexpr float kMargin = 40.0f;
 
-	float minY, maxY;
-	if (c.y >= kBoundaryY) {
-		// +Y側陣営
-		minY = kBoundaryY + kMargin; // 40 以上上
-		maxY = c.y;                  // 自陣の高さ
-	} else {
-		// -Y側陣営
-		minY = c.y;                  // 自陣の高さ
-		maxY = kBoundaryY - kMargin; // -40 以下
-	}
+    float minY, maxY;
+    if (c.y >= kBoundaryY) {
+        minY = kBoundaryY + kMargin; // +側
+        maxY = c.y;
+    } else {
+        minY = c.y;
+        maxY = kBoundaryY - kMargin; // -側
+    }
+    if (maxY < minY) { minY = maxY = c.y; }
 
-	// もし範囲が成立しない（自陣が境界に近すぎるなど）場合は拠点Y固定
-	if (maxY < minY) {
-		minY = maxY = c.y;
-	}
-
-	for (int i = 0; i < target; ++i) {
-		float x = c.x + Random::Range(-R, R);
-		float z = c.z + Random::Range(-R, R);
-		float y = Random::Range(minY, maxY);
-
-		SpawnNPC(Vector3{ x, y, z });
-	}
+    for (int i = 0; i < target; ++i) {
+        float x = c.x + Random::Range(-R, R);
+        float z = c.z + Random::Range(-R, R);
+        float y = Random::Range(minY, maxY);
+        SpawnNPC(Vector3{ x, y, z });
+    }
 }
 
 void BaseStation::BindParms() {
-	globalParam_->Bind(name_, "initialPosition", &initialPosition_);
+    globalParam_->Bind(name_, "initialPosition", &initialPosition_);
 }
 
 void BaseStation::LoadData() {
-	const std::string path = fileDirectory_;
-	globalParam_->LoadFile(name_, path);
-	globalParam_->SyncParamForGroup(name_);
+    const std::string path = fileDirectory_;
+    globalParam_->LoadFile(name_, path);
+    globalParam_->SyncParamForGroup(name_);
 }
 
 void BaseStation::SaveData() {
-	const std::string path = fileDirectory_;
-	globalParam_->SaveFile(name_, path);
+    const std::string path = fileDirectory_;
+    globalParam_->SaveFile(name_, path);
 }
 
 // accessor
@@ -165,25 +183,61 @@ FactionType BaseStation::GetFactionType() const { return faction_; }
 
 // NPC 管理
 std::vector<NPC*> BaseStation::GetLiveNpcs() const {
-	std::vector<NPC*> out; out.reserve(spawned_.size());
-	for (auto& h : spawned_) if (h) out.push_back(h.get());
-	return out;
+    std::vector<NPC*> out; out.reserve(spawned_.size());
+    for (auto& h : spawned_) if (h) out.push_back(h.get());
+    return out;
 }
 
 void BaseStation::CollectTargets(std::vector<const BaseObject*>& out) const {
-	out.clear();
-
-	if (pRivalStation_) {
-		for (NPC* npc : pRivalStation_->GetLiveNpcs()) {
-			if (!npc) continue;
-			out.push_back(static_cast<const BaseObject*>(npc));
-		}
-
-		out.push_back(static_cast<const BaseObject*>(pRivalStation_));
-	}
+    out.clear();
+    if (pRivalStation_) {
+        for (NPC* npc : pRivalStation_->GetLiveNpcs()) {
+            if (!npc) continue;
+            out.push_back(static_cast<const BaseObject*>(npc));
+        }
+        out.push_back(static_cast<const BaseObject*>(pRivalStation_));
+    }
 }
 
 void BaseStation::OnCollisionEnter(BaseCollider* /*other*/) {
-	/// TODO: 衝突した相手が弾ならダメージを受ける
+    // TODO: 弾衝突によるダメージ等
+}
 
+void BaseStation::ReassignRoles() {
+    auto npcs = GetLiveNpcs();
+    if (npcs.empty()) return;
+
+    const auto out = ai_.GetLastOutput();
+    const int N = static_cast<int>(npcs.size());
+
+    int defenders = std::clamp(out.desiredDefenders, 0, N);
+    int attackers = std::clamp(out.desiredAttackers, 0, N - defenders);
+
+    const Vector3 home = GetWorldPosition();
+    const Vector3 rival = pRivalStation_ ? pRivalStation_->GetWorldPosition() : home;
+
+    // 射撃候補の供給元をこのステーションに固定（敵NPC＋敵拠点を供給）
+    for (auto* npc : npcs) if (npc) npc->SetTargetProvider(this);
+
+    // 1) 防衛に近い順で assign
+    std::sort(npcs.begin(), npcs.end(),
+              [&](NPC* a, NPC* b) { return NearerTo(home, a, b); });
+
+    for (int i = 0; i < defenders && i < (int)npcs.size(); ++i) {
+        npcs[i]->CommandDefend(home);
+    }
+
+    // 2) 攻撃（残りから敵拠点に近い順）
+    std::vector<NPC*> rest(npcs.begin() + defenders, npcs.end());
+    std::sort(rest.begin(), rest.end(),
+              [&](NPC* a, NPC* b) { return NearerTo(rival, a, b); });
+
+    for (int i = 0; i < attackers && i < (int)rest.size(); ++i) {
+        rest[i]->CommandAttack(pRivalStation_);
+    }
+
+    // 3) 余りは防衛に寄せる
+    for (int i = attackers; i < (int)rest.size(); ++i) {
+        rest[i]->CommandDefend(home);
+    }
 }

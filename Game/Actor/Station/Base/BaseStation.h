@@ -14,11 +14,12 @@
 #include "AI/Station/StationAI.h"
 
 // targeting
-#include "../../NPC/Bullet/Targeting.h"
+#include "Actor/NPC/Bullet/Targeting.h"
 
 // std
 #include <string>
 #include <vector>
+#include <algorithm>
 
 class NPC;
 
@@ -49,34 +50,32 @@ public:
 	void    SetUnitDirector(IUnitDirector* d) { unitDirector_ = d; }
 	float   GetHp()       const { return hp_; }
 	float   GetMaxHp()    const { return maxLife_; }
-	Vector3 GetPosition() const { return baseTransform_.translation_; } // 必要なら GetWorldPos() に変更
+	Vector3 GetPosition() const { return baseTransform_.translation_; } // 必要なら GetWorldPos()
 
 	// NPC 管理
 	std::vector<NPC*> GetLiveNpcs() const;
 
 	template<class Fn>
-	void ForEachNpc(Fn&& fn) {
-		for (auto& h : spawned_) if (h) fn(*h.get());
-	}
+	void ForEachNpc(Fn&& fn) { for (auto& h : spawned_) if (h) fn(*h.get()); }
 
 	// ===== ITargetProvider 実装 =====
-	// この Station にとっての「敵候補」を out に詰める（Rival 側の NPC / Station 本体など）
 	void CollectTargets(std::vector<const BaseObject*>& out) const override;
-
 
 	/// ===== Collider =====
 	void OnCollisionEnter(BaseCollider* other) override;
-	//void OnCollisionStay(BaseCollider* other) override;
-	//void OnCollisionExit(BaseCollider* other) override;
 
 protected:
-	virtual void SpawnNPC(const Vector3& pos) = 0;   //< npcをスポーン
-	void CleanupSpawnedList();                       //< リストの掃除
+	virtual void SpawnNPC(const Vector3& pos) = 0;   //< 派生側でNPC生成
+	void CleanupSpawnedList();                       //< リストの掃除（必要なら）
+
+private:
+	// AIの希望人数に応じてNPCを防衛/攻撃に再割当て
+	void ReassignRoles();
 
 protected:
 	// 調整用
-	GlobalParameter* globalParam_{};			//< 調整項目用（Initで取得）
-	const std::string  name_;					//< 調整項目グループ名
+	GlobalParameter* globalParam_{};            //< Initで取得
+	const std::string  name_;                   //< 調整項目グループ名
 	const std::string  fileDirectory_ = "GameActor/Station";
 
 	// パラメータ
@@ -84,8 +83,8 @@ protected:
 	float   maxLife_ = 100.0f;
 	float   spawnInterbal_ = 5.0f;
 	int     maxConcurrentUnits_ = 20;
-	int		initialSpawnCount_ = 20;
-	float initialSpawnDistanceFromThis_ = 1500.0f;	//< 初期配置用
+	int     initialSpawnCount_ = 20;
+	float   initialSpawnDistanceFromThis_ = 1500.0f;
 
 	// ---- game ----
 	FactionType faction_{};
@@ -100,4 +99,7 @@ protected:
 	StationAI       ai_;
 	StationAiConfig aiCfg_;
 	float           homeThreatDebug_ = 0.0f; // 0..1 自陣圧デバッグ入力
+
+	// 再計画タイマ
+	float planTimer_ = 0.0f;
 };
