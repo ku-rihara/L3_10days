@@ -22,6 +22,8 @@ void PlayerBulletShooter::Init() {
 
     // 初期弾数設定
     InitializeAmmo();
+
+     targetManager_ = TargetManager::GetInstance();
 }
 
 void PlayerBulletShooter::InitializeAmmo() {
@@ -127,7 +129,7 @@ void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
     }
 }
 
-void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
+ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
     size_t typeIndex = static_cast<size_t>(type);
 
     // 新しい弾丸を生成
@@ -141,6 +143,13 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
             auto* missile = dynamic_cast<PlayerMissile*>(bullet.get());
             if (missile) {
                 missile->SetMissileParameters(typeSpecificParams_.missile);
+
+                // ターゲットが存在する場合、TargetManagerに登録してIDを取得
+                const LockOn::LockOnVariant* currentTarget = pLockOn_->GetCurrentTarget();
+                if (currentTarget && targetManager_) {
+                    TargetID targetId = targetManager_->RegisterTarget(*currentTarget);
+                    missile->SetTargetID(targetId);
+                }
             }
         }
 
@@ -151,6 +160,7 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
         activeBullets_.push_back(std::move(bullet));
     }
 }
+
 
 void PlayerBulletShooter::UpdateBullets() {
     for (auto& bullet : activeBullets_) {

@@ -1,4 +1,5 @@
 #pragma once
+#include "Actor/Player/TargetManager/TargetManager.h "
 #include "BasePlayerBullet.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <array>
@@ -30,7 +31,6 @@ struct ShooterState {
 struct MissileParameter {
     float trackingStrength;
     float maxTurnRate;
- 
 };
 
 // ミサイル連射状態
@@ -66,7 +66,7 @@ private:
 
     // 入力処理
     void HandleInput();
-   void UpdateHomingMissileStatus();
+    void UpdateHomingMissileStatus();
 
     // 発射処理
     void UpdateNormalBulletShooting(const Player* player);
@@ -82,9 +82,12 @@ private:
     void UpdateReload();
     void StartReload(BulletType type);
     bool CanShoot(BulletType type) const;
-    bool CanShootMissile() const; 
+    bool CanShootMissile() const;
 
     void ClearAllBullets();
+
+private:
+    TargetManager* targetManager_ = nullptr;
 
 private:
     // globalParameter
@@ -104,7 +107,7 @@ private:
     // アクティブな弾丸のリスト
     std::vector<std::unique_ptr<BasePlayerBullet>> activeBullets_;
 
-    // 発射状態 
+    // 発射状態
     std::array<ShooterState, static_cast<int32_t>(BulletType::COUNT)> shooterStates_;
 
     // ミサイル連射状態
@@ -134,5 +137,4 @@ public:
     /// -----------------------------------------------------------------
     void SetViewProjection(const ViewProjection* vp) { viewProjection_ = vp; }
     void SetLockOn(LockOn* lockOn) { pLockOn_ = lockOn; }
-
 };

@@ -1,7 +1,7 @@
 #include "PlayerMissile.h"
 // lockOn
-#include"Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
-#include"Actor/NPC/EnemyNPC.h"
+#include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include "Actor/NPC/EnemyNPC.h"
 #include "Actor/Player/Player.h"
 #include "BasePlayerBullet.h"
 #include "Frame/Frame.h"
@@ -26,6 +26,8 @@ void PlayerMissile::Init() {
     velocity_        = Vector3::ZeroVector();
     hasTarget_       = false;
     targetPosition_  = Vector3::ZeroVector();
+    targetId_        = INVALID_TARGET_ID;
+    targetManager_   = TargetManager::GetInstance();
 }
 
 void PlayerMissile::Update() {
@@ -53,8 +55,7 @@ void PlayerMissile::Update() {
 }
 
 void PlayerMissile::UpdateMissileMovement(float deltaTime) {
-
-    if (hasTarget_) {
+    if (hasTarget_ && IsTargetValid()) {
         UpdateTargetTracking(deltaTime);
     }
 
@@ -66,15 +67,13 @@ void PlayerMissile::UpdateMissileMovement(float deltaTime) {
 }
 
 void PlayerMissile::UpdateTargetTracking(float deltaTime) {
-    if (!target_) {
+    if (!IsTargetValid()) {
+        // ターゲットが無効になった場合、直進に切り替え
         return;
     }
 
     Vector3 currentPos = baseTransform_.translation_;
-    Vector3 targetPos  = std::visit([](auto&& obj) -> Vector3 {
-        return obj->GetWorldPosition();
-    },
-        *target_);
+    Vector3 targetPos  = GetTargetWorldPosition();
 
     Vector3 toTarget = targetPos - currentPos;
     if (toTarget.Length() < 0.1f) {
@@ -111,13 +110,24 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
     baseTransform_.quaternion_ = QuaternionFromMatrix(lookMatrix);
 }
 
+bool PlayerMissile::IsTargetValid() const {
+    return targetManager_ && targetManager_->IsTargetValid(targetId_);
+}
+
+Vector3 PlayerMissile::GetTargetWorldPosition() const {
+    if (IsTargetValid()) {
+        return targetManager_->GetTargetPosition(targetId_);
+    }
+    return targetPosition_; // フォールバック
+}
 
 void PlayerMissile::Fire(const Player& player, const LockOn::LockOnVariant* target) {
-
-   if (target) {
-        target_    = target;
+    if (target && targetManager_) {
+        // ターゲットをTargetManagerに登録してIDを取得
+        targetId_  = targetManager_->RegisterTarget(*target);
         hasTarget_ = true;
     } else {
+        targetId_  = INVALID_TARGET_ID;
         hasTarget_ = false;
     }
 
@@ -136,13 +146,20 @@ void PlayerMissile::Fire(const Player& player, const LockOn::LockOnVariant* targ
     isActive_        = true;
 }
 
+void PlayerMissile::SetTargetID(TargetID targetId) {
+    targetId_  = targetId;
+    hasTarget_ = (targetId != INVALID_TARGET_ID);
+}
+
 void PlayerMissile::SetTarget(const Vector3& targetPosition) {
     targetPosition_ = targetPosition;
     hasTarget_      = true;
+    targetId_       = INVALID_TARGET_ID; // 座標指定の場合はIDをクリア
 }
 
 void PlayerMissile::ClearTarget() {
     hasTarget_ = false;
+    targetId_  = INVALID_TARGET_ID;
 }
 
 void PlayerMissile::Deactivate() {
