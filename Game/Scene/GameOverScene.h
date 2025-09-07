@@ -1,6 +1,11 @@
 #pragma once
 
+/// std
+#include <memory>
+
+/// base
 #include "BaseScene.h"
+
 
 /// //////////////////////////////////////////////////////////
 /// ゲームオーバーシーン
@@ -11,6 +16,7 @@ private:
 	/// private objects
 	/// ========================================================
 
+	std::unique_ptr<class GameOverSprite> gameOverSprite_; ///< ゲームオーバースプライト
 
 public:
 	GameOverScene();
