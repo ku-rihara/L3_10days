@@ -1,5 +1,7 @@
 {
     "Bullets": {
+        "damage1": 11.0,
+        "damage2": 22.0,
         "intervalTime1": 0.009999999776482582,
         "intervalTime2": 0.2800000011920929,
         "lifeTime1": 0.4300000071525574,
@@ -8,13 +10,13 @@
         "maxBulletNum2": 2,
         "missileBurstInterval": 0.0,
         "missileMaxBurstCount": 0,
-        "missileMaxTurnRate": 0.23000000417232513,
-        "missileTrackingStrength": 0.36000001430511475,
+        "missileMaxTurnRate": 0.8999999761581421,
+        "missileTrackingStrength": 30.229999542236328,
         "reloadTime1": 0.0,
         "reloadTime2": 2.0,
         "shotNum1": 1,
         "shotNum2": 1,
         "speed1": 666.0,
-        "speed2": 350.0
+        "speed2": 333.0
     }
 }

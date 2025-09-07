@@ -476,3 +476,12 @@ void Player::AdjustParam() {
 void Player::SetGameCamera(GameCamera* camera) {
     pGameCamera_ = camera;
 }
+
+void Player::SetViewProjection(const ViewProjection* viewProjection) {
+    viewProjection_ = viewProjection;
+    bulletShooter_->SetViewProjection(viewProjection);
+}
+
+void Player::SetLockOn(LockOn* lockOn) {
+    bulletShooter_->SetLockOn(lockOn);
+}

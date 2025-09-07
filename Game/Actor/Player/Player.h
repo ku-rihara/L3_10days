@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+class LockOn;
 class GameCamera;
 class Boundary;
 struct Hole;
@@ -149,5 +150,6 @@ public:
     const float& GetRollRotateLimit() const { return rollRotateLimit_; }
 
     void SetGameCamera(GameCamera* camera);
-    void SetViewProjection(const ViewProjection* viewProjection) { viewProjection_ = viewProjection; }
+    void SetLockOn(LockOn* lockOn);
+    void SetViewProjection(const ViewProjection* viewProjection);
 };

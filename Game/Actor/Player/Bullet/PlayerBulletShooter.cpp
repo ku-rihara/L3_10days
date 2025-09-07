@@ -5,6 +5,7 @@
 #include "input/Input.h"
 #include "audio/Audio.h"
 #include "PlayerMissile.h"
+#include "Actor/Player/LockOn/LockOn.h"
 #undef max
 #include <algorithm>
 #include <imgui.h>
@@ -23,6 +24,8 @@ void PlayerBulletShooter::Init() {
 
     // 初期弾数設定
     InitializeAmmo();
+
+     targetManager_ = TargetManager::GetInstance();
 }
 
 void PlayerBulletShooter::InitializeAmmo() {
@@ -52,6 +55,9 @@ void PlayerBulletShooter::Update(const Player* player) {
 
     // 非アクティブな弾丸を削除
     CleanupInactiveBullets();
+
+    // ホーミングミサイルの状態をLockOn
+    UpdateHomingMissileStatus();
 }
 
 void PlayerBulletShooter::HandleInput() {
@@ -61,7 +67,7 @@ void PlayerBulletShooter::HandleInput() {
     normalBulletInput_ = input->PushKey(DIK_J) || Input::IsPressPad(0, XINPUT_GAMEPAD_A) || input->IsPressMouse(0);
 
     // ミサイル発射
-    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_X) || input->IsPressMouse(1);
+    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B) || input->IsPressMouse(1);
 
     // 手動リロード
     if (input->TrrigerKey(DIK_R)) {
@@ -132,7 +138,7 @@ void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
     }
 }
 
-void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
+ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
     size_t typeIndex = static_cast<size_t>(type);
 
     // 新しい弾丸を生成
@@ -146,16 +152,24 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
             auto* missile = dynamic_cast<PlayerMissile*>(bullet.get());
             if (missile) {
                 missile->SetMissileParameters(typeSpecificParams_.missile);
+
+                // ターゲットが存在する場合、TargetManagerに登録してIDを取得
+                const LockOn::LockOnVariant* currentTarget = pLockOn_->GetCurrentTarget();
+                if (currentTarget && targetManager_) {
+                    TargetID targetId = targetManager_->RegisterTarget(*currentTarget);
+                    missile->SetTargetID(targetId);
+                }
             }
         }
 
         // 発射
-        bullet->Fire(*player);
+        bullet->Fire(*player, pLockOn_->GetCurrentTarget());
 
         // 弾丸リストに追加
         activeBullets_.push_back(std::move(bullet));
     }
 }
+
 
 void PlayerBulletShooter::UpdateBullets() {
     for (auto& bullet : activeBullets_) {
@@ -225,21 +239,45 @@ void PlayerBulletShooter::StartReload(BulletType type) {
         }
     }
 }
+
+void PlayerBulletShooter::UpdateHomingMissileStatus() {
+    if (!pLockOn_) {
+        return;
+    }
+
+    // アクティブなホーミングミサイルがあるかチェック
+    bool hasActiveHomingMissile = false;
+
+    for (const auto& bullet : activeBullets_) {
+        if (bullet && bullet->GetIsActive()) {
+            // ミサイルタイプかつアクティブな場合
+            PlayerMissile* missile = dynamic_cast<PlayerMissile*>(bullet.get());
+            if (missile) {
+                hasActiveHomingMissile = true;
+                break;
+            }
+        }
+    }
+
+    // LockOnシステムに状態を通知
+    pLockOn_->SetHomingMissileActive(hasActiveHomingMissile);
+}
+
+
 void PlayerBulletShooter::BindParams() {
     for (uint32_t i = 0; i < bulletParameters_.size(); ++i) {
         // 弾のパラメータ
         globalParameter_->Bind(groupName_, "lifeTime" + std::to_string(int(i + 1)), &bulletParameters_[i].lifeTime);
         globalParameter_->Bind(groupName_, "speed" + std::to_string(int(i + 1)), &bulletParameters_[i].speed);
+        globalParameter_->Bind(groupName_, "damage" + std::to_string(int(i + 1)), &bulletParameters_[i].damage);
         // 発射パラメータ
         globalParameter_->Bind(groupName_, "intervalTime" + std::to_string(int(i + 1)), &shooterParameters_[i].intervalTime);
         globalParameter_->Bind(groupName_, "maxBulletNum" + std::to_string(int(i + 1)), &shooterParameters_[i].maxBulletNum);
         globalParameter_->Bind(groupName_, "reloadTime" + std::to_string(int(i + 1)), &shooterParameters_[i].reloadTime);
     }
-
     // ミサイル専用パラメータ
     globalParameter_->Bind(groupName_, "missileTrackingStrength", &typeSpecificParams_.missile.trackingStrength);
     globalParameter_->Bind(groupName_, "missileMaxTurnRate", &typeSpecificParams_.missile.maxTurnRate);
-  
 }
 
 void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
@@ -247,6 +285,7 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
     ImGui::SeparatorText("BulletParameter");
     ImGui::DragFloat("LifeTime", &bulletParameters_[static_cast<size_t>(type)].lifeTime, 0.01f);
     ImGui::DragFloat("Speed", &bulletParameters_[static_cast<size_t>(type)].speed, 0.01f);
+    ImGui::DragFloat("Damage", &bulletParameters_[static_cast<size_t>(type)].damage, 0.01f);
 
     // 発射のパラメータ
     ImGui::SeparatorText("ShooterParameter");
@@ -258,7 +297,7 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
     if (type == BulletType::MISSILE) {
         ImGui::SeparatorText("MissileParameter");
         ImGui::DragFloat("TrackingStrength", &typeSpecificParams_.missile.trackingStrength, 0.01f);
-        ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f); 
+        ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f);
     }
 }
 

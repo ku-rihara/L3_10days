@@ -1,9 +1,10 @@
 #pragma once
+#include "Actor/Player/LockOn/LockOn.h"
 #include "BaseObject/BaseObject.h"
 #include "BasePlayerBullet.h"
+#include "Actor/Player/TargetManager/TargetManager.h"
 
 struct MissileParameter;
-
 class PlayerMissile : public BasePlayerBullet {
 public:
     PlayerMissile()  = default;
@@ -13,7 +14,7 @@ public:
     void Init();
     void Update() override;
 
-    void Fire(const Player& player) override;
+    void Fire(const Player& player, const LockOn::LockOnVariant* target) override;
     void Deactivate() override;
     Vector3 GetPosition() const override;
 
@@ -24,10 +25,18 @@ public:
     // パラメータ設定メソッド
     void SetMissileParameters(const MissileParameter& params);
 
+    // IDベースのターゲット設定
+    void SetTargetID(TargetID targetId);
+    TargetID GetTargetID() const { return targetId_; }
+
 private:
     // ミサイル特有の更新処理
     void UpdateMissileMovement(float deltaTime);
     void UpdateTargetTracking(float deltaTime);
+
+    // ターゲットの有効性をチェック
+    bool IsTargetValid() const;
+    Vector3 GetTargetWorldPosition() const;
 
 private:
     float currentLifeTime_ = 0.0f;
@@ -37,5 +46,8 @@ private:
     bool hasTarget_ = false;
     float trackingStrength_;
     float maxTurnRate_;
-    bool enableTracking_ = true;
+
+    // IDベースのターゲット管理
+    TargetID targetId_            = INVALID_TARGET_ID;
+    TargetManager* targetManager_ = nullptr;
 };

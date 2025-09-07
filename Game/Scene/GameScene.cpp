@@ -10,130 +10,134 @@
 #include "Lighrt/Light.h"
 #include "Scene/Manager/SceneManager.h"
 
+#include "Actor/NPC/BoundaryBreaker/Installer/BoundaryBreakerInstaller.h"
+#include "Actor/Station/Enemy/EnemyStation.h"
+#include "Actor/Station/Installer/StationsInstaller.h"
+#include "Actor/Station/Player/PlayerStation.h"
 #include "Animation/AnimationRegistry.h"
 #include "Pipeline/Object3DPiprline.h"
 #include "ShadowMap/ShadowMap.h"
-#include "Actor/Station/Enemy/EnemyStation.h"
-#include "Actor/Station/Player/PlayerStation.h"
-#include "Actor/Station/Installer/StationsInstaller.h"
-#include "Actor/NPC/BoundaryBreaker/Installer/BoundaryBreakerInstaller.h"
 
-#include "Pipeline/Line3DPipeline.h"
-#include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryEdgePipeline.h"
+#include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryShardPipeline.h"
+#include "Pipeline/EffectPipelines/GameScreenEffectPipeline.h"
+#include "Pipeline/Line3DPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
 #include "Pipeline/MiniMapPipeline.h"
-#include "Pipeline/EffectPipelines/GameScreenEffectPipeline.h"
 
 #include "Actor/Spline/Spline.h"
 
 /// option
 #include "Option/GameOption.h"
 
+#include "Actor/NPC/EnemyNPC.h"
 #include <imgui.h>
+#include <vector>
 
 GameScene::GameScene() {}
 GameScene::~GameScene() {}
 
 void GameScene::Init() {
 
+    // option load
+    GameOption::GetInstance()->Init();
+    GameOption::GetInstance()->Load();
 	// option load
 	GameOption::GetInstance()->Init();
 
+    BaseScene::Init();
+    // 生成
+    //====================================生成===================================================
+    skyDome_                      = std::make_unique<SkyDome>();
+    player_                       = std::make_unique<Player>();
+    stations_[FactionType::Ally]  = std::make_unique<PlayerStation>("PlayerStation");
+    stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
+    gameCamera_                   = std::make_unique<GameCamera>();
 
-	BaseScene::Init();
-	// 生成
-	//====================================生成===================================================
-	skyDome_ = std::make_unique<SkyDome>();
-	player_ = std::make_unique<Player>();
-	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
-	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
-	gameCamera_ = std::make_unique<GameCamera>();
+    lockOn_ = std::make_unique<LockOn>();
 
+    UnitDirectorConfig cfg;
+    cfg.squadSize        = 4; // 攻撃小隊の目安
+    cfg.preferSticky     = true; // 既存ロール優先で揺れを減らす
+    cfg.defendHoldRadius = 8.0f; // この距離以内なら防衛はその場オービット
+    director_            = std::make_unique<QuotaUnitDirector>(cfg);
 
-	UnitDirectorConfig cfg;
-	cfg.squadSize = 4; // 攻撃小隊の目安
-	cfg.preferSticky = true; // 既存ロール優先で揺れを減らす
-	cfg.defendHoldRadius = 8.0f; // この距離以内なら防衛はその場オービット
-	director_ = std::make_unique<QuotaUnitDirector>(cfg);
+    /// UI -----
+    miniMap_ = std::make_unique<MiniMap>();
+    uis_     = std::make_unique<GameUIs>();
 
-	/// UI -----
-	miniMap_ = std::make_unique<MiniMap>();
-	uis_ = std::make_unique<GameUIs>();
+    /// Effect -----
+    outsideWarning_ = std::make_unique<GameScreenEffect>();
 
-	/// Effect -----
-	outsideWarning_ = std::make_unique<GameScreenEffect>();
+    //====================================初期化===================================================
+    skyDome_->Init();
+    player_->Init();
+    lockOn_->Init();
 
+    Installer::InstallStations(stations_[FactionType::Ally].get(),
+        stations_[FactionType::Enemy].get(),
+        director_.get());
 
-	//====================================初期化===================================================
-	skyDome_->Init();
-	player_->Init();
-	Installer::InstallStations(stations_[FactionType::Ally].get(),
-		stations_[FactionType::Enemy].get(),
-		director_.get());
+    const Vector3 enemyStaitonPos = stations_[FactionType::Enemy]->GetWorldPosition();
+    Installer::InstallBoundaryBreakers(boundaryBreakers_,
+        stations_[FactionType::Enemy].get(),
+        stations_[FactionType::Enemy].get(),
+        2);
 
-	const Vector3 enemyStaitonPos = stations_[FactionType::Enemy]->GetWorldPosition();
-	Installer::InstallBoundaryBreakers(boundaryBreakers_,
-		stations_[FactionType::Enemy].get(),
-		stations_[FactionType::Enemy].get(),
-		2);
+    gameCamera_->Init();
+    // testGround_->Init();
 
-	gameCamera_->Init();
-	//testGround_->Init();
+    boundary_ = Boundary::GetInstance();
+    boundary_->Init();
 
-	boundary_ = Boundary::GetInstance();
-	boundary_->Init();
+    /// UI -----
+    miniMap_->Init(stations_[FactionType::Ally].get(), stations_[FactionType::Enemy].get());
+    miniMap_->RegisterPlayer(player_.get());
+    uis_->Init();
 
-	/// UI -----
-	miniMap_->Init(stations_[FactionType::Ally].get(), stations_[FactionType::Enemy].get());
-	miniMap_->RegisterPlayer(player_.get());
-	uis_->Init();
+    /// Effect -----
+    outsideWarning_->Init();
 
-	/// Effect -----
-	outsideWarning_->Init();
+    // ParticleViewSet
+    ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
-	// ParticleViewSet
-	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
-
-
-	//====================================Class Set===================================================
-	player_->SetViewProjection(&viewProjection_);
+    //====================================Class Set===================================================
+    player_->SetViewProjection(&viewProjection_);
     player_->SetGameCamera(gameCamera_.get());
-	gameCamera_->SetTarget(&player_->GetTransform());
-	gameCamera_->SetPlayer(player_.get());
+    player_->SetLockOn(lockOn_.get());
+    gameCamera_->SetTarget(&player_->GetTransform());
+    gameCamera_->SetPlayer(player_.get());
 
-	// ParticleViewSet
-	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+    // ParticleViewSet
+    ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
+    /// ====================================
+    /// pause init
+    /// ====================================
 
-	/// ====================================
-	/// pause init
-	/// ====================================
-
-	pause_ = std::make_unique<Pause>();
-	pause_->Init();
-
+    pause_ = std::make_unique<Pause>();
+    pause_->Init();
 }
 
 void GameScene::Update() {
 
-	if (!pause_->IsPause()) {
-		GameUpdate();
-	}
+    if (!pause_->IsPause()) {
+        GameUpdate();
+    }
 
-	PauseUpdate();
+    PauseUpdate();
 }
 
 /// ===================================================
 /// モデル描画
 /// ===================================================
 void GameScene::ModelDraw() {
-	GameModelDraw();
+    GameModelDraw();
 
-	if (pause_->IsPause()) {
-		PauseModelDraw();
-	}
+    if (pause_->IsPause()) {
+        PauseModelDraw();
+    }
 }
 
 /// ===================================================
@@ -145,28 +149,31 @@ void GameScene::SkyBoxDraw() {}
 /// スプライト描画
 /// ======================================================
 void GameScene::SpriteDraw() {
-	GameSpriteDraw();
-	if (pause_->IsPause()) {
-		PauseSpriteDraw();
-	}
+    GameSpriteDraw();
+    if (pause_->IsPause()) {
+        PauseSpriteDraw();
+    }
 }
 
 /// ======================================================
 /// 影描画
 /// ======================================================
 void GameScene::DrawShadow() {
-	//Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
+    // Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
 }
 
 void GameScene::Debug() {
 #ifdef _DEBUG
 
-	ImGui::Begin("Object");
-	player_->AdjustParam();
-	for (auto& kv : stations_) { kv.second->ShowGui(); }
-	gameCamera_->AdjustParam();
-	ShadowMap::GetInstance()->DebugImGui();
-	ImGui::End();
+    ImGui::Begin("Object");
+    player_->AdjustParam();
+    for (auto& kv : stations_) {
+        kv.second->ShowGui();
+    }
+    gameCamera_->AdjustParam();
+    lockOn_->AdjustParam();
+    ShadowMap::GetInstance()->DebugImGui();
+    ImGui::End();
 
 #endif
 }
@@ -175,118 +182,145 @@ void GameScene::Debug() {
 void GameScene::ViewProjectionUpdate() { BaseScene::ViewProjectionUpdate(); }
 
 void GameScene::ViewProssess() {
-	viewProjection_.matView_ = gameCamera_->GetViewProjection().matView_;
-	viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
-	viewProjection_.cameraMatrix_ = gameCamera_->GetViewProjection().cameraMatrix_;
-	viewProjection_.rotation_ = gameCamera_->GetViewProjection().rotation_;
-	viewProjection_.TransferMatrix();
+    viewProjection_.matView_       = gameCamera_->GetViewProjection().matView_;
+    viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
+    viewProjection_.cameraMatrix_  = gameCamera_->GetViewProjection().cameraMatrix_;
+    viewProjection_.rotation_      = gameCamera_->GetViewProjection().rotation_;
+    viewProjection_.TransferMatrix();
 }
 
 void GameScene::GameUpdate() {
 
-	// class Update
-	boundary_->Update();
-	player_->Update();
-	gameCamera_->Update();
-	for (auto& kv : stations_) { kv.second->Update(); }
-	for (auto& bb : boundaryBreakers_)bb->Update();
-	skyDome_->Update();
+    Debug();
 
-	miniMap_->Update();
-	uis_->Update(player_.get());
+    // class Update
+    boundary_->Update();
+    player_->Update();
+    gameCamera_->Update();
+    for (auto& kv : stations_) {
+        kv.second->Update();
+    }
+    for (auto& bb : boundaryBreakers_)
+        bb->Update();
+    skyDome_->Update();
 
-	/// objectの行列の更新をする
-	Object3DRegistry::GetInstance()->UpdateAll();
-	AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
+    //----- それぞれのLockOn対象を取得 -----
+    // EnemyNPCs
+    std::vector<LockOn::LockOnVariant> targets;
+    auto enemyStation = static_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
+    auto enemyNPCs    = enemyStation->GetLiveNpcs();
+    for (auto* npc : enemyNPCs) {
+        targets.emplace_back(static_cast<EnemyNPC*>(npc));
+    }
+    // boundaryBreakers
+    for (auto& bb : boundaryBreakers_) {
+        if (bb /*&&生きてたら*/) {
+            targets.emplace_back(bb.get());
+        }
+    }
 
-	// viewProjection 更新
-	ViewProjectionUpdate();
+    // lockOn更新
+    lockOn_->Update(targets, viewProjection_, FactionType::Enemy);
 
-	// Scene Change
-	if (input_->TrrigerKey(DIK_RETURN)) { SceneManager::GetInstance()->ChangeScene("TITLE"); }
+    miniMap_->Update();
+    uis_->Update(player_.get());
 
-	// Particle AllUpdate
-	ParticleManager::GetInstance()->Update();
+    /// objectの行列の更新をする
+    Object3DRegistry::GetInstance()->UpdateAll();
+    AnimationRegistry::GetInstance()->UpdateAll(Frame::DeltaTimeRate());
+
+    // viewProjection 更新
+    ViewProjectionUpdate();
+
+    // Particle AllUpdate
+    ParticleManager::GetInstance()->Update();
+
+    // Scene Change
+    if (input_->TrrigerKey(DIK_RETURN)) {
+        SceneManager::GetInstance()->ChangeScene("TITLE");
+        return;
+    }
 }
 
 void GameScene::PauseUpdate() {
-	pause_->Update();
+    pause_->Update();
 
-	GameOption::GetInstance()->Update();
+    GameOption::GetInstance()->Update();
 
-	if (pause_->IsSceneChange()) {
-		SceneManager::GetInstance()->ChangeScene("TITLE");
-		return;
-	}
+    if (pause_->IsSceneChange()) {
+        SceneManager::GetInstance()->ChangeScene("TITLE");
+        return;
+    }
 }
 
 void GameScene::GameModelDraw() {
-	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+    ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 
-	Line3DPipeline* line3dPipeline = Line3DPipeline::GetInstance();
-	line3dPipeline->PreDraw(commandList);
+    Line3DPipeline* line3dPipeline = Line3DPipeline::GetInstance();
+    line3dPipeline->PreDraw(commandList);
 
-	for (auto& stations : stations_)stations.second->DrawDebug(viewProjection_);
+    for (auto& stations : stations_)
+        stations.second->DrawDebug(viewProjection_);
 
-	/// 天球を描画
-	Object3DPiprline::GetInstance()->PreDraw(commandList);
-	skyDome_->Draw(viewProjection_);
+    /// 天球を描画
+    Object3DPiprline::GetInstance()->PreDraw(commandList);
+    skyDome_->Draw(viewProjection_);
 
-	/// 境界の描画
-	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
-	boundaryPipeline->PreDraw(commandList);
-	boundaryPipeline->Draw(commandList, viewProjection_);
+    /// 境界の描画
+    BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
+    boundaryPipeline->PreDraw(commandList);
+    boundaryPipeline->Draw(commandList, viewProjection_);
 
+   
 	/// オブジェクトの描画
 	Object3DPiprline::GetInstance()->PreDraw(commandList);
 	Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
 	ParticleManager::GetInstance()->Draw(viewProjection_);
 	//CollisionManager::GetInstance()->Draw(viewProjection_);
 
+    /// 境界の破片の描画
+    BoundaryShardPipeline* boundaryShardPipeline = BoundaryShardPipeline::GetInstance();
+    boundaryShardPipeline->PreDraw(commandList);
+    boundaryShardPipeline->Draw(commandList, viewProjection_);
 
-	/// 境界の破片の描画
-	BoundaryShardPipeline* boundaryShardPipeline = BoundaryShardPipeline::GetInstance();
-	boundaryShardPipeline->PreDraw(commandList);
-	boundaryShardPipeline->Draw(commandList, viewProjection_);
+    /// 境界の穴の境界を描画
+    BoundaryEdgePipeline* boundaryEdgePipeline = BoundaryEdgePipeline::GetInstance();
+    boundaryEdgePipeline->PreDraw(commandList);
+    boundaryEdgePipeline->Draw(commandList, viewProjection_);
 
-	/// 境界の穴の境界を描画
-	BoundaryEdgePipeline* boundaryEdgePipeline = BoundaryEdgePipeline::GetInstance();
-	boundaryEdgePipeline->PreDraw(commandList);
-	boundaryEdgePipeline->Draw(commandList, viewProjection_);
-
-	MiniMapPipeline* miniMapPipeline = MiniMapPipeline::GetInstance();
-	miniMapPipeline->PreDraw(commandList);
-	miniMapPipeline->Draw(commandList, miniMap_.get());
+    MiniMapPipeline* miniMapPipeline = MiniMapPipeline::GetInstance();
+    miniMapPipeline->PreDraw(commandList);
+    miniMapPipeline->Draw(commandList, miniMap_.get());
 }
 
 void GameScene::GameSpriteDraw() {
-	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+    ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 
-	/// random noise + vignette
-	GameScreenEffectPipeline* outsideWarning = GameScreenEffectPipeline::GetInstance();
-	outsideWarning->PreDraw(commandList);
-	outsideWarning->Draw(commandList, outsideWarning_.get());
+    /// random noise + vignette
+    GameScreenEffectPipeline* outsideWarning = GameScreenEffectPipeline::GetInstance();
+    outsideWarning->PreDraw(commandList);
+    outsideWarning->Draw(commandList, outsideWarning_.get());
 
-	Sprite::PreDraw(commandList);
-	uis_->Draw();
-	player_->ReticleDraw();
-	/// ミニマップ描画
-	miniMap_->DrawMiniMap();
+    Sprite::PreDraw(commandList);
+    uis_->Draw();
+    player_->ReticleDraw();
+    lockOn_->Draw();
+    /// ミニマップ描画
+    miniMap_->DrawMiniMap();
 
-	/// UI用に
-	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
-	miniMapIconPipeline->PreDraw(commandList);
-	miniMapIconPipeline->Draw(commandList, miniMap_.get());
+    /// UI用に
+    MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
+    miniMapIconPipeline->PreDraw(commandList);
+    miniMapIconPipeline->Draw(commandList, miniMap_.get());
 }
 
 void GameScene::PauseModelDraw() {}
 
 void GameScene::PauseSpriteDraw() {
-	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+    ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 
-	Sprite::PreDraw(commandList);
-	pause_->Draw();
+    Sprite::PreDraw(commandList);
+    pause_->Draw();
 
-	GameOption::GetInstance()->Draw();
-
+    GameOption::GetInstance()->Draw();
 }

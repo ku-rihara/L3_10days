@@ -1,4 +1,5 @@
 #pragma once
+#include "Actor/Player/TargetManager/TargetManager.h "
 #include "BasePlayerBullet.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <array>
@@ -7,8 +8,10 @@
 #include <string>
 #include <vector>
 
+class LockOn;
 class BasePlayerBullet;
 class Player;
+class ViewProjection;
 
 struct ShooterParameter {
     float intervalTime;
@@ -28,7 +31,6 @@ struct ShooterState {
 struct MissileParameter {
     float trackingStrength;
     float maxTurnRate;
- 
 };
 
 // ミサイル連射状態
@@ -64,8 +66,9 @@ private:
 
     // 入力処理
     void HandleInput();
+    void UpdateHomingMissileStatus();
 
-    // 発射処理 - 弾種別に分離
+    // 発射処理
     void UpdateNormalBulletShooting(const Player* player);
     void UpdateMissileShooting(const Player* player);
 
@@ -79,14 +82,19 @@ private:
     void UpdateReload();
     void StartReload(BulletType type);
     bool CanShoot(BulletType type) const;
-    bool CanShootMissile() const; 
+    bool CanShootMissile() const;
 
     void ClearAllBullets();
+
+private:
+    TargetManager* targetManager_ = nullptr;
 
 private:
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Bullets";
+    LockOn* pLockOn_;
+    const ViewProjection* viewProjection_ = nullptr;
 
     // パラメータ
     std::array<BulletParameter, static_cast<int32_t>(BulletType::COUNT)> bulletParameters_;
@@ -99,7 +107,7 @@ private:
     // アクティブな弾丸のリスト
     std::vector<std::unique_ptr<BasePlayerBullet>> activeBullets_;
 
-    // 発射状態 - 各弾種独立
+    // 発射状態
     std::array<ShooterState, static_cast<int32_t>(BulletType::COUNT)> shooterStates_;
 
     // ミサイル連射状態
@@ -127,4 +135,6 @@ public:
     /// -----------------------------------------------------------------
     /// Setter
     /// -----------------------------------------------------------------
+    void SetViewProjection(const ViewProjection* vp) { viewProjection_ = vp; }
+    void SetLockOn(LockOn* lockOn) { pLockOn_ = lockOn; }
 };

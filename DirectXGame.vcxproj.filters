@@ -223,7 +223,9 @@
     <ClCompile Include="Game\Actor\Spline\Spline.cpp" />
     <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
     <ClCompile Include="Game\Fade\Fade.cpp" />
-    <ClCompile Include="Game\Actor\Player\LockOn\LookOn.cpp" />
+    <ClCompile Include="Game\Actor\Player\LockOn\LockOn.cpp" />
+    <ClCompile Include="Game\Option\GameOption.cpp" />
+    <ClCompile Include="Game\Option\Item\GameOptionItem.cpp" />
     <ClCompile Include="Game\PauseActor\Item\PauseMenuItem.cpp" />
     <ClCompile Include="Game\PauseActor\Pause.cpp" />
     <ClCompile Include="Game\Option\Item\SoundOption.cpp" />
@@ -452,7 +454,9 @@
     <ClInclude Include="Game\Actor\Spline\Spline.h" />
     <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
     <ClInclude Include="Game\Fade\Fade.h" />
-    <ClInclude Include="Game\Actor\Player\LockOn\LookOn.h" />
+    <ClInclude Include="Game\Actor\Player\LockOn\LockOn.h" />
+    <ClInclude Include="Game\Option\GameOption.h" />
+    <ClInclude Include="Game\Option\Item\GameOptionItem.h" />
     <ClInclude Include="Game\PauseActor\Item\PauseMenuItem.h" />
     <ClInclude Include="Game\PauseActor\Pause.h" />
     <ClInclude Include="Game\Option\Item\SoundOption.h" />
