@@ -30,9 +30,11 @@ public:
     TargetID GetTargetID() const { return targetId_; }
 
 private:
-    // ミサイル特有の更新処理
+    // 更新処理
     void UpdateMissileMovement(float deltaTime);
     void UpdateTargetTracking(float deltaTime);
+
+    void HitBoundary() override;
 
     // ターゲットの有効性をチェック
     bool IsTargetValid() const;
