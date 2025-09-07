@@ -230,6 +230,7 @@
     <ClCompile Include="Game\Option\Item\GameOptionItem.cpp" />
     <ClCompile Include="Game\Option\GameOption.cpp" />
     <ClCompile Include="Game\Option\Item\OperationOptionItem.cpp" />
+    <ClCompile Include="Game\Actor\NPC\SplineFollwer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -458,6 +459,7 @@
     <ClInclude Include="Game\Option\Item\GameOptionItem.h" />
     <ClInclude Include="Game\Option\GameOption.h" />
     <ClInclude Include="Game\Option\Item\OperationOptionItem.h" />
+    <ClInclude Include="Game\Actor\NPC\SplineFollower.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

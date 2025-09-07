@@ -207,6 +207,7 @@
     <ClCompile Include="Game\PauseActor\Pause.cpp" />
     <ClCompile Include="Game\Option\Item\SoundOption.cpp" />
     <ClCompile Include="Game\Option\Item\OperationOptionItem.cpp" />
+    <ClCompile Include="Game\Actor\NPC\SplineFollwer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.h" />
@@ -428,6 +429,7 @@
     <ClInclude Include="Game\PauseActor\Pause.h" />
     <ClInclude Include="Game\Option\Item\SoundOption.h" />
     <ClInclude Include="Game\Option\Item\OperationOptionItem.h" />
+    <ClInclude Include="Game\Actor\NPC\SplineFollower.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

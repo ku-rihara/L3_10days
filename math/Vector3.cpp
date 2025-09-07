@@ -6,66 +6,66 @@ const float kColumnWidth = 60;
 
 // 二項演算子
 Vector3 Vector3::operator+(const Vector3& obj) const {
-    return {x + obj.x, y + obj.y, z + obj.z};
+	return { x + obj.x, y + obj.y, z + obj.z };
 }
 
 Vector3 Vector3::operator-(const Vector3& obj) const {
-    return {x - obj.x, y - obj.y, z - obj.z};
+	return { x - obj.x, y - obj.y, z - obj.z };
 }
 
 Vector3 Vector3::operator*(const Vector3& obj) const {
-    return {x * obj.x, y * obj.y, z * obj.z};
+	return { x * obj.x, y * obj.y, z * obj.z };
 }
 
 Vector3 Vector3::operator*(const float& scalar) const {
-    return {x * scalar, y * scalar, z * scalar};
+	return { x * scalar, y * scalar, z * scalar };
 }
 
 Vector3 Vector3::operator/(const Vector3& obj) const {
-    return {x / obj.x, y / obj.y, z / obj.z};
+	return { x / obj.x, y / obj.y, z / obj.z };
 }
 
 Vector3 Vector3::operator/(const float& scalar) const {
-    return {x / scalar, y / scalar, z / scalar};
+	return { x / scalar, y / scalar, z / scalar };
 }
 
 
 Vector3 Vector3::operator-() const {
-    return {-x, -y, -z};
+	return { -x, -y, -z };
 }
 
 void Vector3::operator+=(const Vector3& obj) {
-    x += obj.x;
-    y += obj.y;
-    z += obj.z;
+	x += obj.x;
+	y += obj.y;
+	z += obj.z;
 }
 
 void Vector3::operator+=(const float& scalar) {
-    x += scalar;
-    y += scalar;
-    z += scalar;
+	x += scalar;
+	y += scalar;
+	z += scalar;
 }
 
 void Vector3::operator-=(const Vector3& obj) {
-    x -= obj.x;
-    y -= obj.y;
-    z -= obj.z;
+	x -= obj.x;
+	y -= obj.y;
+	z -= obj.z;
 }
 
 void Vector3::operator*=(const float& scalar) {
-    x *=scalar;
-    y *=scalar;
-    z *=scalar;
- }
+	x *= scalar;
+	y *= scalar;
+	z *= scalar;
+}
 
 // 比較演算子
 bool operator!=(const Vector3& lhs, const Vector3& rhs) {
-    return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z;
+	return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z;
 }
 
 // スカラー,ベクトル
 Vector3 operator*(const float& scalar, const Vector3& vec) {
-    return {vec.x * scalar, vec.y * scalar, vec.z * scalar};
+	return { vec.x * scalar, vec.y * scalar, vec.z * scalar };
 }
 
 //内積
@@ -73,9 +73,17 @@ float Vector3::Dot(const Vector3& v1, const Vector3& v2) {
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
+float Vector3::Length() const {
+	return std::sqrt(x * x + y * y + z * z);
+}
+
+Vector3 Vector3::NormalizeOr(const Vector3& v, const Vector3& fallback) {
+	float l = v.Length();
+	return (l > 1e-6f) ? (v * (1.0f / l)) : fallback;
+}
 
 //正規化
-Vector3 Vector3::Normalize(const Vector3& v){
+Vector3 Vector3::Normalize(const Vector3& v) {
 	Vector3 result;
 
 	float length = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -83,8 +91,7 @@ Vector3 Vector3::Normalize(const Vector3& v){
 		result.x = v.x / length;
 		result.y = v.y / length;
 		result.z = v.z / length;
-	}
-	else {
+	} else {
 		result.x = 0;
 		result.y = 0;
 		result.z = 0;
@@ -120,11 +127,6 @@ Vector3 Vector3::operator*(const Matrix4x4& obj) const {
 
 }
 
-// 長さを取得する
-float Vector3::Length() const {
-	return std::sqrt(x * x + y * y + z * z);
-}
-
 Vector3 Vector3::Normalize()const {
 	Vector3 result;
 
@@ -133,8 +135,7 @@ Vector3 Vector3::Normalize()const {
 		result.x = x / length;
 		result.y = y / length;
 		result.z = z / length;
-	}
-	else {
+	} else {
 		result.x = 0;
 		result.y = 0;
 		result.z = 0;

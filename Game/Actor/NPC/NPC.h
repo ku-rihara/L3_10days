@@ -108,13 +108,17 @@ protected:
 
 	// ---- 航法（純ロジック）----
 	NpcNavConfig navConfig_{
-		/*speed*/            18.0f,
-		/*arriveSlowRadius*/ 3.0f,
-		/*minHoleRadius*/    8.0f,
-		/*passFrac*/         0.25f,
-		/*retargetInterval*/ 0.2f,
-		/*orbitRadius*/      20.0f,
-		/*orbitAngularSpd*/  1.2f
+		/* speed            */ 18.0f,
+		/* minSpeed         */ 5.0f,
+		/* maxSpeed         */ 20.0f,
+		/* orbitClockwise   */ +1,     // +1: 時計回り（必要に応じて -1 に）
+		/* orbitRadius      */ 20.0f,
+		/* orbitRadialGain  */ 0.5f,
+		/* orbitTangentBias */ 1.0f,
+		/* orbitAngularSpd  */ 1.2f,
+		/* maxTurnRateDeg   */ 50.0f,
+		/* passFrac         */ 0.25f,
+		/* minHoleRadius    */ 8.0f
 	};
 	NpcNavigator navigator_{ navConfig_ };
 
