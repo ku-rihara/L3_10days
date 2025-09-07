@@ -27,6 +27,7 @@
 #include "Pipeline/MiniMapPipeline.h"
 
 #include "Actor/Spline/Spline.h"
+#include "Actor/Effects/PlayerEngineEffect/PlayerEngineEffect.h"
 
 /// option
 #include "Option/GameOption.h"
@@ -40,13 +41,12 @@ GameScene::~GameScene() {}
 
 void GameScene::Init() {
 
-    // option load
-    GameOption::GetInstance()->Init();
-    GameOption::GetInstance()->Load();
 	// option load
 	GameOption::GetInstance()->Init();
 
     BaseScene::Init();
+
+
     // 生成
     //====================================生成===================================================
     skyDome_                      = std::make_unique<SkyDome>();
@@ -69,6 +69,8 @@ void GameScene::Init() {
 
     /// Effect -----
     outsideWarning_ = std::make_unique<GameScreenEffect>();
+    engineEffect_ = std::make_unique<PlayerEngineEffect>();
+
 
     //====================================初期化===================================================
     skyDome_->Init();
@@ -86,7 +88,6 @@ void GameScene::Init() {
         2);
 
     gameCamera_->Init();
-    // testGround_->Init();
 
     boundary_ = Boundary::GetInstance();
     boundary_->Init();
@@ -98,6 +99,7 @@ void GameScene::Init() {
 
     /// Effect -----
     outsideWarning_->Init();
+    engineEffect_->Init();
 
     // ParticleViewSet
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -121,7 +123,8 @@ void GameScene::Init() {
 }
 
 void GameScene::Update() {
-
+	engineEffect_->SetPlayer(player_.get());
+    engineEffect_->Update();
     if (!pause_->IsPause()) {
         GameUpdate();
     }

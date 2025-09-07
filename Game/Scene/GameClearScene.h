@@ -1,5 +1,8 @@
 #pragma once
 
+/// std
+#include <memory>
+
 /// base
 #include "BaseScene.h"
 
@@ -8,6 +11,8 @@ private:
 	/// ========================================================
 	/// private objects
 	/// ========================================================
+
+	std::unique_ptr<class GameClearSprite> gameClearSprite_; ///< ゲームクリアスプライト
 
 public:
 	/// ========================================================

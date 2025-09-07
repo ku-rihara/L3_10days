@@ -92,7 +92,7 @@ void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
         FireBullets(player, BulletType::NORMAL);
 		// 発射SE再生
 		int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/BulletFire.wav");
-		Audio::GetInstance()->PlayWave(handle, 0.05f);
+		Audio::GetInstance()->PlayWave(handle, 0.05f, 0.5f);
 
         // 発射間隔をリセット
         state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
