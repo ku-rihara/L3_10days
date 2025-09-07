@@ -26,12 +26,28 @@ void EditorScene::Init() {
 
     easingEditor_.Init();
 
+    // Particle初期化(ファイル名,形状,Particle数上限)
+    testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("test1", PrimitiveType::Plane, 500));
+    testEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("test2", PrimitiveType::Plane, 500));
+    testEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("test3", PrimitiveType::Plane, 500));
+
     easingEditor_.SetVector3Target(&easingTestObject_->GetEasingData());
 }
 
 void EditorScene::Update() {
-    
-     easingEditor_.Edit();
+
+    // Particle更新
+    for (int i = 0; i < testEmitter_.size(); i++) {
+        testEmitter_[i]->Update(); // 更新
+        testEmitter_[i]->EditorUpdate(); // パラメータ編集
+        testEmitter_[i]->Emit(); // 発射
+
+        /*   if (Input::GetInstance()->TrrigerKey(DIK_O)) {
+               testEmitter_[i]->Emit();
+           }*/
+    }
+
+    easingEditor_.Edit();
     easingTestObject_->Update();
 
     Object3DRegistry::GetInstance()->UpdateAll();
@@ -75,7 +91,6 @@ void EditorScene::SpriteDraw() {
 /// ===================================================
 void EditorScene::DrawShadow() {
 }
-
 
 void EditorScene::Debug() {
 #ifdef _DEBUG
