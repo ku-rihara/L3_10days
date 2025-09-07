@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Actor\Player\Parts\BasePlayerParts.cpp" />
+    <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWing.cpp" />
     <ClCompile Include="Game\Scene\GameClearScene.cpp" />
     <ClCompile Include="Game\Scene\GameOverScene.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.cpp" />
@@ -213,6 +215,8 @@
     <ClCompile Include="Game\Actor\NPC\SplineFollwer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Actor\Player\Parts\BasePlayerParts.h" />
+    <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWing.h" />
     <ClInclude Include="Game\Scene\GameClearScene.h" />
     <ClInclude Include="Game\Scene\GameOverScene.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.h" />

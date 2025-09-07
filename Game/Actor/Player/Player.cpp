@@ -16,6 +16,16 @@ const std::vector<Hole>& Player::BoundaryHoleSource::GetHoles() const {
     return boundary ? boundary->GetHoles() : kEmpty;
 }
 
+void Player::PartsInit() {
+    // Parts
+    for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
+        backWing = std::make_unique<PlayerBackWing>();
+    }
+    // init
+    backWings_[0]->Init(&baseTransform_, "BackWingLeft");
+    backWings_[1]->Init(&baseTransform_, "BackWingRight");
+}
+
 void Player::Init() {
 
     // グローバルパラメータ
@@ -33,6 +43,8 @@ void Player::Init() {
     baseTransform_.rotateOder_ = RotateOder::Quaternion;
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
+
+   PartsInit();
 
     // レティクル
     reticle_ = std::make_unique<PlayerReticle>();
@@ -67,6 +79,9 @@ void Player::Update() {
     // 移動更新
     MoveUpdate();
 
+    // パーツ更新
+    PartsUpdate();
+
     // レティクル
     reticle_->Update(this, viewProjection_);
 
@@ -94,6 +109,12 @@ void Player::MoveUpdate() {
 
   /*  baseTransform_.translation_ = Vector3(100, 70, -300);*/
 }
+
+void Player::PartsUpdate() {
+    for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
+        backWing->Update();
+    }
+ }
 
 void Player::HandleInput() {
     Input* input = Input::GetInstance();
@@ -463,6 +484,12 @@ void Player::AdjustParam() {
 
         ImGui::PopID();
     }
+
+    // パーツ
+    for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
+        backWing->AdjustParam();
+    }
+
     // 弾
     if (bulletShooter_) {
         bulletShooter_->AdjustParam();
@@ -474,6 +501,7 @@ void Player::AdjustParam() {
 
 #endif // _DEBUG
 }
+
 
 void Player::SetGameCamera(GameCamera* camera) {
     pGameCamera_ = camera;

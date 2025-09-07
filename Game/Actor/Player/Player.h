@@ -7,6 +7,8 @@
 #include "Easing/Easing.h"
 #include "Reticle/PlayerReticle.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
+// parats
+#include "Parts/PlayerBackWing.h"
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -40,7 +42,9 @@ public:
 
     // 初期化、更新
     void Init();
+    void PartsInit();
     void Update();
+    void PartsUpdate();
 
     void ReticleDraw();
 
@@ -75,11 +79,14 @@ private:
     void RotateUpdate();
     void MoveUpdate();
     void ReboundByBoundary();
-
+    
 private:
     // ブースト
     bool isLBPressed_;
     bool wasLBPressed_;
+
+    //Parts
+    std::array<std::unique_ptr<PlayerBackWing>,2> backWings_;
 
     // globalParameter
     GlobalParameter* globalParameter_;

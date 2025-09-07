@@ -236,6 +236,8 @@
     <ClCompile Include="Game\Actor\Player\TargetManager\TargetManager.cpp" />
     <ClCompile Include="Game\Scene\GameOverScene.cpp" />
     <ClCompile Include="Game\Scene\GameClearScene.cpp" />
+    <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWing.cpp" />
+    <ClCompile Include="Game\Actor\Player\Parts\BasePlayerParts.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -470,6 +472,8 @@
     <ClInclude Include="Game\Actor\Player\TargetManager\TargetManager.h" />
     <ClInclude Include="Game\Scene\GameOverScene.h" />
     <ClInclude Include="Game\Scene\GameClearScene.h" />
+    <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWing.h" />
+    <ClInclude Include="Game\Actor\Player\Parts\BasePlayerParts.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
