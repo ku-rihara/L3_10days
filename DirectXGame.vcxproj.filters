@@ -237,6 +237,7 @@
     <ClCompile Include="Game\Scene\GameOverScene.cpp" />
     <ClCompile Include="Game\Scene\GameClearScene.cpp" />
     <ClCompile Include="Game\GameOverActor\GameOverSprite.cpp" />
+    <ClCompile Include="Game\GameClearActor\GameClearSprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -472,6 +473,7 @@
     <ClInclude Include="Game\Scene\GameOverScene.h" />
     <ClInclude Include="Game\Scene\GameClearScene.h" />
     <ClInclude Include="Game\GameOverActor\GameOverSprite.h" />
+    <ClInclude Include="Game\GameClearActor\GameClearSprite.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
