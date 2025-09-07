@@ -8,6 +8,7 @@
 #include "random.h"
 #include "3d/ViewProjection.h"
 #include "3d/Line3D.h"
+#include "Actor/Player/Bullet/BasePlayerBullet.h"
 
 #include <cmath>
 #include <numbers>
@@ -97,6 +98,9 @@ void NPC::Init(){
 	lineDrawer_->Init(256);
 #endif // _DEBUG
 
+	/// collision 
+	cTransform_.Init();
+	AABBCollider::SetCollisionScale(Vector3{1, 1, 1} *100.0f);
 }
 
 /// ===================================================
@@ -107,6 +111,8 @@ void NPC::Update(){
 	Move();
 	TryFire();//座標などを更新してから
 	BaseObject::Update();
+	cTransform_.translation_ = GetWorldPosition();
+	cTransform_.UpdateMatrix();
 }
 
 void NPC::DebugDraw(const ViewProjection& vp) {
@@ -336,6 +342,23 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 	}
 
 	return best;
+}
+
+void NPC::OnCollisionEnter(BaseCollider* other) {
+	/// 衝突相手はPlayerのBulletならダメージを受ける
+	/// 敵NPCの場合の弾もダメージを受ける
+	
+	if(BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)){
+		int i = 0;
+		i = 1;
+		//hp_ -= bullet->GetPower();
+		//if(hp_ <= 0.0f){
+		//	hp_ = 0.0f;
+		//	// 死亡処理
+		//	Deactivate();
+		//}
+	}
+
 }
 
 /// ===================================================
