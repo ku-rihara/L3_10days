@@ -1,11 +1,14 @@
 #include "PlayerMissile.h"
+// lockOn
+#include"Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include"Actor/NPC/EnemyNPC.h"
 #include "Actor/Player/Player.h"
+#include "BasePlayerBullet.h"
 #include "Frame/Frame.h"
 #include "MathFunction.h"
 #include "Matrix4x4.h"
 #include "PlayerBulletShooter.h"
 #include <numbers>
-#include "BasePlayerBullet.h"
 
 void PlayerMissile::Init() {
     // モデル作成
@@ -51,7 +54,7 @@ void PlayerMissile::Update() {
 
 void PlayerMissile::UpdateMissileMovement(float deltaTime) {
 
-    if (enableTracking_ && hasTarget_) {
+    if (hasTarget_) {
         UpdateTargetTracking(deltaTime);
     }
 
@@ -63,40 +66,42 @@ void PlayerMissile::UpdateMissileMovement(float deltaTime) {
 }
 
 void PlayerMissile::UpdateTargetTracking(float deltaTime) {
-    Vector3 currentPos = baseTransform_.translation_;
-    Vector3 toTarget   = targetPosition_ - currentPos;
+    if (!target_) {
+        return;
+    }
 
+    Vector3 currentPos = baseTransform_.translation_;
+    Vector3 targetPos  = std::visit([](auto&& obj) -> Vector3 {
+        return obj->GetWorldPosition();
+    },
+        *target_);
+
+    Vector3 toTarget = targetPos - currentPos;
     if (toTarget.Length() < 0.1f) {
         // ターゲットに到達
+        isActive_ = false;
         return;
     }
 
     Vector3 desiredDirection = toTarget.Normalize();
     Vector3 currentDirection = velocity_.Normalize();
 
-    // 現在の方向とターゲット方向の角度差を計算
     float dot   = Vector3::Dot(currentDirection, desiredDirection);
     dot         = std::clamp(dot, -1.0f, 1.0f);
     float angle = std::acos(dot);
 
-    // 最大旋回速度制限
     float maxAngleChange = maxTurnRate_ * deltaTime;
     if (angle > maxAngleChange) {
-        // 段階的に方向転換
         Vector3 axis = Vector3::Cross(currentDirection, desiredDirection).Normalize();
         if (axis.Length() < 0.001f) {
-            // 平行な場合は適当な軸を選ぶ
             axis = Vector3::ToUp();
         }
-
         Quaternion rotation  = Quaternion::MakeRotateAxisAngle(axis, maxAngleChange);
         Vector3 newDirection = rotation.RotateVector(currentDirection);
 
-        // 追跡強度を適用
         Vector3 finalDirection = Lerp(currentDirection, newDirection, trackingStrength_ * deltaTime);
         velocity_              = finalDirection.Normalize() * param_.speed;
     } else {
-        // 直接ターゲット方向に向ける
         Vector3 finalDirection = Lerp(currentDirection, desiredDirection, trackingStrength_ * deltaTime);
         velocity_              = finalDirection.Normalize() * param_.speed;
     }
@@ -106,11 +111,14 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
     baseTransform_.quaternion_ = QuaternionFromMatrix(lookMatrix);
 }
 
+
 void PlayerMissile::Fire(const Player& player, const LockOn::LockOnVariant* target) {
-  
-    // ターゲットいればそれを取得
-    if (target) {
-        target_ = target;
+
+   if (target) {
+        target_    = target;
+        hasTarget_ = true;
+    } else {
+        hasTarget_ = false;
     }
 
     // 発射位置を設定

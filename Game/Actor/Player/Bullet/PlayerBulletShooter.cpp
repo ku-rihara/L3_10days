@@ -51,6 +51,9 @@ void PlayerBulletShooter::Update(const Player* player) {
 
     // 非アクティブな弾丸を削除
     CleanupInactiveBullets();
+
+    // ホーミングミサイルの状態をLockOn
+    UpdateHomingMissileStatus();
 }
 
 void PlayerBulletShooter::HandleInput() {
@@ -60,7 +63,7 @@ void PlayerBulletShooter::HandleInput() {
     normalBulletInput_ = input->PushKey(DIK_J) || Input::IsPressPad(0, XINPUT_GAMEPAD_A);
 
     // ミサイル発射
-    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_X);
+    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B);
 
     // 手動リロード
     if (input->TrrigerKey(DIK_R)) {
@@ -142,7 +145,7 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
         }
 
         // 発射
-        bullet->Fire(*player, lockOn_->GetCurrentTarget());
+        bullet->Fire(*player, pLockOn_->GetCurrentTarget());
 
         // 弾丸リストに追加
         activeBullets_.push_back(std::move(bullet));
@@ -217,6 +220,31 @@ void PlayerBulletShooter::StartReload(BulletType type) {
         }
     }
 }
+
+void PlayerBulletShooter::UpdateHomingMissileStatus() {
+    if (!pLockOn_) {
+        return;
+    }
+
+    // アクティブなホーミングミサイルがあるかチェック
+    bool hasActiveHomingMissile = false;
+
+    for (const auto& bullet : activeBullets_) {
+        if (bullet && bullet->GetIsActive()) {
+            // ミサイルタイプかつアクティブな場合
+            PlayerMissile* missile = dynamic_cast<PlayerMissile*>(bullet.get());
+            if (missile) {
+                hasActiveHomingMissile = true;
+                break;
+            }
+        }
+    }
+
+    // LockOnシステムに状態を通知
+    pLockOn_->SetHomingMissileActive(hasActiveHomingMissile);
+}
+
+
 void PlayerBulletShooter::BindParams() {
     for (uint32_t i = 0; i < bulletParameters_.size(); ++i) {
         // 弾のパラメータ

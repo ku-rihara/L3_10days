@@ -37,5 +37,5 @@ private:
     bool hasTarget_ = false;
     float trackingStrength_;
     float maxTurnRate_;
-    bool enableTracking_ = true;
+ 
 };

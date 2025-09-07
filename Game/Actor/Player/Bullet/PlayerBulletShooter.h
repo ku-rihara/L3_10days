@@ -66,6 +66,7 @@ private:
 
     // 入力処理
     void HandleInput();
+   void UpdateHomingMissileStatus();
 
     // 発射処理
     void UpdateNormalBulletShooting(const Player* player);
@@ -89,7 +90,7 @@ private:
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Bullets";
-    LockOn* lockOn_;
+    LockOn* pLockOn_;
     const ViewProjection* viewProjection_ = nullptr;
 
     // パラメータ
@@ -103,7 +104,7 @@ private:
     // アクティブな弾丸のリスト
     std::vector<std::unique_ptr<BasePlayerBullet>> activeBullets_;
 
-    // 発射状態 - 各弾種独立
+    // 発射状態 
     std::array<ShooterState, static_cast<int32_t>(BulletType::COUNT)> shooterStates_;
 
     // ミサイル連射状態
@@ -132,5 +133,6 @@ public:
     /// Setter
     /// -----------------------------------------------------------------
     void SetViewProjection(const ViewProjection* vp) { viewProjection_ = vp; }
-    void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; }
+    void SetLockOn(LockOn* lockOn) { pLockOn_ = lockOn; }
+
 };

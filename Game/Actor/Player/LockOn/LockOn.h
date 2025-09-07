@@ -28,6 +28,10 @@ public:
 
     void OnObjectDestroyed(const LockOnVariant& obj);
 
+    // ホーミングミサイル制御
+    void SetHomingMissileActive(bool isActive) { isHomingMissileActive_ = isActive; }
+    bool IsHomingMissileActive() const { return isHomingMissileActive_; }
+
     // editor
     void AdjustParam();
     void BindParams();
@@ -35,9 +39,9 @@ public:
 private:
     // ヘルパー関数
     Vector3 GetPosition(const LockOnVariant& target) const;
-    /*  bool IsDead(const LockOnVariant& target) const;
-      FactionType GetFaction(const LockOnVariant& target) const;*/
     bool IsLockable(const LockOnVariant& target, FactionType playerFaction) const;
+    /*  bool IsDead(const LockOnVariant& target) const;
+    FactionType GetFaction(const LockOnVariant& target) const;*/
 
     // 自動検索関連
     void AutoSearchTarget(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction);
@@ -84,6 +88,9 @@ private:
     bool prevSwitchInput_ = false;
     float targetChangeSpeed_;
 
+    // ホーミングミサイル制御
+    bool isHomingMissileActive_ = false;
+
     // パラメータ
     float minDistance_; //< 最小距離
     float maxDistance_; //< 最大距離
@@ -101,5 +108,6 @@ public:
     Vector3 GetTargetPosition() const;
 
     const LockOnVariant* GetCurrentTarget() const;
-   
 };
+
+  

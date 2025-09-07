@@ -14,7 +14,7 @@
 
 void LockOn::Init() {
 
-    ///* グローバルパラメータ
+    //* グローバルパラメータ
     globalParameter_ = GlobalParameter::GetInstance();
     globalParameter_->CreateGroup(groupName_, false);
     BindParams();
@@ -64,6 +64,11 @@ void LockOn::Update(const std::vector<LockOnVariant>& targets, const ViewProject
 }
 
 void LockOn::HandleTargetSwitching(const std::vector<LockOnVariant>& targets, const ViewProjection& viewProjection, FactionType playerFaction) {
+    // ホーミングミサイルがアクティブな間はターゲット変更を無効化
+    if (isHomingMissileActive_) {
+        return;
+    }
+
     // ボタン入力の検出
     bool currentSwitchInput = Input::IsTriggerPad(0, XINPUT_GAMEPAD_Y);
     bool switchTriggered    = currentSwitchInput && !prevSwitchInput_;
@@ -102,7 +107,7 @@ void LockOn::HandleTargetSwitching(const std::vector<LockOnVariant>& targets, co
         validTargets_.push_back(pair.second);
     }
 
-    // 現在のターゲットがない場合は最初のターゲットを選択
+    // 現在のターゲットが
     if (!currentTarget_.has_value()) {
         currentTargetIndex_ = 0;
         currentTarget_      = validTargets_[0];
@@ -253,15 +258,6 @@ Vector3 LockOn::GetPosition(const LockOnVariant& target) const {
         target);
 }
 
-// bool LockOn::IsDead(const LockOnVariant& target) const {
-//     target;
-//     return false;
-// }
-//
-// FactionType LockOn::GetFaction(const LockOnVariant& target) const {
-//     target;
-//     return FactionType::Enemy;
-// }
 
 bool LockOn::IsLockable(const LockOnVariant& target, FactionType playerFaction) const {
     /* return !IsDead(target) && GetFaction(target) != playerFaction;*/
@@ -334,3 +330,14 @@ void LockOn::AdjustParam() {
 const LockOn::LockOnVariant* LockOn::GetCurrentTarget() const {
     return currentTarget_ ? &(*currentTarget_) : nullptr;
 }
+
+
+// bool LockOn::IsDead(const LockOnVariant& target) const {
+//     target;
+//     return false;
+// }
+//
+// FactionType LockOn::GetFaction(const LockOnVariant& target) const {
+//     target;
+//     return FactionType::Enemy;
+// }
