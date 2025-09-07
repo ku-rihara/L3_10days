@@ -91,6 +91,8 @@ void Player::MoveUpdate() {
 
     // 跳ね返りの分を加えて適応
     baseTransform_.translation_ += velocity_ + reboundVelocity_;
+
+  /*  baseTransform_.translation_ = Vector3(100, 70, -300);*/
 }
 
 void Player::HandleInput() {
