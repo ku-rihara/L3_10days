@@ -241,6 +241,7 @@
     <ClCompile Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\BasePlayerParts.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWing.cpp" />
+    <ClCompile Include="Game\Actor\Player\Effect\PlayerEffects.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -480,6 +481,7 @@
     <ClInclude Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.h" />
     <ClInclude Include="Game\Actor\Player\Parts\BasePlayerParts.h" />
     <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWing.h" />
+    <ClInclude Include="Game\Actor\Player\Effect\PlayerEffects.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
