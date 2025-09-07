@@ -233,6 +233,9 @@
     <ClCompile Include="Game\Option\GameOption.cpp" />
     <ClCompile Include="Game\Option\Item\OperationOptionItem.cpp" />
     <ClCompile Include="Game\Actor\NPC\SplineFollwer.cpp" />
+    <ClCompile Include="Game\Actor\Player\TargetManager\TargetManager.cpp" />
+    <ClCompile Include="Game\Scene\GameOverScene.cpp" />
+    <ClCompile Include="Game\Scene\GameClearScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -464,6 +467,9 @@
     <ClInclude Include="Game\Option\GameOption.h" />
     <ClInclude Include="Game\Option\Item\OperationOptionItem.h" />
     <ClInclude Include="Game\Actor\NPC\SplineFollower.h" />
+    <ClInclude Include="Game\Actor\Player\TargetManager\TargetManager.h" />
+    <ClInclude Include="Game\Scene\GameOverScene.h" />
+    <ClInclude Include="Game\Scene\GameClearScene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
