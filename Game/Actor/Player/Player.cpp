@@ -44,7 +44,7 @@ void Player::Init() {
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
 
-   PartsInit();
+    PartsInit();
 
     // レティクル
     reticle_ = std::make_unique<PlayerReticle>();
@@ -107,14 +107,22 @@ void Player::MoveUpdate() {
     // 跳ね返りの分を加えて適応
     baseTransform_.translation_ += velocity_ + reboundVelocity_;
 
-  /*  baseTransform_.translation_ = Vector3(100, 70, -300);*/
+    /*  baseTransform_.translation_ = Vector3(100, 70, -300);*/
 }
 
 void Player::PartsUpdate() {
+    // 入力から目標回転を計算
+    Vector3 wingInputRotation = Vector3::ZeroVector();
+
+    // 上下入力をX回転に変換
+    wingInputRotation.x = angleInput_.x * 0.2f;
+
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
+        backWing->SetInputRotation(wingInputRotation);
         backWing->Update();
+        backWing->SetBaseRotate(obj3d_->transform_.quaternion_.ToEuler());
     }
- }
+}
 
 void Player::HandleInput() {
     Input* input = Input::GetInstance();
@@ -501,7 +509,6 @@ void Player::AdjustParam() {
 
 #endif // _DEBUG
 }
-
 
 void Player::SetGameCamera(GameCamera* camera) {
     pGameCamera_ = camera;

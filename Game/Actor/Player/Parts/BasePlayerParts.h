@@ -8,8 +8,7 @@
 class BasePlayerParts : public BaseObject {
 public:
     BasePlayerParts()          = default;
-    virtual ~BasePlayerParts() =  default;
-    
+    virtual ~BasePlayerParts() = default;
 
     virtual void Init(WorldTransform* transform, const std::string& GroupName);
     virtual void Update() = 0;
@@ -25,6 +24,15 @@ protected:
 
     Vector3 offsetPos_;
 
+    Vector3 baseRotate_;
+
+    // 入力による回転制御
+    Vector3 inputRotation_;
+    Vector3 targetInputRotation_;
+    float inputRotationSpeed_; // 回転速度
+    float returnSpeed_; // 元に戻る速度
+
 public:
-    void SetObjQuaternion(const Quaternion& q) { obj3d_->transform_.quaternion_ = q; }
+    void SetBaseRotate(const Vector3& q) { baseRotate_ = q; }
+    void SetInputRotation(const Vector3& input) { targetInputRotation_ = input; }
 };

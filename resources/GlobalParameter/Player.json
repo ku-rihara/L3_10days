@@ -17,7 +17,7 @@
         "reboundPower": 4.949999809265137,
         "reverseDecisionValue": -0.5,
         "rollBackTime": 5.0,
-        "rollRotateLimit": 40.0,
+        "rollRotateLimit": 50.0,
         "rollSmoothness": 1.2000000476837158,
         "rollSpeed": 3.059999942779541,
         "rotationSmoothness": 0.30000001192092896,
