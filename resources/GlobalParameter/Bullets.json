@@ -1,5 +1,7 @@
 {
     "Bullets": {
+        "damage1": 11.0,
+        "damage2": 22.0,
         "intervalTime1": 0.009999999776482582,
         "intervalTime2": 0.2800000011920929,
         "lifeTime1": 0.4300000071525574,

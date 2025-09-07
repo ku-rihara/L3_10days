@@ -11,6 +11,7 @@ enum class BulletType {
 struct BulletParameter {
     float lifeTime;
     float speed;
+    float damage;
 };
 
 class Player;
