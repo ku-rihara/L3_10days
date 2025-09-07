@@ -34,11 +34,12 @@ public:
     friend Vector3 operator*(const float& scalar, const Vector3& vec);
 
 	// 静的メソッドの宣言
+	static Vector3 NormalizeOr(const Vector3& v, const Vector3& fallback);
 	static Vector3 Normalize(const Vector3& v);
 	static Vector3 Multiply(const Vector3& v1, const float& v2);
 	static Vector3 Cross(const Vector3& v1, const Vector3& v2);
 	static float Dot(const Vector3& v1, const Vector3& v2);
-	/*static float Length(const Vector3& v);*/
+	static float Length(const Vector3& v);
 
 	static Vector3 ToUp();      // 上方向
 	static Vector3 ToForward(); // 前方向
