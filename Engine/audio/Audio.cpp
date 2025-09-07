@@ -88,7 +88,7 @@ int Audio::LoadWave(const std::string& filename) {
 }
 
 
-void Audio::PlayWave(const int& soundId, const float& volume) {
+void Audio::PlayWave(const int& soundId, const float& volume, float _pitch) {
     if (soundId < 0 || soundId >= soundDatas_.size()) {
         return;
     }
@@ -119,6 +119,9 @@ void Audio::PlayWave(const int& soundId, const float& volume) {
     float volumeScale = option->GetMasterVolume() * option->GetSEVolume();
     result = pSourceVoice->SetVolume(adjustedVolume * volumeScale);
     assert(SUCCEEDED(result));
+
+	result = pSourceVoice->SetFrequencyRatio(_pitch); // ピッチ変更
+	assert(SUCCEEDED(result));
 
     XAUDIO2_BUFFER buf{};
     buf.pAudioData = soundData.pBuffer;
