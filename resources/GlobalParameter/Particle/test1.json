@@ -1,0 +1,162 @@
+{
+    "test1": {
+        "AdaptRotateIsX": false,
+        "AdaptRotateIsY": false,
+        "AdaptRotateIsZ": false,
+        "BaseColor": [
+            0.6196078658103943,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Color Max": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Color Min": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Direction Max": [
+            -1.0,
+            1.0,
+            0.0
+        ],
+        "Direction Min": [
+            0.9800000190734863,
+            -1.0,
+            0.0
+        ],
+        "Gravity": 0.0,
+        "IntervalTime": 1.0,
+        "LifeTime": 0.6299999952316284,
+        "Particle Count": 30,
+        "Position Base": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Position Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Position Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Rotate Base": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Rotate Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Rotate Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "RotateSpeed Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "RotateSpeed Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Scale Max": 14.100000381469727,
+        "Scale Min": 9.899999618530273,
+        "ScaleV3 Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ScaleV3 Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Speed Max": 16.200000762939453,
+        "Speed Min": 14.399999618530273,
+        "SpeedV3 Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpeedV3 Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "UV IsRoop": false,
+        "UV NumOfFrame": 1,
+        "UV Pos": [
+            0.0,
+            0.0
+        ],
+        "UV Rotate": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "UV ScroolSpeed": 0.0,
+        "UV isFlipX": false,
+        "UV isFlipY": false,
+        "UV isScrool": false,
+        "UV isScroolEachPixel": false,
+        "blendMode": 1,
+        "fov": 45.0,
+        "fovEaseType": 0,
+        "isAlphaNoMove": false,
+        "isBillBord": true,
+        "isFloatVelocity": true,
+        "isMoveForRail": false,
+        "isRailRoop": false,
+        "isRotateforDirection": false,
+        "isScalerScale": true,
+        "isShot": false,
+        "moveSpeed": 0.0,
+        "position": [
+            197.39999389648438,
+            0.5,
+            0.0
+        ],
+        "positionEaseType": 0,
+        "preBillBordType_": 0,
+        "rotation": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "rotationEaseType": 0,
+        "scaleEaseParm.easeTypeInt": 0,
+        "scaleEaseParm.endValueF.max": 0.0,
+        "scaleEaseParm.endValueF.min": 0.0,
+        "scaleEaseParm.endValueV3.max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "scaleEaseParm.endValueV3.min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "scaleEaseParm.isScaleEase": false,
+        "scaleEaseParm.maxTime": 0.0,
+        "selectedTexturePath_": "resources/Texture/uvChecker.png",
+        "timeMode": 1,
+        "timePoint": 1.0
+    }
+}
