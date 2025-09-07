@@ -16,6 +16,16 @@ const std::vector<Hole>& Player::BoundaryHoleSource::GetHoles() const {
     return boundary ? boundary->GetHoles() : kEmpty;
 }
 
+void Player::PartsInit() {
+    // Parts
+    for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
+        backWing = std::make_unique<PlayerBackWing>();
+    }
+    // init
+    backWings_[0]->Init(&baseTransform_, "BackWingLeft");
+    backWings_[1]->Init(&baseTransform_, "BackWingRight");
+}
+
 void Player::Init() {
 
     // グローバルパラメータ
@@ -33,6 +43,8 @@ void Player::Init() {
     baseTransform_.rotateOder_ = RotateOder::Quaternion;
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
+
+    PartsInit();
 
     // レティクル
     reticle_ = std::make_unique<PlayerReticle>();
@@ -67,6 +79,9 @@ void Player::Update() {
     // 移動更新
     MoveUpdate();
 
+    // パーツ更新
+    PartsUpdate();
+
     // レティクル
     reticle_->Update(this, viewProjection_);
 
@@ -91,6 +106,22 @@ void Player::MoveUpdate() {
 
     // 跳ね返りの分を加えて適応
     baseTransform_.translation_ += velocity_ + reboundVelocity_;
+
+    /*  baseTransform_.translation_ = Vector3(100, 70, -300);*/
+}
+
+void Player::PartsUpdate() {
+    // 入力から目標回転を計算
+    Vector3 wingInputRotation = Vector3::ZeroVector();
+
+    // 上下入力をX回転に変換
+    wingInputRotation.x = angleInput_.x * 0.2f;
+
+    for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
+        backWing->SetInputRotation(wingInputRotation);
+        backWing->Update();
+        backWing->SetBaseRotate(obj3d_->transform_.quaternion_.ToEuler());
+    }
 }
 
 void Player::HandleInput() {
@@ -461,6 +492,12 @@ void Player::AdjustParam() {
 
         ImGui::PopID();
     }
+
+    // パーツ
+    for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
+        backWing->AdjustParam();
+    }
+
     // 弾
     if (bulletShooter_) {
         bulletShooter_->AdjustParam();
