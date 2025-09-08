@@ -3,6 +3,7 @@
 #include "Actor/Player/Player.h"
 #include"Actor/NPC/EnemyNPC.h"
 #include"actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include"Actor/Station/Enemy/EnemyStation.h"
 //
 #include "Actor/NPC/Navigation/RectXZWithGatesConstraint.h"
 #include "base/TextureManager.h"

@@ -237,8 +237,8 @@ void GameScene::GameUpdate() {
 	//----- それぞれのLockOn対象を取得 -----
 	// EnemyNPCs
 	std::vector<LockOn::LockOnVariant> targets;
-	auto enemyStation = static_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
-	auto enemyNPCs = enemyStation->GetLiveNpcs();
+	auto enemyStations = static_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
+	auto enemyNPCs = enemyStations->GetLiveNpcs();
 	for (auto* npc : enemyNPCs) {
 		targets.emplace_back(static_cast<EnemyNPC*>(npc));
 	}
@@ -246,6 +246,13 @@ void GameScene::GameUpdate() {
 	for (auto& bb : boundaryBreakers_) {
 		if (bb /*&&生きてたら*/) {
 			targets.emplace_back(bb.get());
+		}
+	}
+	// baseStatuon
+	for (auto& station : stations_) {
+		if (station.second->GetHp() > 0/*&&生きてたら*/) {
+			auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
+			targets.emplace_back(enemyStation);
 		}
 	}
 
