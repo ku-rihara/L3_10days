@@ -50,6 +50,13 @@ void GameClearSprite::Init() {
 		sp->anchorPoint_ = { 0.0f, 0.5f };
 	}
 
+	{	/// DESTROY_COUNT_UNIT
+		auto& sp = sprites_[DESTROY_COUNT_UNIT];
+		uint32_t texHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/GameResult/Unit.png");
+		sp.reset(Sprite::Create(texHandle, { 640.0f, 340.0f }, { 1, 1, 1, 1 }));
+		sp->anchorPoint_ = { 0.0f, 0.5f };
+	}
+
 	{   /// DESTROY_BONUS
 		auto& sp = sprites_[DESTROY_BONUS];
 		uint32_t texHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/GameResult/BreakBonus.png");
