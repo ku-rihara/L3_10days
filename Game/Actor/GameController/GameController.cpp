@@ -1,5 +1,8 @@
 #include "GameController.h"
 
+/// engine
+#include "Frame/Frame.h"
+
 /// game
 #include "Actor/Player/Player.h"
 #include "Actor/Station/Base/BaseStation.h"
@@ -10,6 +13,11 @@ GameController::~GameController() = default;
 void GameController::Update() {
 	isGameClear_ = CheckIsGameClear();
 	isGameOver_ = CheckIsGameOver();
+	isPlayerOutOfField_ = CheckIsPlayerOutOfField();
+
+	if (isPlayerOutOfField_) {
+		outOfFieldTime_ += Frame::DeltaTime();
+	}
 }
 
 bool GameController::CheckIsGameOver() {
@@ -25,7 +33,9 @@ bool GameController::CheckIsGameOver() {
 	}
 
 	/// Playerがフィールド外に一定時間以上出たか
-	/// TODO: 実装
+	if (outOfFieldTime_ >= kMaxOutOfFieldTime_) {
+		result = true;
+	}
 
 	return result;
 }
@@ -41,12 +51,28 @@ bool GameController::CheckIsGameClear() {
 	return result;
 }
 
+bool GameController::CheckIsPlayerOutOfField() {
+	/// 中心から一定距離以上離れたらout of field扱い
+	playerToCenterDistance_ = player_->GetWorldPosition().Length();
+	if (playerToCenterDistance_ > kMaxPlayerToCenterDistance_) {
+		outOfFieldTime_ += Frame::DeltaTime();
+		return true;
+	}
+
+	outOfFieldTime_ = 0.0f;
+	return false;
+}
+
 bool GameController::GetIsGameOver() const {
 	return isGameOver_;
 }
 
 bool GameController::GetIsGameClear() const {
 	return isGameClear_;
+}
+
+bool GameController::GetIsPlayerOutOfField() const {
+	return isPlayerOutOfField_;
 }
 
 

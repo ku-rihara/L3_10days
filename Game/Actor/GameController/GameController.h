@@ -18,6 +18,7 @@ public:
 	/// チェック
 	bool CheckIsGameOver();
 	bool CheckIsGameClear();
+	bool CheckIsPlayerOutOfField();
 
 private:
 	/// ゲームの状態
@@ -29,10 +30,18 @@ private:
 	BaseStation* enemyStation_ = nullptr;
 	BaseStation* playerStation_ = nullptr;
 
+	/// Playerがフィールド外に出ている時間
+	float outOfFieldTime_ = 0.0f;
+	const float kMaxOutOfFieldTime_ = 10.0f;// n秒でゲームオーバー
+	float playerToCenterDistance_ = 0.0f;
+	const float kMaxPlayerToCenterDistance_ = 4000.0f;// 中心からn以上離れたらout of field扱い
+	bool isPlayerOutOfField_ = false;
+
 public:
 	/// getter
 	bool GetIsGameOver() const;
 	bool GetIsGameClear() const;
+	bool GetIsPlayerOutOfField() const;
 
 	void SetPlayer(Player* _player);
 	void SetEnemyStation(BaseStation* _station);
