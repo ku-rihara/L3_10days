@@ -9,8 +9,8 @@
 
 namespace {
     inline bool NearerTo(const Vector3& p, NPC* a, NPC* b) {
-        const float da = (a->GetPosition() - p).Length();
-        const float db = (b->GetPosition() - p).Length();
+        const float da = (a->GetWorldPosition() - p).Length();
+        const float db = (b->GetWorldPosition() - p).Length();
         return da < db;
     }
 }
@@ -126,7 +126,6 @@ void BaseStation::ShowGui() {
             ImGui::Text("Attack Ratio     : %.2f", out.attackRatio);
             ImGui::Text("Desired Defenders: %d", out.desiredDefenders);
             ImGui::Text("Desired Attackers: %d", out.desiredAttackers);
-            ImGui::Text("Next Replan in   : %.2f s", std::max(0.0f, planTimer_));
         }
 
         ImGui::PopID();
@@ -213,31 +212,37 @@ void BaseStation::ReassignRoles() {
     int defenders = std::clamp(out.desiredDefenders, 0, N);
     int attackers = std::clamp(out.desiredAttackers, 0, N - defenders);
 
-    const Vector3 home = GetWorldPosition();
+    const Vector3 home  = GetWorldPosition();
     const Vector3 rival = pRivalStation_ ? pRivalStation_->GetWorldPosition() : home;
 
-    // 射撃候補の供給元をこのステーションに固定（敵NPC＋敵拠点を供給）
+    // 射撃候補の供給元
     for (auto* npc : npcs) if (npc) npc->SetTargetProvider(this);
 
-    // 1) 防衛に近い順で assign
+    // 1) 防衛：自陣近い順
     std::sort(npcs.begin(), npcs.end(),
-              [&](NPC* a, NPC* b) { return NearerTo(home, a, b); });
+        [&](NPC* a, NPC* b){ return NearerTo(home, a, b); });
 
     for (int i = 0; i < defenders && i < (int)npcs.size(); ++i) {
-        npcs[i]->CommandDefend(home);
+        auto* npc = npcs[i];
+        npc->SetTarget(nullptr);           // 攻撃目標解除
+        npc->SetDefendAnchor(home);        // 自陣アンカーで防衛
     }
 
-    // 2) 攻撃（残りから敵拠点に近い順）
+    // 2) 攻撃：残りを敵拠点に近い順
     std::vector<NPC*> rest(npcs.begin() + defenders, npcs.end());
     std::sort(rest.begin(), rest.end(),
-              [&](NPC* a, NPC* b) { return NearerTo(rival, a, b); });
+        [&](NPC* a, NPC* b){ return NearerTo(rival, a, b); });
 
     for (int i = 0; i < attackers && i < (int)rest.size(); ++i) {
-        rest[i]->CommandAttack(pRivalStation_);
+        auto* npc = rest[i];
+        npc->ClearDefendAnchor();
+        npc->SetTarget(pRivalStation_);
     }
 
     // 3) 余りは防衛に寄せる
     for (int i = attackers; i < (int)rest.size(); ++i) {
-        rest[i]->CommandDefend(home);
+        auto* npc = rest[i];
+        npc->SetTarget(nullptr);
+        npc->SetDefendAnchor(home);
     }
 }

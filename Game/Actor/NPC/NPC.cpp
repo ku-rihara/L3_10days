@@ -226,39 +226,6 @@ void NPC::ClearDefendAnchor() {
 void NPC::StartOrbit(const Vector3& center) {
 	navigator_.StartOrbit(center);
 }
-
-void NPC::Move() {
-	const float dt = Frame::DeltaTime();
-	const Vector3 cur = GetWorldPosition();
-
-	// 目標（攻撃時：敵拠点、 防衛時：現在地 or アンカーで Orbit）
-	Vector3 targetPos = cur;
-	if (target_) {
-		targetPos = target_->GetWorldPosition();
-	} else if (hasDefendAnchor_) {
-		StartOrbit(defendAnchor_);
-	} else {
-		StartOrbit(cur);
-	}
-
-	// 穴（境界）があれば取得
-	std::vector<Hole> holes;
-	if (auto* bd = Boundary::GetInstance()) {
-		holes = bd->GetHoles();
-	}
-
-	// Navigator で一歩進める
-	Vector3 delta = navigator_.Tick(dt, cur, targetPos, holes);
-
-	// 制約（任意）
-	if (moveConstraint_) {
-		moveConstraint_->Constrain(cur, delta);
-	}
-
-	// 反映
-	baseTransform_.translation_ += delta;
-}
-
 void NPC::Move() {
 	if (!isActive_) return;
 
@@ -340,9 +307,11 @@ void NPC::TryFire() {
 	// 実弾発射：既存の NpcFierController API に合わせて呼び出し
 	switch (fireMode_) {
 		case FireMode::Homing:
-			// Homing: 目標を追尾
-			Vector3 dir = (target->GetWorldPosition() - muzzle);
-			fireController_->SpawnHoming(muzzle, dir, target);
+			{
+				// Homing: 目標を追尾
+				Vector3 dir = (target->GetWorldPosition() - muzzle);
+				fireController_->SpawnHoming(muzzle, dir, target);
+			}
 			break;
 		case FireMode::Straight:
 		default:
