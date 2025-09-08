@@ -86,7 +86,6 @@ void NpcHomingBullet::Update() {
 		SteerToTarget(dt);
 	}
 
-	// 以降の Move / 衝突 / 寿命処理は基底に任せる
 	NpcBullet::Update();                                  // :contentReference[oaicite:4]{index=4}
 }
 

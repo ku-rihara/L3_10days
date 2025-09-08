@@ -1,6 +1,7 @@
 #pragma once
 #include "Actor/Player/TargetManager/TargetManager.h "
 #include "BasePlayerBullet.h"
+#include "MissileSlotManager.h" // 追加
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include <array>
 #include <cstdint>
@@ -35,15 +36,16 @@ struct MissileParameter {
     float acceleration;
 };
 
-// ミサイル連射状態
-struct MissileBurstState {
-    int32_t currentBurstCount;
-    float burstTimer;
-    bool isBursting;
+// ミサイル設定パラメータ
+struct MissileSystemParameter {
+    int32_t maxSlots    = 2; // 最大スロット数
+    float cooldownTime  = 3.0f; // 各スロットのクールダウン時間
+    float shootInterval = 0.1f; // 発射間隔（連続発射防止）
 };
 
 struct TypeSpecificParameters {
     MissileParameter missile;
+    MissileSystemParameter missileSystem; // 追加
 };
 
 class PlayerBulletShooter {
@@ -75,6 +77,7 @@ private:
     void UpdateMissileShooting(const Player* player);
 
     void FireBullets(const Player* player, BulletType type);
+    void FireMissile(const Player* player); // ミサイル専用発射メソッド
 
     // 弾丸更新・管理
     void UpdateBullets();
@@ -112,8 +115,9 @@ private:
     // 発射状態
     std::array<ShooterState, static_cast<int32_t>(BulletType::COUNT)> shooterStates_;
 
-    // ミサイル連射状態
-    MissileBurstState missileBurstState_;
+    // ミサイルスロット管理
+    MissileSlotManager missileSlotManager_;
+    float missileShootTimer_ = 0.0f; 
 
     // 入力状態
     bool normalBulletInput_ = false;
@@ -131,8 +135,12 @@ public:
 
     const MissileParameter& GetMissileParameter() const { return typeSpecificParams_.missile; }
 
-    int32_t GetMissileBurstCount() const { return missileBurstState_.currentBurstCount; }
-    bool IsMissileBursting() const { return missileBurstState_.isBursting; }
+    // ミサイルスロット関連のGetter
+    int32_t GetAvailableMissileSlots() const { return missileSlotManager_.GetAvailableSlotCount(); }
+    int32_t GetMaxMissileSlots() const { return missileSlotManager_.GetMaxSlots(); }
+    bool IsAnyMissileSlotAvailable() const { return missileSlotManager_.HasAnyAvailableSlot(); }
+    float GetMissileSlotCooldownProgress(int32_t slotIndex) const { return missileSlotManager_.GetSlotCooldownProgress(slotIndex); }
+    bool IsMissileSlotAvailable(int32_t slotIndex) const { return missileSlotManager_.IsSlotAvailable(slotIndex); }
 
     /// -----------------------------------------------------------------
     /// Setter
