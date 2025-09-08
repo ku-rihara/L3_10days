@@ -13,15 +13,13 @@ SamplerState gSampler : register(s0);
 PSOutput main(VSOutput input) {
 	PSOutput output;
 	
-	float4 baseColor = float4(1, 0, 0, 1);
-	
 	float distance = length(input.screenPosition.xy - gMiniMapSize.position);
 	if(distance > gMiniMapSize.radius) {
 		discard;
 	}
 
 	float4 texColor = gTexture.Sample(gSampler, input.texcoord);
-	output.color = texColor * baseColor;
+	output.color = texColor;
 	if(output.color.a < 0.1) {
 		discard;
 	}

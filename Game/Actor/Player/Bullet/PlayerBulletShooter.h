@@ -111,6 +111,7 @@ private:
 
     // アクティブな弾丸のリスト
     std::vector<std::unique_ptr<BasePlayerBullet>> activeBullets_;
+    std::vector<BasePlayerBullet*> activeMissiles_;
 
     // 発射状態
     std::array<ShooterState, static_cast<int32_t>(BulletType::COUNT)> shooterStates_;
@@ -128,6 +129,7 @@ public:
     /// Getter
     /// -----------------------------------------------------------------
     std::vector<BasePlayerBullet*> GetActiveBullets() const;
+	const std::vector<BasePlayerBullet*>& GetActiveMissiles() const;
     int32_t GetCurrentAmmo(BulletType type) const;
     bool IsReloading(BulletType type) const;
     float GetReloadProgress(BulletType type) const;

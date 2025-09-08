@@ -84,15 +84,15 @@ void MiniMapIconPipeline::CreateGraphicsPipeline() {
 	rtBlend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	D3D12_BLEND_DESC blendDescNormal = {};
-	blendDescNormal.RenderTarget[0] = rtBlend;
-	//blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
-	//blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	//blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-	//blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	//blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	//blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-	//blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	//blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	//blendDescNormal.RenderTarget[0] = rtBlend;
+	blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
+	blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	// RasterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -211,34 +211,49 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 		return;
 	}
 
-
-
 	vertexBuffer_.BindForCommandList(_cmdList);
 	indexBuffer_.BindForCommandList(_cmdList);
-
-
-	const size_t kIconCount = 2;
-	StructuredBuffer<IconBufferData>* iconBuffer[kIconCount] = {
-		&_miniMap->GetFriendIconBufferRef(),
-		&_miniMap->GetEnemyIconBufferRef()
-	};
-
-	UINT instanceCounts[kIconCount] = {
-		_miniMap->GetFriendIconCount(),
-		_miniMap->GetEnemyIconCount()
-	};
 
 	/// MiniMapSize Bind
 	_miniMap->GetMiniMapDataBufferRef().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_MINI_MAP_SIZE);
 
-	/// Texture Bind
+
+	enum ICON_TYPE : size_t {
+		FRIEND_ICON,		 //< 味方のアイコン
+		ENEMY_ICON,			 //< 敵のアイコン
+		PLAYER_MISSILE_ICON, //< プレイヤーのミサイルアイコン
+		ENEMY_MISSILE_ICON,	 //< 敵のミサイルアイコン
+		ENEMY_STATION_ICON,  //< 敵の基地アイコン
+		ICON_TYPE_MAX
+	};
+
+	StructuredBuffer<IconBufferData>* iconBuffer[ICON_TYPE_MAX] = {
+		&_miniMap->GetFriendIconBufferRef(),
+		&_miniMap->GetEnemyIconBufferRef(),
+		&_miniMap->GetPlayerMissileBufferRef(),
+	};
+
+	UINT instanceCounts[ICON_TYPE_MAX] = {
+		_miniMap->GetFriendIconCount(),
+		_miniMap->GetEnemyIconCount(),
+		_miniMap->GetPlayerMissileCount(),
+	};
+
+	/// 各ICONのテクスチャを取得
 	TextureManager* textureManager = TextureManager::GetInstance();
-	uint32_t textureIndex = textureManager->LoadTexture("./resources/Texture/MiniMap/Icon.png");
-	D3D12_GPU_DESCRIPTOR_HANDLE	gpuHandle = textureManager->GetTextureHandle(textureIndex);
-	_cmdList->SetGraphicsRootDescriptorTable(ROOT_PARAM_TEXTURE, gpuHandle);
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandles[ICON_TYPE_MAX] = {
+		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/Icon.png")),
+		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/RadarIconEnemy.png")),
+		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/uvChecker.png")),
+	};
 
 	UINT indexCount = static_cast<UINT>(indexBuffer_.GetIndices().size());
-	for (size_t i = 0; i < kIconCount; i++) {
+	for (size_t i = 0; i < ICON_TYPE_MAX; i++) {
+		if (!iconBuffer[i]) {
+			continue;
+		}
+
+		_cmdList->SetGraphicsRootDescriptorTable(ROOT_PARAM_TEXTURE, gpuHandles[i]);
 		iconBuffer[i]->BindToCommandList(ROOT_PARAM_ICON, _cmdList);
 
 		_cmdList->DrawIndexedInstanced(indexCount, instanceCounts[i], 0, 0, 0);

@@ -148,6 +148,7 @@ void PlayerBulletShooter::FireMissile(const Player* player) {
             // ミサイル固有のパラメータを設定
             auto* missile = dynamic_cast<PlayerMissile*>(bullet.get());
             if (missile) {
+                activeMissiles_.push_back(missile);
                 missile->SetMissileParameters(typeSpecificParams_.missile);
 
                 // ターゲットが存在する場合、TargetManagerに登録してIDを取得
@@ -187,6 +188,7 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
         if (type == BulletType::MISSILE) {
             auto* missile = dynamic_cast<PlayerMissile*>(bullet.get());
             if (missile) {
+				activeMissiles_.push_back(missile);
                 missile->SetMissileParameters(typeSpecificParams_.missile);
 
                 // ターゲットが存在する場合、TargetManagerに登録してIDを取得
@@ -215,6 +217,13 @@ void PlayerBulletShooter::UpdateBullets() {
 }
 
 void PlayerBulletShooter::CleanupInactiveBullets() {
+    activeMissiles_.erase(
+        std::remove_if(activeMissiles_.begin(), activeMissiles_.end(),
+            [](BasePlayerBullet* missile) {
+                return !missile || !missile->GetIsActive();
+            }),
+		activeMissiles_.end());
+
     // 非アクティブな弾丸を削除
     activeBullets_.erase(
         std::remove_if(activeBullets_.begin(), activeBullets_.end(),
@@ -431,6 +440,10 @@ std::vector<BasePlayerBullet*> PlayerBulletShooter::GetActiveBullets() const {
     }
 
     return bullets;
+}
+
+const std::vector<BasePlayerBullet*>& PlayerBulletShooter::GetActiveMissiles() const {
+	return activeMissiles_;
 }
 
 int32_t PlayerBulletShooter::GetActiveBulletCount() const {

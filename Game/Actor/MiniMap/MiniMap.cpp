@@ -13,6 +13,8 @@ void MiniMap::Init(BaseStation* _ally, BaseStation* _enemy) {
 	pEnemyStation_ = _enemy;
 
 	TextureManager::GetInstance()->LoadTexture("./resources/Texture/MiniMap/Icon.png");
+	TextureManager::GetInstance()->LoadTexture("./resources/Texture/MiniMap/RadarIconEnemy.png");
+	TextureManager::GetInstance()->LoadTexture("./resources/Texture/uvChecker.png");
 
 	miniMapSize_ = { 300.0f, 300.0f };
 	miniMapPos_ = { 12.0f, 720.0f - 12.0f };
@@ -40,6 +42,7 @@ void MiniMap::Init(BaseStation* _ally, BaseStation* _enemy) {
 	/// ミニマップに表示する味方、敵の最大数を設定
 	friendIconBuffer_.Create(100, DirectXCommon::GetInstance()->GetDxDevice());
 	enemyIconBuffer_.Create(100, DirectXCommon::GetInstance()->GetDxDevice());
+	playerMissile_.Create(12, DirectXCommon::GetInstance()->GetDxDevice());
 
 	miniMapBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	Vector2 size = miniMapFrameSprite_->GetTextureSize();
@@ -69,10 +72,6 @@ void MiniMap::Update() {
 
 	/// ICONに積める
 	Player* player = dynamic_cast<Player*>(playerPtr_);
-
-	/// 仮
-	//player->SetWorldPosition({-110, 0,0});
-
 	if (player) {
 		/// playerの位置、回転を取得
 		const Vector3& playerPos = player->GetWorldPosition();
@@ -83,6 +82,7 @@ void MiniMap::Update() {
 		);
 
 		miniMapFrameSprite_->transform_.rotate.z = playerRotY;
+		matPlayerRotY_ = MakeRotateYMatrix(playerRotY);
 
 
 		/// bufferの更新
@@ -96,28 +96,20 @@ void MiniMap::Update() {
 
 
 
-		float scale = 32.0f; 
+		float mapScale = 0.1f; /// マップの縮尺
+		float scale = 32.0f;
 		/// 味方のアイコン更新
 		size_t index = 0;
 		for (auto& fd : friends_) {
-			Vector3 toPlayerDirection = fd->GetWorldPosition() - playerPos;
-			toPlayerDirection.y = 0.0f;
-			toPlayerDirection = toPlayerDirection.Normalize();
-
-			/// ある程度離れていたら表示しても意味がないのでスルー
-			float distance = (fd->GetWorldPosition() - playerPos).Length();
-			if (distance > 320.0f) {
-				//continue;
-			}
-
-			/// player から見た方向を計算
-			Vector2 position = { toPlayerDirection.x * distance, -toPlayerDirection.z * distance };
-			/// mini map上の位置に変換
-			position += miniMapPos_;
-
-			float rotate = fd->GetTransform().rotation_.y;
-			Matrix4x4 matIcon = MakeAffineMatrix(Vector3(scale, scale, 1.0f), Vector3(0.0f, 0.0f, rotate), Vector3(position.x, position.y, 0.0f));
-
+			Vector3 relativePos = fd->GetWorldPosition() - playerPos;
+			Vector3 localPos = TransformMatrix(relativePos, matPlayerRotY_);
+			localPos *= mapScale;
+			Vector2 mapPos = { miniMapPos_.x + localPos.x, miniMapPos_.y - localPos.z };
+			Matrix4x4 matIcon = MakeAffineMatrix(
+				Vector3(scale, scale, 1.0f),
+				Vector3(0.0f, 0.0f, fd->GetTransform().rotation_.y),
+				Vector3(mapPos.x, mapPos.y, 0.0f)
+			);
 			friendIconBuffer_.SetMappedData(index++, { matIcon });
 		}
 
@@ -125,33 +117,43 @@ void MiniMap::Update() {
 		/// 敵のアイコン更新
 		index = 0;
 		for (auto& enemy : enemies_) {
-			Vector3 toPlayerDirection = enemy->GetWorldPosition() - playerPos;
-			toPlayerDirection.y = 0.0f;
-			toPlayerDirection = toPlayerDirection.Normalize();
-
-			/// ある程度離れていたら表示しても意味がないのでスルー
-			float distance = (enemy->GetWorldPosition() - playerPos).Length();
-			if (distance > 320.0f) {
-				//continue;
-			}
-
-			/// player から見た方向を計算
-			Vector2 position = { toPlayerDirection.x * distance, -toPlayerDirection.z * distance };
-			/// mini map上の位置に変換
-			position += miniMapPos_;
-
-			float rotate = enemy->GetTransform().rotation_.y;
-			Matrix4x4 matIcon = MakeAffineMatrix(Vector3(scale, scale, 1.0f), Vector3(0.0f, 0.0f, rotate), Vector3(position.x, position.y, 0.0f));
-
-			friendIconBuffer_.SetMappedData(index++, { matIcon });
+			Vector3 relativePos = enemy->GetWorldPosition() - playerPos;
+			Vector3 localPos = TransformMatrix(relativePos, matPlayerRotY_);
+			localPos *= mapScale;
+			Vector2 mapPos = { miniMapPos_.x + localPos.x, miniMapPos_.y - localPos.z };
+			Matrix4x4 matIcon = MakeAffineMatrix(
+				Vector3(scale, scale, 1.0f),
+				Vector3(0.0f, 0.0f, enemy->GetTransform().rotation_.y),
+				Vector3(mapPos.x, mapPos.y, 0.0f)
+			);
+			enemyIconBuffer_.SetMappedData(index++, { matIcon });
 		}
 
+		/// ミサイルのアイコン更新
+		index = 0;
+		for (const auto& missile : player->GetBulletShooter()->GetActiveMissiles()) {
+			Vector3 relativePos = missile->GetWorldPosition() - playerPos;
+			Vector3 localPos = TransformMatrix(relativePos, matPlayerRotY_);
+			localPos *= mapScale;
+			Vector2 mapPos = { miniMapPos_.x + localPos.x, miniMapPos_.y - localPos.z };
+			Matrix4x4 matIcon = MakeAffineMatrix(
+				Vector3(scale, scale, 1.0f),
+				Vector3(0.0f, 0.0f, missile->GetTransform().rotation_.y),
+				Vector3(mapPos.x, mapPos.y, 0.0f)
+			);
+			playerMissile_.SetMappedData(index++, { matIcon });
+		}
+
+		missileCount_ = static_cast<UINT>(player->GetBulletShooter()->GetActiveMissiles().size());
 	}
 
 }
 
-void MiniMap::DrawMiniMap() {
+void MiniMap::DrawMiniMapFrame() {
 	miniMapFrameSprite_->Draw();
+}
+
+void MiniMap::DrawMiniMapPlayerIcon() {
 	miniMapPlayerIconSprite_->Draw();
 }
 
@@ -172,6 +174,10 @@ StructuredBuffer<IconBufferData>& MiniMap::GetEnemyIconBufferRef() {
 	return enemyIconBuffer_;
 }
 
+StructuredBuffer<IconBufferData>& MiniMap::GetPlayerMissileBufferRef() {
+	return playerMissile_;
+}
+
 ConstantBuffer<PlayerBufferData>& MiniMap::GetPlayerBufferRef() {
 	return playerBuffer_;
 }
@@ -187,3 +193,17 @@ UINT MiniMap::GetFriendIconCount() const {
 UINT MiniMap::GetEnemyIconCount() const {
 	return static_cast<UINT>(enemies_.size());
 }
+
+UINT MiniMap::GetPlayerMissileCount() const {
+	return missileCount_;
+}
+
+Vector2 MiniMap::ToVector2(const Vector3& _vec3) {
+	return Vector2(_vec3.x, _vec3.z);
+}
+
+Vector2 MiniMap::ApplyRotation(const Vector3& _point) {
+	/// プレイヤーの回転を考慮して回転させる
+	return ToVector2(TransformMatrix(_point, matPlayerRotY_));
+}
+
