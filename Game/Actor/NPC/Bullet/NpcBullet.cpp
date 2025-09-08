@@ -54,6 +54,11 @@ void NpcBullet::Move() {
 
 void NpcBullet::Hit() {}
 
+void NpcBullet::OnCollisionEnter(BaseCollider* other) {
+	/// 何かに衝突したら消える
+	//Deactivate();
+}
+
 /// ===================================================
 /// パラメータ同期
 /// ===================================================

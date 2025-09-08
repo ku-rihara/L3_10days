@@ -1,9 +1,10 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
+#include "Collider/AABBCollider.h"
 
 class GlobalParameter;
 
-class NpcBullet : public BaseObject {
+class NpcBullet : public BaseObject, public AABBCollider {
 public:
 	/// ===================================================
 	/// public func
@@ -22,6 +23,10 @@ public:
 	void Activate()   noexcept { isActive_ = true;  lifeRemain_ = maxLifeTime_; }
 	void Deactivate() noexcept { isActive_ = false; }
 	bool IsAlive() const noexcept { return isActive_; }
+
+	void OnCollisionEnter(BaseCollider* other) override;
+
+	float GetDamage() const { return damage_; }
 
 protected:
 	/// ===================================================
@@ -52,7 +57,7 @@ protected:
 	float maxLifeTime_ = 8.0f;		//< s
 
 	// Runtime
-	Vector3 dir_{ 0,0,1 };			//< 方向
+	Vector3 dir_{ 0, 0, 1 };			//< 方向
 	float lifeRemain_ = 0.0f;		//< 
 	float radius_ = 5.0f;			//< 弾の半径
 	bool isActive_ = false;			//< アクティブフラグ

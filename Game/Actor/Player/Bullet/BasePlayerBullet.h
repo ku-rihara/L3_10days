@@ -44,4 +44,6 @@ public:
 
     // setter
     void SetParameter(const BulletType& type, const BulletParameter& parameter);
+
+    const BulletParameter& GetParameter() const;
 };

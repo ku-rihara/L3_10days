@@ -2,6 +2,9 @@
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Frame/Frame.h"
 #include "Actor/NPC/NPC.h"
+#include "Actor/Player/Bullet/BasePlayerBullet.h"
+#include "Actor/NPC/Bullet/NpcBullet.h"
+
 #include "3d/ViewProjection.h"
 #include "random.h"
 #include <algorithm>
@@ -26,11 +29,16 @@ void BaseStation::Init() {
 
 	// 初期座標適用
 	baseTransform_.translation_ = initialPosition_;
+	baseTransform_.scale_ = Vector3(1, 1, 1) * 10.0f;
 	baseTransform_.UpdateMatrix();
 
 	// === AI 初期化 ===
 	ai_.Initialize(this, unitDirector_);
 	ai_.SetConfig(aiCfg_);
+
+	// コライダー
+	AABBCollider::Init();
+	SetCollisionScale(Vector3(1, 1, 1) * 50.0f);
 
 	this->Update();
 
@@ -47,6 +55,9 @@ void BaseStation::Update() {
 		/*pos*/   baseTransform_.translation_,
 		/*rival*/ pRivalStation_,
 		/*H*/     homeThreatDebug_);
+
+	cTransform_.translation_ = GetWorldPosition();
+	cTransform_.UpdateMatrix();
 }
 
 void BaseStation::DrawDebug(const ViewProjection& vp) {
@@ -183,7 +194,34 @@ void BaseStation::CollectTargets(std::vector<const BaseObject*>& out) const {
 	}
 }
 
-void BaseStation::OnCollisionEnter(BaseCollider* /*other*/) {
-	/// TODO: 衝突した相手が弾ならダメージを受ける
+void BaseStation::OnCollisionEnter(BaseCollider* other) {
+
+	/// 敵の基地にプレイヤー弾が当たったらダメージ
+	if (faction_ == FactionType::Enemy) {
+		if (BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)) {
+			float damage = bullet->GetParameter().damage;
+			hp_ -= damage;
+			if (hp_ < 0.0f) {
+				/// TODO: 死亡
+				hp_ = 0.0f;
+			}
+		}
+
+		return;
+	}
+
+
+	/// 味方の基地に敵弾が当たったらダメージ
+	if (faction_ == FactionType::Ally) {
+		if (NpcBullet* bullet = dynamic_cast<NpcBullet*>(other)) {
+			float damage = bullet->GetDamage();
+			hp_ -= damage;
+			if (hp_ < 0.0f) {
+				/// TODO: 死亡
+				hp_ = 0.0f;
+
+			}
+		}
+	}
 
 }

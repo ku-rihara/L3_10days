@@ -9,6 +9,7 @@
 #include "3d/ViewProjection.h"
 #include "3d/Line3D.h"
 #include "Actor/Player/Bullet/BasePlayerBullet.h"
+#include "Actor/NPC/Bullet/NpcBullet.h"
 
 #include <cmath>
 #include <numbers>
@@ -92,6 +93,9 @@ void NPC::Init() {
 	shootCooldown_ = Random::Range(0.0f, shootInterval_);
 
 	BaseObject::Update();	//transformの更新を挟む
+
+	/// hp
+	hp_ = maxHP_;
 
 #ifdef _DEBUG
 	lineDrawer_ = std::make_unique<Line3D>();
@@ -345,18 +349,34 @@ const BaseObject* NPC::PickFrustumTarget_() const {
 }
 
 void NPC::OnCollisionEnter(BaseCollider* other) {
-	/// 衝突相手はPlayerのBulletならダメージを受ける
-	/// 敵NPCの場合の弾もダメージを受ける
 
-	if (BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)) {
-		int i = 0;
-		i = 1;
-		//hp_ -= bullet->GetPower();
-		//if(hp_ <= 0.0f){
-		//	hp_ = 0.0f;
-		//	// 死亡処理
-		//	Deactivate();
-		//}
+	/// 敵のNPCにプレイヤー弾が当たったらダメージ
+	if (faction_ == FactionType::Enemy) {
+		if (BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)) {
+			float damage = bullet->GetParameter().damage;
+			hp_ -= damage;
+			if (hp_ <= 0.0f) {
+				hp_ = 0.0f;
+				// 死亡処理
+				Deactivate();
+			}
+		}
+		return;
+	}
+
+	// 味方NPCに敵弾が当たったらダメージ
+	if (faction_ == FactionType::Ally) {
+		/// 敵弾のクラスをここに追加
+		if (NpcBullet* bullet = dynamic_cast<NpcBullet*>(other)) {
+			float damage = bullet->GetDamage();
+			hp_ -= damage;
+			if (hp_ <= 0.0f) {
+				hp_ = 0.0f;
+				// 死亡処理
+				Deactivate();
+			}
+		}
+		return;
 	}
 
 }

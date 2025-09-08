@@ -91,6 +91,7 @@ protected:
 
 	// パラメータ
 	float maxHP_ = 10.0f;				//< 最大hp
+	float hp_;							//< 現在のhp
 	float speed_ = 5.0f;				//< 基本移動速度（Navigator に渡す）
 	float shootInterval_ = 5.0f;
 	float shootCooldown_ = 1.0f;
