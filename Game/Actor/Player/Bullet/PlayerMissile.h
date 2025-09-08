@@ -3,6 +3,11 @@
 #include "Actor/Player/TargetManager/TargetManager.h"
 #include "BasePlayerBullet.h"
 #include "PlayerBulletShooter.h"
+#include <array>
+#include <utility/ParticleEditor/ParticleEmitter.h>
+
+// 前方宣言
+class PlayerBulletShooter;
 
 class PlayerMissile : public BasePlayerBullet {
 public:
@@ -29,6 +34,9 @@ public:
     void SetTargetID(TargetID targetId);
     TargetID GetTargetID() const { return targetId_; }
 
+    // パーティクルエミッター設定
+    void SetParticleShooter(PlayerBulletShooter* shooter) { particleShooter_ = shooter; }
+
 private:
     // 更新処理
     void UpdateMissileMovement(float deltaTime);
@@ -50,9 +58,11 @@ private:
     bool hasTarget_ = false;
 
     MissileParameter uniqueParam_;
-    
 
     // IDベースのターゲット管理
     TargetID targetId_            = INVALID_TARGET_ID;
     TargetManager* targetManager_ = nullptr;
+
+    // パーティクルエミッター
+    PlayerBulletShooter* particleShooter_ = nullptr;
 };

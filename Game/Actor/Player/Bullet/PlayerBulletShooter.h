@@ -1,14 +1,14 @@
 #pragma once
 #include "Actor/Player/TargetManager/TargetManager.h "
 #include "BasePlayerBullet.h"
-#include "MissileSlotManager.h" // 追加
+#include "MissileSlotManager.h" 
 #include "utility/ParameterEditor/GlobalParameter.h"
+#include "utility/ParticleEditor/ParticleEmitter.h"
 #include <array>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
-#include "utility/ParticleEditor/ParticleEmitter.h"
 
 class LockOn;
 class BasePlayerBullet;
@@ -55,7 +55,7 @@ public:
     ~PlayerBulletShooter() = default;
 
 public:
-    void Init( WorldTransform* parent);
+    void Init(WorldTransform* parent);
     void Update(const Player* player);
 
     ///-------------------------------------------------------------------------------------
@@ -64,6 +64,11 @@ public:
     void BindParams();
     void AdjustParam();
     void DrawEnemyParamUI(BulletType type);
+
+    ///-------------------------------------------------------------------------------------
+    /// Particle Methods (Missileから呼び出し用)
+    ///-------------------------------------------------------------------------------------
+    void EmitMissileParticle(const Vector3& position);
 
 private:
     // 初期化関数
@@ -109,6 +114,7 @@ private:
 
     // particle
     std::array<std::unique_ptr<ParticleEmitter>, 3> playerShotEmitter_;
+    std::array<std::unique_ptr<ParticleEmitter>, 3> playerMissileEmitter_;
 
     // 弾種別専用パラメータ
     TypeSpecificParameters typeSpecificParams_;
@@ -122,7 +128,7 @@ private:
 
     // ミサイルスロット管理
     MissileSlotManager missileSlotManager_;
-    float missileShootTimer_ = 0.0f; 
+    float missileShootTimer_ = 0.0f;
 
     // 入力状態
     bool normalBulletInput_ = false;
@@ -133,7 +139,7 @@ public:
     /// Getter
     /// -----------------------------------------------------------------
     std::vector<BasePlayerBullet*> GetActiveBullets() const;
-	const std::vector<BasePlayerBullet*>& GetActiveMissiles() const;
+    const std::vector<BasePlayerBullet*>& GetActiveMissiles() const;
     int32_t GetCurrentAmmo(BulletType type) const;
     bool IsReloading(BulletType type) const;
     float GetReloadProgress(BulletType type) const;

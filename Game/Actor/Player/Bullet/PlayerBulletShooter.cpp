@@ -26,14 +26,21 @@ void PlayerBulletShooter::Init(WorldTransform* parent) {
         typeSpecificParams_.missileSystem.maxSlots,
         typeSpecificParams_.missileSystem.cooldownTime);
 
-    // particle
+    // 通常弾用particle
     playerShotEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot1", PrimitiveType::Plane, 500));
     playerShotEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot2", PrimitiveType::Plane, 500));
     playerShotEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot3", PrimitiveType::Plane, 500));
 
+    // ミサイル用particle
+    playerMissileEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile1", PrimitiveType::Plane, 11));
+    playerMissileEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile2", PrimitiveType::Box, 2000));
+    playerMissileEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile3", PrimitiveType::Plane, 11));
+
     for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
         playerShotEmitter_[i]->SetParentTransform(parent);
     }
+
+ /* playerMissileEmitter_[0]->SetParentTransform(parent);*/
 
     // 初期弾数設定
     InitializeAmmo();
@@ -82,10 +89,16 @@ void PlayerBulletShooter::Update(const Player* player) {
     // ホーミングミサイルの状態をLockOn
     UpdateHomingMissileStatus();
 
-    // particle
+    // 通常弾particle
     for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
         playerShotEmitter_[i]->Update();
         playerShotEmitter_[i]->EditorUpdate();
+    }
+
+    // ミサイル用particle
+    for (int32_t i = 0; i < playerMissileEmitter_.size(); ++i) {
+        playerMissileEmitter_[i]->Update();
+        playerMissileEmitter_[i]->EditorUpdate();
     }
 }
 
@@ -130,7 +143,6 @@ void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
 }
 
 void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
-
     if (missileInput_ && CanShootMissile()) {
         FireMissile(player);
     }
@@ -156,6 +168,9 @@ void PlayerBulletShooter::FireMissile(const Player* player) {
             if (missile) {
                 activeMissiles_.push_back(missile);
                 missile->SetMissileParameters(typeSpecificParams_.missile);
+
+                // Shooterのポインタを設定（パーティクル用）
+                missile->SetParticleShooter(this);
 
                 // ターゲットが存在する場合、TargetManagerに登録してIDを取得
                 const LockOn::LockOnVariant* currentTarget = pLockOn_->GetCurrentTarget();
@@ -197,6 +212,9 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
                 activeMissiles_.push_back(missile);
                 missile->SetMissileParameters(typeSpecificParams_.missile);
 
+                // Shooterのポインタを設定
+                missile->SetParticleShooter(this);
+
                 // ターゲットが存在する場合、TargetManagerに登録してIDを取得
                 const LockOn::LockOnVariant* currentTarget = pLockOn_->GetCurrentTarget();
                 if (currentTarget && targetManager_) {
@@ -205,6 +223,7 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
                 }
             }
         } else {
+            // 通常弾の場合のパーティクル
             for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
                 playerShotEmitter_[i]->Emit();
             }
@@ -249,7 +268,7 @@ void PlayerBulletShooter::UpdateReload() {
     for (size_t i = 0; i < shooterStates_.size(); ++i) {
         ShooterState& state = shooterStates_[i];
 
-        // 　リロード中の処理
+        // リロード中の処理
         if (!state.isReloading) {
             continue;
         }
@@ -284,12 +303,6 @@ void PlayerBulletShooter::StartReload(BulletType type) {
     if (!state.isReloading && state.currentAmmo < shooterParameters_[typeIndex].maxBulletNum) {
         state.isReloading = true;
         state.reloadTimer = shooterParameters_[typeIndex].reloadTime;
-
-        //// ミサイルの連射状態リセット
-        // if (type == BulletType::MISSILE) {
-        //     missileBurstState_.isBursting        = false;
-        //     missileBurstState_.currentBurstCount = 0;
-        // }
     }
 }
 
@@ -314,6 +327,16 @@ void PlayerBulletShooter::UpdateHomingMissileStatus() {
 
     // LockOnシステムに状態を通知
     pLockOn_->SetHomingMissileActive(hasActiveHomingMissile);
+}
+
+// ミサイルから呼び出されるパーティクル発射メソッド
+void PlayerBulletShooter::EmitMissileParticle(const Vector3& position) {
+  
+  /*  playerMissileEmitter_[0]->Emit();*/
+    for (int32_t i = 0; i < playerMissileEmitter_.size(); ++i) {
+        playerMissileEmitter_[i]->SetTargetPosition(position);
+        playerMissileEmitter_[i]->Emit();
+    }
 }
 
 void PlayerBulletShooter::BindParams() {

@@ -8,6 +8,7 @@
 #include "MathFunction.h"
 #include "Matrix4x4.h"
 #include "Physics/SweepAabb.h"
+#include "PlayerBulletShooter.h"
 #include <numbers>
 
 void PlayerMissile::Init() {
@@ -29,6 +30,9 @@ void PlayerMissile::Init() {
     targetPosition_  = Vector3::ZeroVector();
     targetId_        = INVALID_TARGET_ID;
     targetManager_   = TargetManager::GetInstance();
+
+    // パーティクルシューターのポインタは外部から設定される
+    particleShooter_ = nullptr;
 }
 
 void PlayerMissile::Update() {
@@ -60,6 +64,11 @@ void PlayerMissile::Update() {
     BaseObject::Update();
     cTransform_.translation_ = GetWorldPosition();
     cTransform_.UpdateMatrix();
+
+    // パーティクル発射
+    if (particleShooter_) {
+        particleShooter_->EmitMissileParticle(GetWorldPosition());
+    }
 }
 
 void PlayerMissile::UpdateSpeed(float deltaTime) {

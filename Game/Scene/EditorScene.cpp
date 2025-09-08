@@ -36,6 +36,11 @@ void EditorScene::Init() {
     playerShotEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot2", PrimitiveType::Plane, 500));
     playerShotEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot3", PrimitiveType::Plane, 500));
     
+    playerMissileEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile1", PrimitiveType::Plane, 500));
+    playerMissileEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile2", PrimitiveType::Box, 500));
+    playerMissileEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile3", PrimitiveType::Plane, 500));
+   
+
     easingEditor_.SetVector3Target(&easingTestObject_->GetEasingData());
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
@@ -49,12 +54,20 @@ void EditorScene::Update() {
     //    testEmitter_[i]->Emit(); // 発射
     //}
 
-    for (int i = 0; i < playerShotEmitter_.size(); i++) {
-        playerShotEmitter_[i]->Update(); // 更新
-        playerShotEmitter_[i]->EditorUpdate(); // パラメータ編集
-        if (input_->TrrigerKey(DIK_Y)) {
-            playerShotEmitter_[i]->Emit(); // 発射
-        }
+    //for (int i = 0; i < playerShotEmitter_.size(); i++) {
+    //    playerShotEmitter_[i]->Update(); // 更新
+    //    playerShotEmitter_[i]->EditorUpdate(); // パラメータ編集
+    //    if (input_->TrrigerKey(DIK_Y)) {
+    //        playerShotEmitter_[i]->Emit(); // 発射
+    //    }
+    //}
+
+    for (int i = 0; i < playerMissileEmitter_.size(); i++) {
+        playerMissileEmitter_[i]->Update(); // 更新
+        playerMissileEmitter_[i]->EditorUpdate(); // パラメータ編集
+      
+            playerMissileEmitter_[i]->Emit(); // 発射
+        
     }
 
     easingEditor_.Edit();
