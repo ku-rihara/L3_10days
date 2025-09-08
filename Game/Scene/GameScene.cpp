@@ -85,6 +85,10 @@ void GameScene::Init() {
 		stations_[FactionType::Enemy].get(),
 		director_.get());
 
+	//プレイヤーを攻撃対象に追加
+	auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
+	enemyStation->SetPlayerPtr(player_.get());
+
 	const Vector3 enemyStaitonPos = stations_[FactionType::Enemy]->GetWorldPosition();
 	Installer::InstallBoundaryBreakers(boundaryBreakers_,
 		stations_[FactionType::Ally].get(),

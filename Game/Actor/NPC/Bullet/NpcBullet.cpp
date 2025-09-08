@@ -25,6 +25,7 @@ void NpcBullet::Init() {
 	BaseObject::Init();
 	obj3d_->transform_.parent_ = &baseTransform_;
 	isInitialized_ = true;
+	speed_ = 150.0f;
 }
 
 void NpcBullet::Init(const Vector3& dir) {
