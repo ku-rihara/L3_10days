@@ -1,11 +1,14 @@
-#include "Actor/Station/Base/BaseStation.h"
-#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
-#include "Frame/Frame.h"
-#include "Actor/NPC/NPC.h"
 #include "3d/ViewProjection.h"
-#include "random.h"
-#include <algorithm>
+#include "Actor/Boundary/Boundary.h"
+#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
+#include "Actor/NPC/NPC.h"
+#include "Actor/Station/Base/BaseStation.h"
+#include "Frame/Frame.h"
+
 #include "imgui.h"
+#include "random.h"
+
+#include <algorithm>
 
 namespace {
     inline bool NearerTo(const Vector3& p, NPC* a, NPC* b) {
@@ -202,47 +205,75 @@ void BaseStation::OnCollisionEnter(BaseCollider* /*other*/) {
     // TODO: 弾衝突によるダメージ等
 }
 
-void BaseStation::ReassignRoles() {
+void BaseStation::ReassignRoles(){
     auto npcs = GetLiveNpcs();
     if (npcs.empty()) return;
 
     const auto out = ai_.GetLastOutput();
-    const int N = static_cast<int>(npcs.size());
+    const int N = static_cast< int >(npcs.size());
 
     int defenders = std::clamp(out.desiredDefenders, 0, N);
     int attackers = std::clamp(out.desiredAttackers, 0, N - defenders);
 
-    const Vector3 home  = GetWorldPosition();
+    // 安全策（攻撃対象が居るなら最低1体は攻撃へ）
+    if (pRivalStation_ && N > 0 && attackers == 0){
+        attackers = 1;
+        defenders = ( std::max ) (0, N - attackers);
+    }
+
+    const Vector3 home = GetWorldPosition();
     const Vector3 rival = pRivalStation_ ? pRivalStation_->GetWorldPosition() : home;
 
-    // 射撃候補の供給元
     for (auto* npc : npcs) if (npc) npc->SetTargetProvider(this);
 
     // 1) 防衛：自陣近い順
     std::sort(npcs.begin(), npcs.end(),
-        [&](NPC* a, NPC* b){ return NearerTo(home, a, b); });
+              [&] (NPC* a, NPC* b){ return NearerTo(home, a, b); });
 
-    for (int i = 0; i < defenders && i < (int)npcs.size(); ++i) {
+    for (int i = 0; i < defenders && i < ( int ) npcs.size(); ++i){
         auto* npc = npcs[i];
-        npc->SetTarget(nullptr);           // 攻撃目標解除
-        npc->SetDefendAnchor(home);        // 自陣アンカーで防衛
+        npc->SetTarget(nullptr);
+        npc->SetDefendAnchor(home);
+        npc->SetRole(NpcNavigator::Role::DefendBase);
     }
 
-    // 2) 攻撃：残りを敵拠点に近い順
+    // 2) 残りを「穴に近い順」で攻撃割り当て
     std::vector<NPC*> rest(npcs.begin() + defenders, npcs.end());
-    std::sort(rest.begin(), rest.end(),
-        [&](NPC* a, NPC* b){ return NearerTo(rival, a, b); });
 
-    for (int i = 0; i < attackers && i < (int)rest.size(); ++i) {
+    // 穴を取得
+    const Boundary* boundary = Boundary::GetInstance();
+    const auto& holes = boundary ? boundary->GetHoles() : std::vector<Hole> {};
+
+    auto distToNearestHole = [&] (NPC* u) -> float{
+        const Vector3 p = u->GetWorldPosition();
+        float best = std::numeric_limits<float>::infinity();
+        for (const auto& h : holes){
+            if (h.radius <= 0.0f) continue; // 無効穴はスキップ
+            float d = (h.position - p).Length();
+            if (d < best) best = d;
+        }
+        // 穴が無ければ敵拠点までの距離を代用（従来挙動にフォールバック）
+        if (!std::isfinite(best)) best = (rival - p).Length();
+        return best;
+        };
+
+    // ★ここがポイント：穴に近い順に並べる
+    std::sort(rest.begin(), rest.end(),
+              [&] (NPC* a, NPC* b){ return distToNearestHole(a) < distToNearestHole(b); });
+
+    for (int i = 0; i < attackers && i < ( int ) rest.size(); ++i){
         auto* npc = rest[i];
-        npc->ClearDefendAnchor();
-        npc->SetTarget(pRivalStation_);
+        npc->ClearDefendAnchor();                     // 防衛アンカー解除が重要
+        npc->SetTarget(pRivalStation_);              // 敵拠点を必ずセット
+        npc->SetRole(NpcNavigator::Role::AttackBase);// ロール明示
     }
 
-    // 3) 余りは防衛に寄せる
-    for (int i = attackers; i < (int)rest.size(); ++i) {
+    // 3) 余りは防衛（必要なら Patrol にしてもOK）
+    for (int i = attackers; i < ( int ) rest.size(); ++i){
         auto* npc = rest[i];
         npc->SetTarget(nullptr);
         npc->SetDefendAnchor(home);
+        npc->SetRole(NpcNavigator::Role::DefendBase);
     }
 }
+

@@ -64,6 +64,9 @@ public:
 	/// ===================================================
 	void OnCollisionEnter(BaseCollider* other) override;
 
+public:
+	void SetRole(NpcNavigator::Role r){ navigator_.SetRole(r); }
+
 private:
 	/// ===================================================
 	///  private func（末尾アンダースコア無し）
@@ -101,7 +104,7 @@ protected:
 
 	// ---- game ----
 	const BaseStation* target_ = nullptr;            // 航法上の目標（敵拠点）。nullptr で防衛モード
-	const ITargetProvider* targetProvider_ = nullptr;// ★ 敵候補の供給元
+	const ITargetProvider* targetProvider_ = nullptr;
 	FireMode fireMode_ = FireMode::Homing;          // 射撃モード
 
 	FactionType faction_{};
@@ -124,7 +127,7 @@ protected:
 		/* orbitAngularSpd  */ 0.0f,
 		/* maxTurnRateDeg   */ 120.0f,
 		/* passFrac         */ 0.25f,
-		/* minHoleRadius    */ 8.0f
+		/* minHoleRadius    */ 3.0f
 	};
 	NpcNavigator navigator_{ navConfig_ };
 
