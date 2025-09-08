@@ -89,8 +89,7 @@ void NPC::Init() {
 	// --- 通行制約（XZ 長方形＋穴ゲート）---
 	Boundary* boundary = Boundary::GetInstance();
 	holeSource_.boundary = boundary;
-	RectXZ rect{ -1500.0f, 1500.0f, -1500.0f, 1500.0f };
-	moveConstraint_ = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, rect, 0.01f);
+	moveConstraint_ = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, boundary->GetRectXZWorld(), 0.01f);
 
 	isInitialized_ = true;
 
