@@ -10,7 +10,7 @@ class NpcFireController {
 public:
 	enum class BulletKind { Straight, Homing, BoundaryBreak };
 
-	void Init(size_t prewarm = 128);
+	void Init(size_t prewarm = 16);
 
 	// 現在の弾種でスポーン（Homing の場合は target を渡すと追尾開始）
 	NpcBullet* Spawn(const Vector3& worldPos, const Vector3& dir, const BaseObject* target = nullptr);

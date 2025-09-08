@@ -11,7 +11,7 @@
 /// imgui
 #include <imgui.h>
 
-const char kWindowTitle[] = "3005_ブリキ人形クリハラン";
+const char kWindowTitle[] = "3005_破界戦機クリハラン";
 
 // ========================================================
 // 初期化

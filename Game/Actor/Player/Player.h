@@ -106,7 +106,7 @@ private:
     GameCamera* pGameCamera_     = nullptr;
 
     // Parameter
-    int32_t hp_;
+    float hp_;
 
     // speed
     SpeedParam speedParam_;
@@ -166,6 +166,8 @@ public:
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
     const SpeedParam& GetSpeedParam() const { return speedParam_; }
     const float& GetRollRotateLimit() const { return rollRotateLimit_; }
+	const Vector3& GetAngleInput() const { return angleInput_; }
+	float GetHP() const { return hp_; }
 
     void SetGameCamera(GameCamera* camera);
     void SetLockOn(LockOn* lockOn);

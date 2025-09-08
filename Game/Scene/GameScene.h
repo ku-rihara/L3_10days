@@ -50,12 +50,14 @@ private:
 
     /// ----- Effect ----- ///
     std::unique_ptr<GameScreenEffect> outsideWarning_ = nullptr;
+    std::unique_ptr<class PlayerEngineEffect> engineEffect_;
+    std::unique_ptr<class PlayerLocusEffect> playerLocusEffect_= nullptr;
 
     std::map<FactionType, std::unique_ptr<BaseStation>> stations_;
     std::unique_ptr<QuotaUnitDirector> director_;
 
-    /// test
-    std::unique_ptr<class PlayerEngineEffect> engineEffect_;
+	/// Controller
+	std::unique_ptr<class GameController> gameController_ = nullptr;
 
     ///========================================================
     /// pause objects

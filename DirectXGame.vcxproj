@@ -12,6 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
+    <ClCompile Include="Game\Actor\GameController\GameController.cpp" />
+    <ClCompile Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.cpp" />
     <ClCompile Include="Game\Actor\Player\Effect\PlayerEffects.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\BasePlayerParts.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWing.cpp" />
@@ -220,9 +222,12 @@
     <ClCompile Include="Game\Option\Item\OperationOptionItem.cpp" />
     <ClCompile Include="Game\Actor\NPC\SplineFollwer.cpp" />
     <ClCompile Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.cpp" />
+    <ClCompile Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
+    <ClInclude Include="Game\Actor\GameController\GameController.h" />
+    <ClInclude Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.h" />
     <ClInclude Include="Game\Actor\Player\Effect\PlayerEffects.h" />
     <ClInclude Include="Game\Actor\Player\Parts\BasePlayerParts.h" />
     <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWing.h" />
@@ -454,6 +459,7 @@
     <ClInclude Include="Game\Option\Item\OperationOptionItem.h" />
     <ClInclude Include="Game\Actor\NPC\SplineFollower.h" />
     <ClInclude Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.h" />
+    <ClInclude Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

@@ -467,7 +467,7 @@ void Player::AdjustParam() {
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
         ImGui::PushID(groupName_.c_str());
 
-        ImGui::DragInt("Hp", &hp_);
+        ImGui::DragFloat("Hp", &hp_);
 
         // EditParameter
         ImGui::Separator();

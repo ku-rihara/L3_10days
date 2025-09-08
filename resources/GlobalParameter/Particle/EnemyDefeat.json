@@ -1,0 +1,146 @@
+{
+    "EnemyDefeat": {
+        "AdaptRotateIsX": false,
+        "AdaptRotateIsY": false,
+        "AdaptRotateIsZ": false,
+        "BaseColor": [
+            0.8921568393707275,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Color Max": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Color Min": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Direction Max": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Direction Min": [
+            -1.0,
+            -1.0,
+            -1.0
+        ],
+        "Gravity": 0.0,
+        "IntervalTime": 2.0,
+        "LifeTime": 1.1200000047683716,
+        "Particle Count": 59,
+        "Position Base": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Position Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Position Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Rotate Base": [
+            14.800000190734863,
+            11.399999618530273,
+            14.5
+        ],
+        "Rotate Max": [
+            29.100000381469727,
+            21.700000762939453,
+            17.399999618530273
+        ],
+        "Rotate Min": [
+            -43.79999923706055,
+            -27.200000762939453,
+            -62.599998474121094
+        ],
+        "RotateSpeed Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "RotateSpeed Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Scale Max": 2.0,
+        "Scale Min": 1.0,
+        "ScaleV3 Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ScaleV3 Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Speed Max": 37.79999923706055,
+        "Speed Min": 36.900001525878906,
+        "SpeedV3 Max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpeedV3 Min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "UV IsRoop": false,
+        "UV NumOfFrame": 1,
+        "UV Pos": [
+            0.0,
+            0.0
+        ],
+        "UV Rotate": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "UV ScroolSpeed": 0.0,
+        "UV isFlipX": false,
+        "UV isFlipY": false,
+        "UV isScrool": false,
+        "UV isScroolEachPixel": false,
+        "blendMode": 0,
+        "isAlphaNoMove": false,
+        "isBillBord": false,
+        "isFloatVelocity": true,
+        "isMoveForRail": false,
+        "isRailRoop": false,
+        "isRotateforDirection": false,
+        "isScalerScale": true,
+        "isShot": false,
+        "moveSpeed": 0.20000000298023224,
+        "preBillBordType_": 0,
+        "scaleEaseParm.easeTypeInt": 0,
+        "scaleEaseParm.endValueF.max": 18.299999237060547,
+        "scaleEaseParm.endValueF.min": 13.199999809265137,
+        "scaleEaseParm.endValueV3.max": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "scaleEaseParm.endValueV3.min": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "scaleEaseParm.isScaleEase": true,
+        "scaleEaseParm.maxTime": 0.6000000238418579,
+        "selectedTexturePath_": "Resources/texture/NoiseTex.png"
+    }
+}

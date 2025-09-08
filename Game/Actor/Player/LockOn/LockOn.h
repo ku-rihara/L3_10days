@@ -15,11 +15,12 @@
 // 前方宣言
 class EnemyNPC;
 class BoundaryBreaker;
+class EnemyStation;
 class Player;
 
 class LockOn {
 public:
-    using LockOnVariant = std::variant<EnemyNPC*, BoundaryBreaker*>;
+    using LockOnVariant = std::variant < EnemyNPC*, BoundaryBreaker*, EnemyStation*> ;
 
 public:
     struct BoundaryHoleSource : IHoleSource {

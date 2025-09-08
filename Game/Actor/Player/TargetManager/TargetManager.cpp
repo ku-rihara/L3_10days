@@ -1,6 +1,7 @@
 #include "TargetManager.h"
 #include"Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
 #include "Actor/NPC/EnemyNPC.h"
+#include"Actor/Station/Enemy/EnemyStation.h"
 #include <algorithm>
 
 TargetManager* TargetManager::GetInstance() {

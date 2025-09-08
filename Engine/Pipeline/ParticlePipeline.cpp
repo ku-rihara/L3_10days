@@ -127,13 +127,16 @@ void ParticlePipeline::CreateGraphicsPipeline() {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	//DepthStencilStateの設定-------------------------------------
-   //Depthの機能を有効化する
-	depthStencilDesc_.DepthEnable = true;
-	//書き込みする
-    depthStencilDesc_.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	//比較関数はLessEqual。つまり、近ければ描画される
+ //  //Depthの機能を有効化する
+	//depthStencilDesc_.DepthEnable = true;
+	////書き込みする
+ //   depthStencilDesc_.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	////比較関数はLessEqual。つまり、近ければ描画される
+	//depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	//D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
+	depthStencilDesc_.DepthEnable = TRUE;
+	depthStencilDesc_.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	depthStencilDesc_.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
 	//ShaderをコンパイルするParticle
     vertexShaderBlob_ = pDxCommon_->GetDxCompiler()->CompileShader(L"resources/Shader/Particle.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob_ != nullptr);

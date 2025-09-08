@@ -12,3 +12,7 @@ void BasePlayerBullet::SetParameter(const BulletType& type, const BulletParamete
     param_ = parameter;
 }
 
+const BulletParameter& BasePlayerBullet::GetParameter() const {
+	return param_;
+}
+
