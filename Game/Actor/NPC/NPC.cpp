@@ -1,19 +1,18 @@
-#include "NPC.h"
-
-#include "Actor/Station/Base/BaseStation.h"
+#include "Actor/NPC/NPC.h"
 #include "Actor/Boundary/Boundary.h"
+#include "Actor/Station/Base/BaseStation.h"
+#include "Actor/NPC/Bullet/Targeting.h"
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
-#include "Navigation/RectXZWithGatesConstraint.h"
 #include "Frame/Frame.h"
-#include "random.h"
 #include "3d/ViewProjection.h"
 #include "3d/Line3D.h"
-#include "Actor/Player/Bullet/BasePlayerBullet.h"
+#include "random.h"
+#include "Navigation/RectXZWithGatesConstraint.h"
+#include "imgui.h"
 
+#include <limits>
 #include <cmath>
 #include <numbers>
-#include <algorithm>
-#include <limits>
 
 namespace {
 
@@ -30,14 +29,14 @@ namespace {
 	}
 
 	// 安全正規化
-	inline Vector3 SafeNormalize(const Vector3& v, const Vector3& fb = { 0, 0, 1 }) {
+	inline Vector3 SafeNormalize(const Vector3& v, const Vector3& fb = { 0,0,1 }) {
 		float L = v.Length();
 		return (L > 1e-6f) ? (v * (1.0f / L)) : fb;
 	}
 
 
 	// 回転(x=pitch, y=yaw, z=roll) から前方ベクトルを得る
-	inline Vector3 ForwardFromPitchYaw_(const Vector3& rot) {
+	inline Vector3 ForwardFromPitchYaw(const Vector3& rot) {
 		const float pitch = rot.x; // 上下
 		const float yaw = rot.y; // 左右
 		const float cp = std::cos(pitch), sp = std::sin(pitch);
@@ -48,18 +47,22 @@ namespace {
 
 } // namespace
 
-// ===== BoundaryHoleSource 実装 =====
+/// ===================================================
+/// BoundaryHoleSource
+/// ===================================================
 const std::vector<Hole>& NPC::BoundaryHoleSource::GetHoles() const {
-	static const std::vector<Hole> kEmpty;
-	return boundary ? boundary->GetHoles() : kEmpty;
+	static const std::vector<Hole> empty;
+	return boundary ? boundary->GetHoles() : empty;
 }
 
+/// ===================================================
+/// Ctor / Dtor
+/// ===================================================
 NPC::NPC() = default;
-
 NPC::~NPC() = default;
 
 /// ===================================================
-/// 初期化
+/// Init
 /// ===================================================
 void NPC::Init() {
 	globalParam_ = GlobalParameter::GetInstance();
@@ -102,9 +105,8 @@ void NPC::Init() {
 	cTransform_.Init();
 	AABBCollider::SetCollisionScale(Vector3{ 1, 1, 1 } *100.0f);
 }
-
 /// ===================================================
-/// 更新
+/// UpdateS
 /// ===================================================
 void NPC::Update() {
 	if (fireController_) fireController_->Tick();
@@ -123,7 +125,7 @@ void NPC::DebugDraw([[maybe_unused]] const ViewProjection& vp) {
 	const Vector3 origin = GetWorldPosition();
 
 	// 前方ベクトル（既存ヘルパー）
-	const Vector3 f = ForwardFromPitchYaw_(baseTransform_.rotation_);
+	const Vector3 f = ForwardFromPitchYaw(baseTransform_.rotation_);
 
 	// up が f とほぼ平行なら代替Upを使う
 	Vector3 upHint = { 0, 1, 0 };
@@ -193,11 +195,37 @@ void NPC::DebugDraw([[maybe_unused]] const ViewProjection& vp) {
 
 	lineDrawer_->Draw(vp);
 #endif
+
 }
 
 /// ===================================================
-/// 移動（Navigator 出力 → Constraint で検閲 → 反映）
+/// Accessors / Controls
 /// ===================================================
+void NPC::SetTarget(const BaseStation* target) {
+	target_ = target;
+	// 攻撃指示を受けたら防衛アンカーは解除
+	if (target_) { hasDefendAnchor_ = false; defendAnchor_ = {}; }
+}
+
+void NPC::Activate() { isActive_ = true; }
+void NPC::Deactivate() { isActive_ = false; }
+
+void NPC::SetDefendAnchor(const Vector3& p) {
+	defendAnchor_ = p;
+	hasDefendAnchor_ = true;
+}
+
+void NPC::ClearDefendAnchor() {
+	hasDefendAnchor_ = false;
+	defendAnchor_ = {};
+}
+
+/// ===================================================
+/// Movement / Navigation
+/// ===================================================
+void NPC::StartOrbit(const Vector3& center) {
+	navigator_.StartOrbit(center);
+}
 void NPC::Move() {
 	if (!isActive_) return;
 
@@ -257,177 +285,110 @@ void NPC::Move() {
 }
 
 /// ===================================================
-/// 視錐台内チェック
-/// ===================================================
-bool NPC::IsInFiringFrustum_(const Vector3& worldPt) const {
-	// 基底座標
-	const Vector3 npcPos = GetWorldPosition();
-	const Vector3 fwd = ForwardFromPitchYaw_(baseTransform_.rotation_);
-
-	// 右・上ベクトル（ワールドUpを使って直交基底を作る）
-	Vector3 worldUp = { 0, 1, 0 };
-	if (std::fabs(Vector3::Dot(fwd, worldUp)) > 0.98f) worldUp = { 0, 0, 1 }; // 平行回避
-
-	const Vector3 right = SafeNormalize(Vector3::Cross(worldUp, fwd));
-	const Vector3 up = SafeNormalize(Vector3::Cross(fwd, right));
-
-	// ターゲットをNPCローカルへ投影
-	const Vector3 to = worldPt - npcPos;
-	const float x = Vector3::Dot(to, right);
-	const float y = Vector3::Dot(to, up);
-	const float z = Vector3::Dot(to, fwd);   // 前方正
-
-	// Z（距離）チェック
-	if (z < fireConeNear_ || z > fireConeFar_) return false;
-
-	// 視錐台境界：|x| <= z * tan(hHFov), |y| <= z * tan(vHFov)
-	const float tanHx = std::tan(fireConeHFovDeg_ * 3.14159265f / 180.0f);
-	const float tanHy = std::tan(fireConeVFovDeg_ * 3.14159265f / 180.0f);
-	if (std::fabs(x) > z * tanHx) return false;
-	if (std::fabs(y) > z * tanHy) return false;
-
-	return true;
-}
-
-/// ===================================================
-/// 視錐台から最適ターゲットを選ぶ
-/// ===================================================
-const BaseObject* NPC::PickFrustumTarget_() const {
-	if (!targetProvider_) return nullptr;
-
-	// 候補収集
-	std::vector<const BaseObject*> candidates;
-	candidates.reserve(32);
-	targetProvider_->CollectTargets(candidates);
-	if (candidates.empty()) return nullptr;
-
-
-	// 射出座標系基底
-	const Vector3 npcPos = GetWorldPosition();
-	const Vector3 fwd = ForwardFromPitchYaw_(baseTransform_.rotation_);
-	Vector3 worldUp = { 0, 1, 0 };
-	if (std::fabs(Vector3::Dot(fwd, worldUp)) > 0.98f) worldUp = { 0, 0, 1 };
-	const Vector3 right = SafeNormalize(Vector3::Cross(worldUp, fwd));
-	const Vector3 up = SafeNormalize(Vector3::Cross(fwd, right));
-
-	const float tanHx = std::tan(fireConeHFovDeg_ * 3.14159265f / 180.0f);
-	const float tanHy = std::tan(fireConeVFovDeg_ * 3.14159265f / 180.0f);
-
-	const BaseObject* best = nullptr;
-	float bestScore = std::numeric_limits<float>::infinity();
-
-	for (auto* obj : candidates) {
-		if (!obj || obj == this) continue;
-
-		// 視錐台内か？
-		const Vector3 to = obj->GetWorldPosition() - npcPos;
-		const float x = Vector3::Dot(to, right);
-		const float y = Vector3::Dot(to, up);
-		const float z = Vector3::Dot(to, fwd);
-		if (z < fireConeNear_ || z > fireConeFar_) continue;
-		if (std::fabs(x) > z * tanHx) continue;
-		if (std::fabs(y) > z * tanHy) continue;
-
-		// 中心に近いほどスコア小（正面優先）、同率なら近距離優先
-		const float nx = (tanHx > 1e-6f) ? (x / (z * tanHx)) : 0.0f; // [-1,1] 付近
-		const float ny = (tanHy > 1e-6f) ? (y / (z * tanHy)) : 0.0f;
-		const float centerCost = std::fabs(nx) + std::fabs(ny);
-		const float distCost = 0.001f * z;       // わずかに距離も加味
-		const float score = centerCost + distCost;
-
-		if (score < bestScore) {
-			bestScore = score;
-			best = obj;
-		}
-	}
-
-	return best;
-}
-
-void NPC::OnCollisionEnter(BaseCollider* other) {
-	/// 衝突相手はPlayerのBulletならダメージを受ける
-	/// 敵NPCの場合の弾もダメージを受ける
-
-	if (BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)) {
-		int i = 0;
-		i = 1;
-		//hp_ -= bullet->GetPower();
-		//if(hp_ <= 0.0f){
-		//	hp_ = 0.0f;
-		//	// 死亡処理
-		//	Deactivate();
-		//}
-	}
-
-}
-
-/// ===================================================
-/// 発砲（視錐台内の相手をターゲットに設定して撃つ）
+/// Fire
 /// ===================================================
 void NPC::TryFire() {
-	if (!fireController_) return;
-
 	shootCooldown_ -= Frame::DeltaTime();
 	if (shootCooldown_ > 0.0f) return;
+	if (!targetProvider_) return;
+	if (!fireController_) return;
 
-	// 視錐台からターゲットを選ぶ
-	const BaseObject* chosen = PickFrustumTarget_();
+	// 射撃候補を集める（敵NPC + 敵拠点）
+	std::vector<const BaseObject*> candidates;
+	targetProvider_->CollectTargets(candidates);
+	if (candidates.empty()) return;
 
-	if (!chosen) return;
+	// 最適ターゲットを選ぶ（とりあえず「最も近い & 射程内」）
+	const BaseObject* target = PickFrustumTarget();
+	if (!target) return;
 
-	// 発射位置と向き：NPC の現在向き
-	const Vector3 pos = GetWorldPosition();
-	const Vector3 forward = ForwardFromPitchYaw_(baseTransform_.rotation_);
+	const Vector3 muzzle = GetWorldPosition();
 
-	// モードに応じて撃ち分け
+	// 実弾発射：既存の NpcFierController API に合わせて呼び出し
 	switch (fireMode_) {
-	case FireMode::Homing:
-		// ホーミング：視錐台で選んだ相手をターゲットに設定
-		fireController_->SpawnHoming(pos, forward, chosen);
-		break;
-	case FireMode::Straight:
-	default:
-		// 直進：向いている方向へ
-		fireController_->SpawnStraight(pos, forward);
-		break;
+		case FireMode::Homing:
+			{
+				// Homing: 目標を追尾
+				Vector3 dir = (target->GetWorldPosition() - muzzle);
+				fireController_->SpawnHoming(muzzle, dir, target);
+			}
+			break;
+		case FireMode::Straight:
+		default:
+			// Straight: 前方へ直進弾
+			// 前方ベクトルが未確定なら目標方向で打つ
+			{
+				Vector3 dir = (target->GetWorldPosition() - muzzle);
+				if (dir.LengthSq() < 1e-6f) dir = Vector3(0, 0, 1);
+				dir.Normalize();
+				fireController_->SpawnStraight(muzzle, dir);
+			}
+			break;
 	}
 
 	shootCooldown_ = shootInterval_;
 }
 
-/// ===================================================
-/// 旋回開始（Navigator へ委譲）
-/// ===================================================
-void NPC::StartOrbit(const Vector3& center) { navigator_.StartOrbit(center); }
+/// 視錐台チェック（前方ベクトルの取り方が未共有のため、まずは距離のみ判定）
+bool NPC::IsInFiringFrustum(const Vector3& worldPt) const {
+	const Vector3 p = GetWorldPosition();
+	const float d2 = (worldPt - p).LengthSq();
+	if (d2 < fireConeNear_ * fireConeNear_) return false;
+	if (d2 > fireConeFar_ * fireConeFar_)  return false;
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//      パラメータ
-/////////////////////////////////////////////////////////////////////////////////////////
+	// TODO: 前方ベクトル（例：baseTransform_ から forward を取得）と角度で
+	// HFOV/VFOV を掛けたい場合はここで判定を拡張
+	return true;
+}
+
+/// 最適ターゲット（最も近い射程内）
+/// targetProvider_ から都度取得する実装に合わせ、ここで再取得する
+const BaseObject* NPC::PickFrustumTarget() const {
+	if (!targetProvider_) return nullptr;
+
+	std::vector<const BaseObject*> candidates;
+	targetProvider_->CollectTargets(candidates);
+	if (candidates.empty()) return nullptr;
+
+	const Vector3 p = GetWorldPosition();
+	const BaseObject* best = nullptr;
+	float bestD2 = std::numeric_limits<float>::infinity();
+
+	for (auto* c : candidates) {
+		if (!c) continue;
+		const Vector3 cp = c->GetWorldPosition();
+		if (!IsInFiringFrustum(cp)) continue;
+
+		const float d2 = (cp - p).LengthSq();
+		if (d2 < bestD2) { bestD2 = d2; best = c; }
+	}
+	return best;
+}
+
+/// ===================================================
+/// Collision
+/// ===================================================
+void NPC::OnCollisionEnter(BaseCollider* other) {
+	// TODO: 弾との衝突で hp を減らす等
+	(void)other;
+
+}
+
+/// ===================================================
+/// Param I/O
+/// ===================================================
 void NPC::BindParms() {
-	globalParam_->Bind(groupName_, "maxHP", &maxHP_);
-	globalParam_->Bind(groupName_, "speed", &speed_);
-	globalParam_->Bind(groupName_, "shootInterval", &shootInterval_);
-
-	// 視錐台パラメータ
-	globalParam_->Bind(groupName_, "fireConeNear", &fireConeNear_);
-	globalParam_->Bind(groupName_, "fireConeFar", &fireConeFar_);
-	globalParam_->Bind(groupName_, "fireConeHFovDeg", &fireConeHFovDeg_);
-	globalParam_->Bind(groupName_, "fireConeVFovDeg", &fireConeVFovDeg_);
+	 globalParam_->Bind(groupName_, "shootInterval", &shootInterval_);
+	 globalParam_->Bind(groupName_, "fireConeFar", &fireConeFar_);
 }
 
-void NPC::LoadData() { globalParam_->LoadFile(groupName_, fileDirectory_); }
-void NPC::SaveData() { globalParam_->SaveFile(groupName_, fileDirectory_); }
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//      accessor
-/////////////////////////////////////////////////////////////////////////////////////////
-void NPC::SetTarget(const BaseStation* target) { target_ = target; }
-void NPC::Activate() { isActive_ = true; }
-void NPC::Deactivate() { isActive_ = false; }
-
-void NPC::SetDefendAnchor(const Vector3& p) {
-	defendAnchor_ = p;
-	hasDefendAnchor_ = true;
+void NPC::LoadData() {
+	const std::string path = fileDirectory_;
+	globalParam_->LoadFile(groupName_, path);
+	globalParam_->SyncParamForGroup(groupName_);
 }
 
-void NPC::ClearDefendAnchor() { hasDefendAnchor_ = false; }
+void NPC::SaveData() {
+	const std::string path = fileDirectory_;
+	globalParam_->SaveFile(groupName_, path);
+}
