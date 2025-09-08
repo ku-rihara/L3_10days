@@ -27,7 +27,7 @@ void EditorScene::Init() {
     easingEditor_.Init();
 
     // Particle初期化(ファイル名,形状,Particle数上限)
-    testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("test1", PrimitiveType::Box, 500));
+    testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("test1", PrimitiveType::Sphere, 500));
     testEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("test2", PrimitiveType::Plane, 500));
     testEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("test3", PrimitiveType::Plane, 500));
 

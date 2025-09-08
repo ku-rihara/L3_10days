@@ -21,6 +21,8 @@ public:
     // ターゲット
     void SetTarget(const Vector3& targetPosition);
     void ClearTarget();
+    void OnCollisionStay([[maybe_unused]] BaseCollider* other) override;
+
 
     // パラメータ設定メソッド
     void SetMissileParameters(const MissileParameter& params);
@@ -30,9 +32,11 @@ public:
     TargetID GetTargetID() const { return targetId_; }
 
 private:
-    // ミサイル特有の更新処理
+    // 更新処理
     void UpdateMissileMovement(float deltaTime);
     void UpdateTargetTracking(float deltaTime);
+
+    void HitBoundary() override;
 
     // ターゲットの有効性をチェック
     bool IsTargetValid() const;

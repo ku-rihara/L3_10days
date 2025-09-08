@@ -129,7 +129,7 @@ void Player::PartsUpdate() {
 
 void Player::HandleInput() {
     Input* input = Input::GetInstance();
-    input->SetJoystickDeadZone(0, 20000, 9000);
+  /*  input->SetJoystickDeadZone(0, 20000, 9000);*/
 
     // 入力値をリセット
     Vector2 stickL      = Vector2::ZeroVector();
@@ -139,7 +139,7 @@ void Player::HandleInput() {
     stickL = Input::GetPadStick(0, 0);
 
     // キーボード入力
-    if (stickL.Length() < 0.1f) {
+    if (stickL.Length() < 0.3f) {
 
         if (input->PushKey(DIK_W)) {
             stickL.y = 1.0f;

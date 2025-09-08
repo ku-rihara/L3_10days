@@ -13,6 +13,7 @@ struct BulletParameter {
     float lifeTime;
     float speed;
     float damage;
+    float collisionRadiusForBoundary;
 };
 
 class Player;
@@ -28,14 +29,19 @@ public:
     virtual void Deactivate()           = 0;
     virtual Vector3 GetPosition() const = 0;
 
+    virtual void HitBoundary()                                 = 0;
+    virtual void OnCollisionStay(BaseCollider* other) override = 0;
+
 protected:
     bool isActive_;
     BulletParameter param_;
     BulletType type_;
     const LockOn::LockOnVariant* target_;
-  
+
 public:
-    // 既存のゲッター
+    // getter 
     bool GetIsActive() const { return isActive_; }
+
+    // setter
     void SetParameter(const BulletType& type, const BulletParameter& parameter);
 };

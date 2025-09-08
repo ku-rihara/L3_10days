@@ -2,6 +2,7 @@
 #include "Frame/Frame.h"
 #include "Actor/Player/Player.h"
 #include "BasePlayerBullet.h"
+#include "Physics/SweepAabb.h"
 
 void PlayerNormalBullet::Init() {
     // モデル作成
@@ -77,4 +78,32 @@ void PlayerNormalBullet::Deactivate() {
 
 Vector3 PlayerNormalBullet::GetPosition() const {
     return baseTransform_.GetWorldPos();
+}
+
+
+void PlayerNormalBullet::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
+
+    if (dynamic_cast<LockOn::LockOnVariant*>(other)) {
+        Deactivate();
+    }
+}
+
+void PlayerNormalBullet::HitBoundary() {
+    auto boundary = Boundary::GetInstance();
+
+    Vector3 prevPos_    = baseTransform_.translation_ - velocity_ * Frame::DeltaTime();
+    Vector3 currentPos_ = baseTransform_.GetWorldPos();
+
+    if (boundary) {
+        const AABB box = boundary->GetWorldAabb();
+        auto hit       = Sweep::SegmentSphereVsAabb(prevPos_, baseTransform_.translation_, 5, box);
+        if (hit) {
+            // 穴内なら無効
+            if (!boundary->IsInHoleXZ(hit->point, 5)) {
+                // 破壊通知（AddCrack 内部呼び出し）
+             /*   boundary->OnBulletImpact(*hit, param_.damage);*/
+                Deactivate();
+            }
+        }
+    }
 }
