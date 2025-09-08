@@ -12,7 +12,7 @@ public:
     virtual ~BasePlayerUI() = default;
 
     // init,update,draw
-    virtual void Init(const std::string& fileName);
+    virtual void Init(const std::string& fileName, const size_t& num = 0);
     virtual void Update() = 0;
     virtual void Draw()   = 0;
 

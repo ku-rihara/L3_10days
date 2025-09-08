@@ -45,7 +45,7 @@ struct MissileSystemParameter {
 
 struct TypeSpecificParameters {
     MissileParameter missile;
-    MissileSystemParameter missileSystem; // 追加
+    MissileSystemParameter missileSystem;
 };
 
 class PlayerBulletShooter {
@@ -132,6 +132,8 @@ public:
     bool IsReloading(BulletType type) const;
     float GetReloadProgress(BulletType type) const;
     int32_t GetActiveBulletCount() const;
+    bool CanFireMissileFromSlot(int32_t slotIndex) const { return missileSlotManager_.CanFireFromSlot(slotIndex); }
+    float GetMissileSlotRemainingCooldown(int32_t slotIndex) const { return missileSlotManager_.GetSlotRemainingCooldown(slotIndex); }
 
     const MissileParameter& GetMissileParameter() const { return typeSpecificParams_.missile; }
 
@@ -141,6 +143,7 @@ public:
     bool IsAnyMissileSlotAvailable() const { return missileSlotManager_.HasAnyAvailableSlot(); }
     float GetMissileSlotCooldownProgress(int32_t slotIndex) const { return missileSlotManager_.GetSlotCooldownProgress(slotIndex); }
     bool IsMissileSlotAvailable(int32_t slotIndex) const { return missileSlotManager_.IsSlotAvailable(slotIndex); }
+    const float& GetMissileCollTimeMax() const { return typeSpecificParams_.missileSystem.cooldownTime; }
 
     /// -----------------------------------------------------------------
     /// Setter
