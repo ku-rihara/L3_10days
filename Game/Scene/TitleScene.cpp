@@ -18,8 +18,7 @@
 #include "Option/GameOption.h"
 
 TitleScene::TitleScene() {}
-TitleScene::~TitleScene() {
-}
+TitleScene::~TitleScene() {}
 
 void TitleScene::Init() {
 	BaseScene::Init();
@@ -59,7 +58,7 @@ void TitleScene::Init() {
 
 void TitleScene::Update() {
 
-	if(input_->PushKey(DIK_ESCAPE)){
+	if (input_->PushKey(DIK_ESCAPE)) {
 		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
 		audio_->StopBGM(soundId);
 	}
@@ -71,7 +70,7 @@ void TitleScene::Update() {
 	titleSprite_->Update();
 	fade_->Update();
 
-	if(input_->TrrigerKey(DIK_F)) {
+	if (input_->TrrigerKey(DIK_F)) {
 		fade_->FadeOut(0.02f);
 	}
 
@@ -83,7 +82,8 @@ void TitleScene::Update() {
 
 
 	/// Scene Change
-	if(input_->TrrigerKey(DIK_SPACE)){
+	if (input_->TrrigerKey(DIK_SPACE) ||
+		input_->IsTriggerPad(0, Gamepad::A)) {
 		/// 効果音の再生
 		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
 		audio_->PlayWave(soundId, 0.2f);

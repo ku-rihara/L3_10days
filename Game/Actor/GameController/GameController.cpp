@@ -52,7 +52,7 @@ void GameController::Update() {
 	isPlayerOutOfField_ = CheckIsPlayerOutOfField();
 
 	if (isPlayerOutOfField_) {
-		outOfFieldTime_ += Frame::DeltaTime();
+		outOfFieldTime_ += Frame::DeltaTime() * 0.5f;
 	}
 
 
@@ -115,7 +115,6 @@ bool GameController::CheckIsPlayerOutOfField() {
 	/// 中心から一定距離以上離れたらout of field扱い
 	playerToCenterDistance_ = player_->GetWorldPosition().Length();
 	if (playerToCenterDistance_ > kMaxPlayerToCenterDistance_) {
-		outOfFieldTime_ += Frame::DeltaTime();
 		return true;
 	}
 
