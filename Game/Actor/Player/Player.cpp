@@ -199,11 +199,6 @@ void Player::HandleInput() {
 
     // ロール
     float rollInput = -stickL.x;
-
-    // 目標ロール角を更新
-    if (upDot_ < 0.0f) {
-        rollInput = -rollInput;
-    }
     targetRoll_ += rollInput * speedParam_.rollSpeed * deltaTime;
 
     // 制限

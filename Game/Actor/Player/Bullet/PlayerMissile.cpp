@@ -184,7 +184,7 @@ void PlayerMissile::SetMissileParameters(const MissileParameter& params) {
 
 void PlayerMissile::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
 
-    if (dynamic_cast<LockOn::LockOnVariant*>(other)) {
+    if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
         Deactivate();
     }
 }
