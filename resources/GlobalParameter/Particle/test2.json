@@ -4,9 +4,9 @@
         "AdaptRotateIsY": false,
         "AdaptRotateIsZ": false,
         "BaseColor": [
-            0.3490196168422699,
-            0.3490196168422699,
-            0.3490196168422699,
+            1.0,
+            1.0,
+            1.0,
             1.0
         ],
         "Color Max": [
@@ -115,7 +115,7 @@
         "UV isFlipY": false,
         "UV isScrool": false,
         "UV isScroolEachPixel": false,
-        "blendMode": 0,
+        "blendMode": 2,
         "isAlphaNoMove": false,
         "isBillBord": false,
         "isFloatVelocity": true,

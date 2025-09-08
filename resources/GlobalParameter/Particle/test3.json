@@ -4,9 +4,9 @@
         "AdaptRotateIsY": false,
         "AdaptRotateIsZ": false,
         "BaseColor": [
-            0.4803921580314636,
-            0.4803921580314636,
-            0.4803921580314636,
+            1.0,
+            1.0,
+            1.0,
             0.0
         ],
         "Color Max": [
@@ -23,7 +23,7 @@
         ],
         "Direction Max": [
             1.0,
-            1.0,
+            0.09000000357627869,
             1.0
         ],
         "Direction Min": [
@@ -31,24 +31,24 @@
             0.0,
             -1.0
         ],
-        "Gravity": 33.599998474121094,
-        "IntervalTime": 1.0,
-        "LifeTime": 3.240000009536743,
-        "Particle Count": 11,
+        "Gravity": 0.0,
+        "IntervalTime": 0.28999999165534973,
+        "LifeTime": 1.2300000190734863,
+        "Particle Count": 65,
         "Position Base": [
             0.0,
-            0.0,
+            -26.100000381469727,
             0.0
         ],
         "Position Max": [
+            10.0,
             0.0,
-            0.0,
-            0.0
+            10.0
         ],
         "Position Min": [
+            -10.0,
             0.0,
-            0.0,
-            0.0
+            -10.0
         ],
         "Rotate Base": [
             0.0,
@@ -66,9 +66,9 @@
             0.0
         ],
         "RotateSpeed Max": [
-            0.0,
-            0.0,
-            0.0
+            2.4000000953674316,
+            5.800000190734863,
+            2.299999952316284
         ],
         "RotateSpeed Min": [
             0.0,
@@ -87,8 +87,8 @@
             0.0,
             0.0
         ],
-        "Speed Max": 14.899999618530273,
-        "Speed Min": 9.199999809265137,
+        "Speed Max": 81.4000015258789,
+        "Speed Min": 82.80000305175781,
         "SpeedV3 Max": [
             0.0,
             0.0,
@@ -117,11 +117,11 @@
         "UV isScroolEachPixel": false,
         "blendMode": 1,
         "isAlphaNoMove": false,
-        "isBillBord": true,
+        "isBillBord": false,
         "isFloatVelocity": true,
         "isMoveForRail": false,
         "isRailRoop": false,
-        "isRotateforDirection": false,
+        "isRotateforDirection": true,
         "isScalerScale": true,
         "isShot": false,
         "moveSpeed": 0.0,
@@ -141,6 +141,6 @@
         ],
         "scaleEaseParm.isScaleEase": true,
         "scaleEaseParm.maxTime": 1.75,
-        "selectedTexturePath_": "resources/Texture/uvChecker.png"
+        "selectedTexturePath_": "Resources/texture/NoiseTex.png"
     }
 }

@@ -4,9 +4,9 @@
         "AdaptRotateIsY": false,
         "AdaptRotateIsZ": false,
         "BaseColor": [
-            1.0,
-            1.0,
-            1.0,
+            0.8921568393707275,
+            0.0,
+            0.0,
             0.0
         ],
         "Color Max": [
@@ -32,7 +32,7 @@
             -1.0
         ],
         "Gravity": 0.0,
-        "IntervalTime": 2.2799999713897705,
+        "IntervalTime": 2.0,
         "LifeTime": 1.1200000047683716,
         "Particle Count": 59,
         "Position Base": [
@@ -141,6 +141,6 @@
         ],
         "scaleEaseParm.isScaleEase": true,
         "scaleEaseParm.maxTime": 0.6000000238418579,
-        "selectedTexturePath_": "resources/Texture/uvChecker.png"
+        "selectedTexturePath_": "Resources/texture/NoiseTex.png"
     }
 }

@@ -42,6 +42,38 @@ void PrimitiveBox::Create() {
     mesh_->SetVertexPositionData(22, Vector4(-1.0f, -1.0f, -1.0f, 1.0f));
     mesh_->SetVertexPositionData(23, Vector4(1.0f, -1.0f, -1.0f, 1.0f));
 
+	/// texcoord
+	// 右面
+	mesh_->SetVertexTexcoordData(0, Vector2(0.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(1, Vector2(1.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(2, Vector2(0.0f, 1.0f));
+	mesh_->SetVertexTexcoordData(3, Vector2(1.0f, 1.0f));
+	// 左面
+	mesh_->SetVertexTexcoordData(4, Vector2(0.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(5, Vector2(1.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(6, Vector2(0.0f, 1.0f));
+	mesh_->SetVertexTexcoordData(7, Vector2(1.0f, 1.0f));
+	// 前面
+	mesh_->SetVertexTexcoordData(8, Vector2(0.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(9, Vector2(1.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(10, Vector2(0.0f, 1.0f));
+	mesh_->SetVertexTexcoordData(11, Vector2(1.0f, 1.0f));
+	// 背面
+	mesh_->SetVertexTexcoordData(12, Vector2(0.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(13, Vector2(1.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(14, Vector2(0.0f, 1.0f));
+	mesh_->SetVertexTexcoordData(15, Vector2(1.0f, 1.0f));
+	// 上面
+	mesh_->SetVertexTexcoordData(16, Vector2(0.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(17, Vector2(1.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(18, Vector2(0.0f, 1.0f));
+	mesh_->SetVertexTexcoordData(19, Vector2(1.0f, 1.0f));
+	// 下面
+	mesh_->SetVertexTexcoordData(20, Vector2(0.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(21, Vector2(1.0f, 0.0f));
+	mesh_->SetVertexTexcoordData(22, Vector2(0.0f, 1.0f));
+	mesh_->SetVertexTexcoordData(23, Vector2(1.0f, 1.0f));
+
     // 各面の三角形インデックス（内向き）
     uint32_t indices[] = {
         // 右面
