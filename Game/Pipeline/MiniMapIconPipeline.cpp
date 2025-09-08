@@ -203,10 +203,11 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 		return;
 	}
 
-
-
 	vertexBuffer_.BindForCommandList(_cmdList);
 	indexBuffer_.BindForCommandList(_cmdList);
+
+	/// MiniMapSize Bind
+	_miniMap->GetMiniMapDataBufferRef().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_MINI_MAP_SIZE);
 
 
 	enum ICON_TYPE : size_t {
@@ -230,14 +231,13 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 		_miniMap->GetPlayerMissileCount(),
 	};
 
-	/// MiniMapSize Bind
-	_miniMap->GetMiniMapDataBufferRef().BindForGraphicsCommandList(_cmdList, ROOT_PARAM_MINI_MAP_SIZE);
-
-	/// Texture Bind
+	/// 各ICONのテクスチャを取得
 	TextureManager* textureManager = TextureManager::GetInstance();
-	uint32_t textureIndex = textureManager->LoadTexture("./resources/Texture/MiniMap/Icon.png");
-	D3D12_GPU_DESCRIPTOR_HANDLE	gpuHandle = textureManager->GetTextureHandle(textureIndex);
-	_cmdList->SetGraphicsRootDescriptorTable(ROOT_PARAM_TEXTURE, gpuHandle);
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandles[ICON_TYPE_MAX] = {
+		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/Icon.png")),
+		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/RadarIconEnemy.png")),
+		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/uvChecker.png")),
+	};
 
 	UINT indexCount = static_cast<UINT>(indexBuffer_.GetIndices().size());
 	for (size_t i = 0; i < ICON_TYPE_MAX; i++) {
@@ -245,6 +245,7 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 			continue;
 		}
 
+		_cmdList->SetGraphicsRootDescriptorTable(ROOT_PARAM_TEXTURE, gpuHandles[i]);
 		iconBuffer[i]->BindToCommandList(ROOT_PARAM_ICON, _cmdList);
 
 		_cmdList->DrawIndexedInstanced(indexCount, instanceCounts[i], 0, 0, 0);

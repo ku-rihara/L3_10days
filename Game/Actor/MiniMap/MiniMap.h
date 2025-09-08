@@ -59,6 +59,11 @@ public:
 	UINT GetEnemyIconCount() const;
 	UINT GetPlayerMissileCount() const;
 
+	Vector2 ToVector2(const Vector3& _vec3);
+
+	/// 回転を適用
+	Vector2 ApplyRotation(const Vector3& _point);
+
 private:
 	/// ===================================================
 	/// private : objects
@@ -72,6 +77,7 @@ private:
 
 	Vector2 miniMapPos_;  /// ミニマップの位置
 	Vector2 miniMapSize_; /// ミニマップのサイズ
+	Matrix4x4 matPlayerRotY_; /// プレイヤーのY回転行列
 
 	/// 表示対象のオブジェクト
 	BaseObject* playerPtr_;
