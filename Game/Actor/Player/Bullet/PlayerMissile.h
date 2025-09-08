@@ -1,10 +1,9 @@
 #pragma once
 #include "Actor/Player/LockOn/LockOn.h"
-#include "BaseObject/BaseObject.h"
-#include "BasePlayerBullet.h"
 #include "Actor/Player/TargetManager/TargetManager.h"
+#include "BasePlayerBullet.h"
+#include "PlayerBulletShooter.h"
 
-struct MissileParameter;
 class PlayerMissile : public BasePlayerBullet {
 public:
     PlayerMissile()  = default;
@@ -23,7 +22,6 @@ public:
     void ClearTarget();
     void OnCollisionStay([[maybe_unused]] BaseCollider* other) override;
 
-
     // パラメータ設定メソッド
     void SetMissileParameters(const MissileParameter& params);
 
@@ -35,6 +33,7 @@ private:
     // 更新処理
     void UpdateMissileMovement(float deltaTime);
     void UpdateTargetTracking(float deltaTime);
+    void UpdateSpeed(float deltaTime);
 
     void HitBoundary() override;
 
@@ -45,11 +44,13 @@ private:
 private:
     float currentLifeTime_ = 0.0f;
     Vector3 velocity_;
+    float currentSpeed_ = 0.0f;
 
     Vector3 targetPosition_;
     bool hasTarget_ = false;
-    float trackingStrength_;
-    float maxTurnRate_;
+
+    MissileParameter uniqueParam_;
+    
 
     // IDベースのターゲット管理
     TargetID targetId_            = INVALID_TARGET_ID;

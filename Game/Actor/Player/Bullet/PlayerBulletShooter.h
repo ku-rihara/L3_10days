@@ -31,6 +31,8 @@ struct ShooterState {
 struct MissileParameter {
     float trackingStrength;
     float maxTurnRate;
+    float maxSpeed;
+    float acceleration;
 };
 
 // ミサイル連射状態
