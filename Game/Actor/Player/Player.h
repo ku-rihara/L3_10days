@@ -7,8 +7,11 @@
 #include "Easing/Easing.h"
 #include "Reticle/PlayerReticle.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
-// parats
+// parts
 #include "Parts/PlayerBackWing.h"
+#include "Parts/PlayerBackWingCenter.h"
+#include "Parts/PlayerFrontWing.h"
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -72,8 +75,9 @@ public:
     // ロール所得
     float GetRollDegree() const;
 
-    // 逆さ判定
-    void CheckIsUpsideDown();
+    // Check
+    void CheckIsUpsideDown();   //<逆さ判定
+    bool CheckIsRollMax()const; //<ロールMAX判定
 
     // Behavior management
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
@@ -93,6 +97,8 @@ private:
 
     // Parts
     std::array<std::unique_ptr<PlayerBackWing>, 2> backWings_;
+    std::array<std::unique_ptr<PlayerFrontWing>, 2> frontWings_;
+    std::unique_ptr<PlayerBackWingCenter> backWingCenter_;
 
     // globalParameter
     GlobalParameter* globalParameter_;
@@ -140,6 +146,7 @@ private:
     float rollBackTime_;
     float rotationSmoothness_;
     float rollRotateLimit_;
+    float rollRotateOffset_;
     float currentMaxRoll_;
 
     // other class

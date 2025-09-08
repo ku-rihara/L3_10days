@@ -70,6 +70,9 @@ private:
    
     float rotate_;
     float smoothness_;
+    float cameraXSmoothnessInRotating_;
+    float cameraXSmoothnessInNoRotate_;
+    float currentCameraXSmoothness_;
   
 public:
     /// ===================================================

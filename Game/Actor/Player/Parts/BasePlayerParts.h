@@ -11,7 +11,7 @@ public:
     virtual ~BasePlayerParts() = default;
 
     virtual void Init(WorldTransform* transform, const std::string& GroupName);
-    virtual void Update() = 0;
+    virtual void Update();
 
     // editor
     virtual void AdjustParam();
@@ -23,7 +23,8 @@ protected:
     std::string groupName_;
 
     Vector3 offsetPos_;
-
+    Vector3 offsetRotate_;
+    Vector3 scale_;
     Vector3 baseRotate_;
 
     // 入力による回転制御

@@ -21,6 +21,12 @@ void BasePlayerParts::Init(WorldTransform* transform, const std::string& GroupNa
     targetInputRotation_ = Vector3::ZeroVector();
 }
 
+void BasePlayerParts::Update() {
+    // ポジション設定
+    obj3d_->transform_.translation_ = offsetPos_;
+    obj3d_->transform_.scale_       = scale_;
+}
+
 ///=========================================================
 /// バインド
 ///==========================================================
@@ -28,6 +34,8 @@ void BasePlayerParts::BindParams() {
     globalParameter_->Bind(groupName_, "offsetPos", &offsetPos_);
     globalParameter_->Bind(groupName_, "inputRotationSpeed", &inputRotationSpeed_);
     globalParameter_->Bind(groupName_, "returnSpeed", &returnSpeed_);
+    globalParameter_->Bind(groupName_, "scale", &scale_);
+    globalParameter_->Bind(groupName_, "offsetRotate", &offsetRotate_);
 }
 
 ///=========================================================
@@ -40,7 +48,8 @@ void BasePlayerParts::AdjustParam() {
         ImGui::PushID(groupName_.c_str());
 
         ImGui::DragFloat3("offsetPos", &offsetPos_.x, 0.01f);
-        ImGui::DragFloat3("Rotate", &obj3d_->transform_.rotation_.x, 0.01f);
+        ImGui::DragFloat3("Rotate", &offsetRotate_.x, 0.01f);
+        ImGui::DragFloat3("scale", &scale_.x,0.01f);
 
         // 入力制御パラメータ
         ImGui::Separator();
@@ -61,4 +70,4 @@ void BasePlayerParts::AdjustParam() {
         ImGui::PopID();
     }
 #endif // _DEBUG
-} 
+}
