@@ -14,10 +14,13 @@
 #include "Actor/Station/Enemy/EnemyStation.h"
 #include "Actor/Station/Installer/StationsInstaller.h"
 #include "Actor/Station/Player/PlayerStation.h"
-#include "Animation/AnimationRegistry.h"
-#include "Pipeline/Object3DPiprline.h"
-#include "ShadowMap/ShadowMap.h"
+#include "Actor/Spline/Spline.h"
+#include "Actor/NPC/EnemyNPC.h"
+#include "Actor/GameController/GameController.h"
 
+#include "Animation/AnimationRegistry.h"
+#include "ShadowMap/ShadowMap.h"
+#include "Pipeline/Object3DPiprline.h"
 #include "Pipeline/BoundaryEdgePipeline.h"
 #include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryShardPipeline.h"
@@ -26,8 +29,6 @@
 #include "Pipeline/MiniMapIconPipeline.h"
 #include "Pipeline/MiniMapPipeline.h"
 
-#include "Actor/Spline/Spline.h"
-
 /// effects
 #include "Actor/Effects/PlayerEngineEffect/PlayerEngineEffect.h"
 #include "Actor/Effects/PlayerLocus/PlayerLocusEffect.h"
@@ -35,7 +36,6 @@
 /// option
 #include "Option/GameOption.h"
 
-#include "Actor/NPC/EnemyNPC.h"
 #include <imgui.h>
 #include <vector>
 
@@ -43,12 +43,12 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {}
 
 void GameScene::Init() {
+    BaseScene::Init();
 
 	// option load
 	GameOption::GetInstance()->Init();
 
-    BaseScene::Init();
-
+	gameController_ = std::make_unique<GameController>();
 
     // 生成
     //====================================生成===================================================
@@ -107,8 +107,6 @@ void GameScene::Init() {
     engineEffect_->SetPlayer(player_.get());
 	playerLocusEffect_->Init(player_.get());
 
-    // ParticleViewSet
-    ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
     //====================================Class Set===================================================
     player_->SetViewProjection(&viewProjection_);
@@ -116,6 +114,10 @@ void GameScene::Init() {
     player_->SetLockOn(lockOn_.get());
     gameCamera_->SetTarget(&player_->GetTransform());
     gameCamera_->SetPlayer(player_.get());
+
+	gameController_->SetPlayer(player_.get());
+	gameController_->SetEnemyStation(stations_[FactionType::Enemy].get());
+	gameController_->SetPlayerStation(stations_[FactionType::Ally].get());
 
     // ParticleViewSet
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -242,6 +244,8 @@ void GameScene::GameUpdate() {
 
 	/// effect update
     playerLocusEffect_->Update();
+
+    gameController_->Update();
 
     /// objectの行列の更新をする
     Object3DRegistry::GetInstance()->UpdateAll();

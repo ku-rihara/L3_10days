@@ -56,6 +56,8 @@ private:
     std::map<FactionType, std::unique_ptr<BaseStation>> stations_;
     std::unique_ptr<QuotaUnitDirector> director_;
 
+	/// Controller
+	std::unique_ptr<class GameController> gameController_ = nullptr;
 
     ///========================================================
     /// pause objects

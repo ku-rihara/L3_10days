@@ -245,6 +245,7 @@
     <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
     <ClCompile Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.cpp" />
     <ClCompile Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.cpp" />
+    <ClCompile Include="Game\Actor\GameController\GameController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -488,6 +489,7 @@
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
     <ClInclude Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.h" />
     <ClInclude Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.h" />
+    <ClInclude Include="Game\Actor\GameController\GameController.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
