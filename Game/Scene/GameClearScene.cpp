@@ -20,6 +20,7 @@ void GameClearScene::Init() {
 }
 
 void GameClearScene::Update() {
+	gameClearSprite_->Update();
 
 	/// タイトルに戻る処理
 	if (input_->TrrigerKey(DIK_RETURN) ||

@@ -17,6 +17,7 @@
 #include "Actor/Spline/Spline.h"
 #include "Actor/NPC/EnemyNPC.h"
 #include "Actor/GameController/GameController.h"
+#include "Actor/GameController/GameScore.h"
 
 #include "Animation/AnimationRegistry.h"
 #include "ShadowMap/ShadowMap.h"
@@ -51,6 +52,7 @@ void GameScene::Init() {
 	GameOption::GetInstance()->Init();
 
 	gameController_ = std::make_unique<GameController>();
+	GameScore::GetInstance()->ScoreReset();
 
 	// 生成
 	//====================================生成===================================================

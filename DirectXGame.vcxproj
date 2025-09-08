@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
+    <ClCompile Include="Game\Actor\GameController\GameScore.cpp" />
     <ClCompile Include="Game\Actor\GameController\GameController.cpp" />
     <ClCompile Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.cpp" />
     <ClCompile Include="Game\Actor\Player\Bullet\MissileSlotManager.cpp" />
@@ -233,6 +234,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
+    <ClInclude Include="Game\Actor\GameController\GameScore.h" />
     <ClInclude Include="Game\Actor\GameController\GameController.h" />
     <ClInclude Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\MissileSlotManager.h" />
