@@ -1,15 +1,14 @@
 #include "PlayerBulletShooter.h"
+#include "Actor/Player/LockOn/LockOn.h"
 #include "Actor/Player/Player.h"
+#include "audio/Audio.h"
 #include "BulletFactory.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
-#include "audio/Audio.h"
 #include "PlayerMissile.h"
-#include "Actor/Player/LockOn/LockOn.h"
 #undef max
 #include <algorithm>
 #include <imgui.h>
-
 
 void PlayerBulletShooter::Init() {
     /// グローバルパラメータ
@@ -25,7 +24,7 @@ void PlayerBulletShooter::Init() {
     // 初期弾数設定
     InitializeAmmo();
 
-     targetManager_ = TargetManager::GetInstance();
+    targetManager_ = TargetManager::GetInstance();
 }
 
 void PlayerBulletShooter::InitializeAmmo() {
@@ -90,9 +89,9 @@ void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
     // 通常弾の発射処理
     if (normalBulletInput_ && CanShoot(BulletType::NORMAL) && state.intervalTimer <= 0.0f) {
         FireBullets(player, BulletType::NORMAL);
-		// 発射SE再生
-		int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/BulletFire.wav");
-		Audio::GetInstance()->PlayWave(handle, 0.05f, 0.5f);
+        // 発射SE再生
+        int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/BulletFire.wav");
+        Audio::GetInstance()->PlayWave(handle, 0.05f, 0.5f);
 
         // 発射間隔をリセット
         state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
@@ -121,9 +120,9 @@ void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
     if (missileInput_ && CanShoot(BulletType::MISSILE) && state.intervalTimer <= 0.0f) {
         FireBullets(player, BulletType::MISSILE);
 
-		// 発射SE再生
-		int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/MissileFire.wav");
-		Audio::GetInstance()->PlayWave(handle, 0.1f);
+        // 発射SE再生
+        int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/MissileFire.wav");
+        Audio::GetInstance()->PlayWave(handle, 0.1f);
 
         // 発射間隔をリセット
         state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
@@ -138,7 +137,7 @@ void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
     }
 }
 
- void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
+void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
     size_t typeIndex = static_cast<size_t>(type);
 
     // 新しい弾丸を生成
@@ -169,7 +168,6 @@ void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
         activeBullets_.push_back(std::move(bullet));
     }
 }
-
 
 void PlayerBulletShooter::UpdateBullets() {
     for (auto& bullet : activeBullets_) {
@@ -263,7 +261,6 @@ void PlayerBulletShooter::UpdateHomingMissileStatus() {
     pLockOn_->SetHomingMissileActive(hasActiveHomingMissile);
 }
 
-
 void PlayerBulletShooter::BindParams() {
     for (uint32_t i = 0; i < bulletParameters_.size(); ++i) {
         // 弾のパラメータ
@@ -276,9 +273,12 @@ void PlayerBulletShooter::BindParams() {
         globalParameter_->Bind(groupName_, "maxBulletNum" + std::to_string(int(i + 1)), &shooterParameters_[i].maxBulletNum);
         globalParameter_->Bind(groupName_, "reloadTime" + std::to_string(int(i + 1)), &shooterParameters_[i].reloadTime);
     }
+
     // ミサイル専用パラメータ
     globalParameter_->Bind(groupName_, "missileTrackingStrength", &typeSpecificParams_.missile.trackingStrength);
     globalParameter_->Bind(groupName_, "missileMaxTurnRate", &typeSpecificParams_.missile.maxTurnRate);
+    globalParameter_->Bind(groupName_, "missileAcceleration", &typeSpecificParams_.missile.acceleration);
+    globalParameter_->Bind(groupName_, "missileMaxSpeed", &typeSpecificParams_.missile.maxSpeed);
 }
 
 void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
@@ -288,7 +288,6 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
     ImGui::DragFloat("Speed", &bulletParameters_[static_cast<size_t>(type)].speed, 0.01f);
     ImGui::DragFloat("Damage", &bulletParameters_[static_cast<size_t>(type)].damage, 0.01f);
     ImGui::DragFloat("CollisionRadiusForBoundary", &bulletParameters_[static_cast<size_t>(type)].collisionRadiusForBoundary, 0.01f);
-
 
     // 発射のパラメータ
     ImGui::SeparatorText("ShooterParameter");
@@ -301,6 +300,8 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
         ImGui::SeparatorText("MissileParameter");
         ImGui::DragFloat("TrackingStrength", &typeSpecificParams_.missile.trackingStrength, 0.01f);
         ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f);
+        ImGui::DragFloat("Acceleration", &typeSpecificParams_.missile.acceleration, 0.01f);
+        ImGui::DragFloat("MaxSpeed", &typeSpecificParams_.missile.maxSpeed, 0.01f);
     }
 }
 

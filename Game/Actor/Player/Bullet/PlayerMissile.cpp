@@ -7,9 +7,8 @@
 #include "Frame/Frame.h"
 #include "MathFunction.h"
 #include "Matrix4x4.h"
-#include "PlayerBulletShooter.h"
-#include <numbers>
 #include "Physics/SweepAabb.h"
+#include <numbers>
 
 void PlayerMissile::Init() {
     // モデル作成
@@ -25,6 +24,7 @@ void PlayerMissile::Init() {
     isActive_        = false;
     currentLifeTime_ = 0.0f;
     velocity_        = Vector3::ZeroVector();
+    currentSpeed_    = 0.0f;
     hasTarget_       = false;
     targetPosition_  = Vector3::ZeroVector();
     targetId_        = INVALID_TARGET_ID;
@@ -45,6 +45,9 @@ void PlayerMissile::Update() {
         return;
     }
 
+    // 速度更新（加速度処理）
+    UpdateSpeed(deltaTime);
+
     // ミサイルの移動処理
     UpdateMissileMovement(deltaTime);
 
@@ -55,8 +58,16 @@ void PlayerMissile::Update() {
 
     // トランスフォーム更新
     BaseObject::Update();
-	cTransform_.translation_ = GetWorldPosition();
-	cTransform_.UpdateMatrix();
+    cTransform_.translation_ = GetWorldPosition();
+    cTransform_.UpdateMatrix();
+}
+
+void PlayerMissile::UpdateSpeed(float deltaTime) {
+    // 加速度による速度増加
+    currentSpeed_ += uniqueParam_.acceleration * deltaTime;
+
+    // 最高速度でクランプ
+    currentSpeed_ = std::min(currentSpeed_, uniqueParam_.maxSpeed);
 }
 
 void PlayerMissile::UpdateMissileMovement(float deltaTime) {
@@ -64,10 +75,9 @@ void PlayerMissile::UpdateMissileMovement(float deltaTime) {
         UpdateTargetTracking(deltaTime);
     }
 
-    // 速度の大きさを維持
-    float currentSpeed = velocity_.Length();
-    if (currentSpeed > 0.0f) {
-        velocity_ = velocity_.Normalize() * param_.speed;
+    // 速度ベクトルを現在の速度に合わせて調整
+    if (velocity_.Length() > 0.0f) {
+        velocity_ = velocity_.Normalize() * currentSpeed_;
     }
 }
 
@@ -94,7 +104,7 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
     dot         = std::clamp(dot, -1.0f, 1.0f);
     float angle = std::acos(dot);
 
-    float maxAngleChange = maxTurnRate_ * deltaTime;
+    float maxAngleChange = uniqueParam_.maxTurnRate * deltaTime;
     if (angle > maxAngleChange) {
         Vector3 axis = Vector3::Cross(currentDirection, desiredDirection).Normalize();
         if (axis.Length() < 0.001f) {
@@ -103,11 +113,11 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
         Quaternion rotation  = Quaternion::MakeRotateAxisAngle(axis, maxAngleChange);
         Vector3 newDirection = rotation.RotateVector(currentDirection);
 
-        Vector3 finalDirection = Lerp(currentDirection, newDirection, trackingStrength_ * deltaTime);
-        velocity_              = finalDirection.Normalize() * param_.speed;
+        Vector3 finalDirection = Lerp(currentDirection, newDirection, uniqueParam_.trackingStrength * deltaTime);
+        velocity_              = finalDirection.Normalize() * currentSpeed_;
     } else {
-        Vector3 finalDirection = Lerp(currentDirection, desiredDirection, trackingStrength_ * deltaTime);
-        velocity_              = finalDirection.Normalize() * param_.speed;
+        Vector3 finalDirection = Lerp(currentDirection, desiredDirection, uniqueParam_.trackingStrength * deltaTime);
+        velocity_              = finalDirection.Normalize() * currentSpeed_;
     }
 
     // ミサイルの向きを移動方向に合わせる
@@ -143,8 +153,9 @@ void PlayerMissile::Fire(const Player& player, const LockOn::LockOnVariant* targ
     baseTransform_.quaternion_     = player.GetBaseQuaternion();
     obj3d_->transform_.quaternion_ = player.GetObjQuaternion();
 
-    // 速度を設定
-    velocity_ = player.GetForwardVector().Normalize() * param_.speed;
+    // 初速を設定
+    currentSpeed_ = param_.speed;
+    velocity_     = player.GetForwardVector().Normalize() * currentSpeed_;
 
     // 初期化
     currentLifeTime_ = 0.0f;
@@ -159,7 +170,7 @@ void PlayerMissile::SetTargetID(TargetID targetId) {
 void PlayerMissile::SetTarget(const Vector3& targetPosition) {
     targetPosition_ = targetPosition;
     hasTarget_      = true;
-    targetId_       = INVALID_TARGET_ID; 
+    targetId_       = INVALID_TARGET_ID;
 }
 
 void PlayerMissile::ClearTarget() {
@@ -177,13 +188,10 @@ Vector3 PlayerMissile::GetPosition() const {
 
 // パラメータ設定
 void PlayerMissile::SetMissileParameters(const MissileParameter& params) {
-    trackingStrength_ = params.trackingStrength;
-    maxTurnRate_      = params.maxTurnRate;
+    uniqueParam_ = params;
 }
 
-
 void PlayerMissile::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
-
     if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
         Deactivate();
     }
@@ -192,7 +200,7 @@ void PlayerMissile::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
 void PlayerMissile::HitBoundary() {
     auto boundary = Boundary::GetInstance();
 
-    Vector3 prevPos_ = baseTransform_.translation_ - velocity_ * Frame::DeltaTime();
+    Vector3 prevPos_    = baseTransform_.translation_ - velocity_ * Frame::DeltaTime();
     Vector3 currentPos_ = baseTransform_.GetWorldPos();
 
     if (boundary) {
