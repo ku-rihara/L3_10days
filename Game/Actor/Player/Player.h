@@ -13,6 +13,8 @@
 // UI
 #include "UI/PlayerLifeUI.h"
 #include"UI/MissileIconUI.h"
+#include"UI/DMGTextUI.h"
+#include"UI/PlayerDamageParUI.h"
 
 #include <array>
 #include <cstdint>
@@ -110,6 +112,8 @@ private:
 
     // UIs
     std::unique_ptr<PlayerLifeUI> lifeUI_ = nullptr;
+    std::unique_ptr<DMGTextUI> dmgTextUI_ = nullptr;
+    std::unique_ptr<PlayerDamageParUI> dmgParUI_ = nullptr;
     std::array<std::unique_ptr<MissileIconUI>, 2> missileUIs_;
     // globalParameter
     GlobalParameter* globalParameter_;
