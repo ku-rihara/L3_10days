@@ -15,12 +15,14 @@ GameController::GameController() {
 	outOfFieldWarningTimeIntNumDraw_->Init(3);
 	outOfFieldWarningTimeFracNumDraw_->Init(3);
 
-	float scale = 5.0f;
+	float scale = 2.0f;
 	outOfFieldWarningTimeIntNumDraw_->SetScale({ scale, scale });
 	outOfFieldWarningTimeFracNumDraw_->SetScale({ scale, scale });
 
-	outOfFieldWarningTimeIntNumDraw_->SetBasePosition({ 1280.0f / 2.0f - 50.0f, 720.0f / 2.0f + 100.0f });
-	outOfFieldWarningTimeFracNumDraw_->SetBasePosition({ 1280.0f / 2.0f + 10.0f, 720.0f / 2.0f + 100.0f });
+	/// 二つの数字の間隔
+	Vector2 offset = { 10.0f, 0.0f };
+	outOfFieldWarningTimeIntNumDraw_->SetBasePosition({ 1280.0f - 200.0f - offset.x, 50.0f });
+	outOfFieldWarningTimeFracNumDraw_->SetBasePosition({ 1280.0f - 200.0f + offset.x, 50.0f });
 
 	outOfFieldWarningTimeIntNumDraw_->SetDigitSpacing(12.0f);
 	outOfFieldWarningTimeFracNumDraw_->SetDigitSpacing(12.0f);

@@ -42,7 +42,6 @@
 
 GameScene::GameScene() {}
 GameScene::~GameScene() {
-	audio_->StopBGM(bgmId_);
 }
 
 void GameScene::Init() {
@@ -150,15 +149,18 @@ void GameScene::Update() {
 	/// ゲームの状態チェック
 	/// TODO: 各演出が終了してから遷移する
 	if (gameController_->GetIsGameClear()) {
+		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
 		return;
 	} else if (gameController_->GetIsGameOver()) {
+		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
 		return;
 	}
 
 
 	if (pause_->IsSceneChange()) {
+		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
@@ -166,6 +168,7 @@ void GameScene::Update() {
 #ifdef _DEBUG /// Scene Change (Debug)
 	// Scene Change
 	if (input_->TrrigerKey(DIK_RETURN)) {
+		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}

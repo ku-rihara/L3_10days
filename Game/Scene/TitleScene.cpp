@@ -19,7 +19,6 @@
 
 TitleScene::TitleScene() {}
 TitleScene::~TitleScene() {
-	audio_->StopBGM(bgmId_);
 }
 
 void TitleScene::Init() {
@@ -88,6 +87,7 @@ void TitleScene::Update() {
 		/// 効果音の再生
 		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
 		audio_->PlayWave(soundId, 0.2f);
+		audio_->StopBGM(bgmId_);
 
 		/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
