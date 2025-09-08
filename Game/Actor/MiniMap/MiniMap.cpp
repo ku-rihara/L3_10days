@@ -40,6 +40,7 @@ void MiniMap::Init(BaseStation* _ally, BaseStation* _enemy) {
 	/// ミニマップに表示する味方、敵の最大数を設定
 	friendIconBuffer_.Create(100, DirectXCommon::GetInstance()->GetDxDevice());
 	enemyIconBuffer_.Create(100, DirectXCommon::GetInstance()->GetDxDevice());
+	playerMissile_.Create(12, DirectXCommon::GetInstance()->GetDxDevice());
 
 	miniMapBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	Vector2 size = miniMapFrameSprite_->GetTextureSize();
@@ -96,7 +97,7 @@ void MiniMap::Update() {
 
 
 
-		float scale = 32.0f; 
+		float scale = 32.0f;
 		/// 味方のアイコン更新
 		size_t index = 0;
 		for (auto& fd : friends_) {
@@ -146,6 +147,27 @@ void MiniMap::Update() {
 			friendIconBuffer_.SetMappedData(index++, { matIcon });
 		}
 
+		/// ミサイルのアイコン更新
+		index = 0;
+		for (const auto& missile : player->GetBulletShooter()->GetActiveMissiles()) {
+			Vector3 toPlayerDirection = missile->GetWorldPosition() - playerPos;
+			toPlayerDirection.y = 0.0f;
+			toPlayerDirection = toPlayerDirection.Normalize();
+			/// ある程度離れていたら表示しても意味がないのでスルー
+			float distance = (missile->GetWorldPosition() - playerPos).Length();
+			if (distance > 320.0f) {
+				//continue;
+			}
+			/// player から見た方向を計算
+			Vector2 position = { toPlayerDirection.x * distance, -toPlayerDirection.z * distance };
+			/// mini map上の位置に変換
+			position += miniMapPos_;
+			float rotate = missile->GetTransform().rotation_.y;
+			Matrix4x4 matIcon = MakeAffineMatrix(Vector3(scale, scale, 1.0f), Vector3(0.0f, 0.0f, rotate), Vector3(position.x, position.y, 0.0f));
+			playerMissile_.SetMappedData(index++, { matIcon });
+		}
+
+		missileCount_ = static_cast<UINT>(player->GetBulletShooter()->GetActiveMissiles().size());
 	}
 
 }
@@ -172,6 +194,10 @@ StructuredBuffer<IconBufferData>& MiniMap::GetEnemyIconBufferRef() {
 	return enemyIconBuffer_;
 }
 
+StructuredBuffer<IconBufferData>& MiniMap::GetPlayerMissileBufferRef() {
+	return playerMissile_;
+}
+
 ConstantBuffer<PlayerBufferData>& MiniMap::GetPlayerBufferRef() {
 	return playerBuffer_;
 }
@@ -186,4 +212,8 @@ UINT MiniMap::GetFriendIconCount() const {
 
 UINT MiniMap::GetEnemyIconCount() const {
 	return static_cast<UINT>(enemies_.size());
+}
+
+UINT MiniMap::GetPlayerMissileCount() const {
+	return missileCount_;
 }
