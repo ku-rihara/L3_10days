@@ -128,6 +128,12 @@ void GameScene::Init() {
 
 	pause_ = std::make_unique<Pause>();
 	pause_->Init();
+
+
+
+	/// BGMの再生
+	int bgmId = audio_->LoadWave("./resources/Sound/BGM/InGameBGM.wav");
+	audio_->PlayBGM(bgmId, 0.5f);
 }
 
 void GameScene::Update() {
@@ -287,6 +293,7 @@ void GameScene::GameUpdate() {
 
 	// Particle AllUpdate
 	ParticleManager::GetInstance()->Update();
+
 
 }
 
