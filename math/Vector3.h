@@ -46,8 +46,8 @@ public:
 	static Vector3 ToRight();   // 右方向
 	static Vector3 UnitVector();// 単位ベクトル
 	static Vector3 ZeroVector();
-
-
+	static float   LengthSq(const Vector3& v) { return Dot(v, v); }
+	float          LengthSq() const           { return Dot(*this, *this); }
 
 
 	Vector3 Normalize()const;
