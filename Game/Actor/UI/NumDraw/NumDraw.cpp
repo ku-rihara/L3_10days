@@ -3,14 +3,17 @@
 /// engine
 #include "base/TextureManager.h"
 
+NumDraw::NumDraw(const std::string& _filePath)
+	: kFilePath_(_filePath), baseSize_(Vector2{ 4.0f, 5.0f } *2.0f) {}
+
 void NumDraw::Init(size_t _maxNumDigit) {
 	maxNumDigit_ = _maxNumDigit;
 	basePosition_ = { 1280.0f / 2.0f, 100.0f };
 	for (size_t i = 0; i < maxNumDigit_; ++i) {
 		numSprites_.emplace_back(std::make_unique<Sprite>());
-		numSprites_[i]->CreateSprite(TextureManager::GetInstance()->LoadTexture("./resources/Texture/UI/Num.png"), { 100, 100 }, { 1, 1, 1, 1 });
+		numSprites_[i]->CreateSprite(TextureManager::GetInstance()->LoadTexture(kFilePath_), { 100, 100 }, { 1, 1, 1, 1 });
 		numSprites_[i]->anchorPoint_ = { 0.5f, 0.5f };
-		size_ = Vector2{ 4.0f, 5.0f } *2.0f;
+		size_ = baseSize_;
 		texSize_ = numSprites_[i]->GetTextureSize();
 		numSprites_[i]->SetScale({ size_.x / texSize_.x, size_.y / texSize_.y });
 		numSprites_[i]->SetColor({ 0.239f, 1.0f, 0.239f });
@@ -31,53 +34,62 @@ void NumDraw::Update() {
 		// 桁を一時的に保存
 		std::vector<int32_t> digits(digitNum_);
 		for (int32_t i = 0; i < digitNum_; ++i) {
-			digits[digitNum_ - 1 - i] = num % 10; // ←逆順に格納
+			digits[digitNum_ - 1 - i] = num % 10; // 逆順に格納
 			num /= 10;
 		}
 
+		auto calcStartX = [&](size_t drawDigit) {
+			float totalWidth = (drawDigit - 1) * digitSpacing_;
+			switch (alignment_) {
+			case Alignment::Left:
+				return basePosition_.x;
+			case Alignment::Center:
+				return basePosition_.x - totalWidth * 0.5f;
+			case Alignment::Right:
+				return basePosition_.x - totalWidth;
+			}
+			return basePosition_.x; // fallback
+			};
 
 		if (isDrawAll_) {
 			// --- 全桁表示（ゼロ埋めあり）
+			float startX = calcStartX(maxNumDigit_);
 			for (size_t i = 0; i < maxNumDigit_; ++i) {
 				int32_t digitIndex = static_cast<int32_t>(i - (maxNumDigit_ - digitNum_));
+				int32_t digit = (digitIndex >= 0) ? digits[digitIndex] : 0;
 
-				int32_t digit = 0;
-				if (digitIndex >= 0) {
-					// digits[] から値を取る（有効桁）
-					digit = digits[digitIndex];
-				}
 				// 桁をセット
 				numSprites_[i]->uvTransform_.pos = { digit / 10.0f, 0.0f };
 				numSprites_[i]->uvTransform_.scale = { 1.0f / 10.0f, 1.0f };
-
-				// 位置は maxNumDigit_ を基準に中央揃え
 				numSprites_[i]->SetPosition({
-					basePosition_.x - digitSpacing_ * (maxNumDigit_ - 1) / 2.0f + digitSpacing_ * i,
+					startX + digitSpacing_ * i,
 					basePosition_.y
 					});
 				numSprites_[i]->uvTransform_.rotate = { 0.0f, 0.0f, 0.0f };
 			}
 		} else {
-			// --- 有効桁だけ表示（従来処理）
-			for (size_t i = 0; i < (maxNumDigit_); ++i) {
+			// --- 有効桁だけ表示
+			float startX = calcStartX(digitNum_);
+			for (size_t i = 0; i < maxNumDigit_; ++i) {
 				if (i < digitNum_) {
 					int32_t digit = digits[i];
 					numSprites_[i]->uvTransform_.pos = { digit / 10.0f, 0.0f };
 					numSprites_[i]->uvTransform_.scale = { 1.0f / 10.0f, 1.0f };
 					numSprites_[i]->SetPosition({
-						basePosition_.x - digitSpacing_ * (digitNum_ - 1) / 2.0f + digitSpacing_ * i,
+						startX + digitSpacing_ * i,
 						basePosition_.y
 						});
 					numSprites_[i]->uvTransform_.rotate = { 0.0f, 0.0f, 0.0f };
 				} else {
+					// 非表示にする
 					numSprites_[i]->uvTransform_.pos = { 1.0f, 0.0f };
 					numSprites_[i]->uvTransform_.scale = { 0.0f, 0.0f };
 				}
 			}
 		}
 	}
-}
 
+}
 
 void NumDraw::Draw() {
 	for (size_t i = 0; i < maxNumDigit_; ++i) {
@@ -87,6 +99,10 @@ void NumDraw::Draw() {
 
 void NumDraw::SetNumber(int32_t _num) {
 	currentNum_ = _num;
+	/// 最大値を超えたら最大値にする
+	if (currentNum_ > static_cast<int32_t>(std::pow(10, maxNumDigit_) - 1)) {
+		currentNum_ = static_cast<int32_t>(std::pow(10, maxNumDigit_) - 1);
+	}
 }
 
 int32_t NumDraw::GetDigitNum(int32_t _num) {
@@ -104,6 +120,16 @@ int32_t NumDraw::GetDigitNum(int32_t _num) {
 
 void NumDraw::SetBasePosition(const Vector2& _pos) {
 	basePosition_ = _pos;
+}
+
+void NumDraw::SetBaseSize(const Vector2& _size) {
+	baseSize_ = _size;
+
+	for (size_t i = 0; i < maxNumDigit_; ++i) {
+		size_ = baseSize_;
+		texSize_ = numSprites_[i]->GetTextureSize();
+		numSprites_[i]->SetScale({ size_.x / texSize_.x, size_.y / texSize_.y });
+	}
 }
 
 void NumDraw::SetDigitSpacing(float _spacing) {
@@ -130,4 +156,8 @@ void NumDraw::SetScale(const Vector2& _scale) {
 
 void NumDraw::SetIsDrawAll(bool _isDrawAll) {
 	isDrawAll_ = _isDrawAll;
+}
+
+void NumDraw::SetAlignment(Alignment _alignment) {
+	alignment_ = _alignment;
 }
