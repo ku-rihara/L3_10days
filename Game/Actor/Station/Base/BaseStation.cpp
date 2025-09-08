@@ -86,10 +86,16 @@ void BaseStation::Update() {
 	/// collider update
 	cTransform_.translation_ = GetWorldPosition();
 	cTransform_.UpdateMatrix();
+
+	// 死んでいるnpcを回収
+	CleanupSpawnedList();
 }
 
 void BaseStation::DrawDebug(const ViewProjection& vp) {
-	for (auto& h : spawned_) h->DebugDraw(vp);
+	for (auto& h : spawned_) {
+		if (!h || !h->GetIsAlive()) continue;
+		h->DebugDraw(vp);
+	}
 }
 
 void BaseStation::ShowGui() {
@@ -198,7 +204,9 @@ FactionType BaseStation::GetFactionType() const { return faction_; }
 // NPC 管理
 std::vector<NPC*> BaseStation::GetLiveNpcs() const {
 	std::vector<NPC*> out; out.reserve(spawned_.size());
-	for (auto& h : spawned_) if (h) out.push_back(h.get());
+	for (auto& h : spawned_) {
+		if (h && h->GetIsAlive()) out.push_back(h.get());
+	}
 	return out;
 }
 
@@ -316,3 +324,11 @@ void BaseStation::ReassignRoles() {
 	}
 }
 
+void BaseStation::CleanupSpawnedList() {
+	auto it = std::remove_if(spawned_.begin(), spawned_.end(),
+							 [](const NpcHandle& h) {
+								 // 非アクティブ なら削除
+		return !h || !h->GetIsAlive();
+	});
+	spawned_.erase(it, spawned_.end());
+}

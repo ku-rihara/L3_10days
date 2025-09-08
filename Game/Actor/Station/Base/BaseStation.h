@@ -59,7 +59,11 @@ public:
 	std::vector<NPC*> GetLiveNpcs() const;
 
 	template<class Fn>
-	void ForEachNpc(Fn&& fn) { for (auto& h : spawned_) if (h) fn(*h.get()); }
+	void ForEachNpc(Fn&& fn) {
+		for (auto& h : spawned_) {
+			if (h && h->GetIsAlive()) fn(*h.get());
+		}
+	}
 
 	// ===== ITargetProvider 実装 =====
 	void CollectTargets(std::vector<const BaseObject*>& out) const override;
