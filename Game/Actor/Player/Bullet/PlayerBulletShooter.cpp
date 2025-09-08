@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <imgui.h>
 
-void PlayerBulletShooter::Init() {
+void PlayerBulletShooter::Init(WorldTransform* parent) {
     /// グローバルパラメータ
     globalParameter_ = GlobalParameter::GetInstance();
     globalParameter_->CreateGroup(groupName_, false);
@@ -25,6 +25,15 @@ void PlayerBulletShooter::Init() {
     missileSlotManager_.Initialize(
         typeSpecificParams_.missileSystem.maxSlots,
         typeSpecificParams_.missileSystem.cooldownTime);
+
+    // particle
+    playerShotEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot1", PrimitiveType::Plane, 500));
+    playerShotEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot2", PrimitiveType::Plane, 500));
+    playerShotEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot3", PrimitiveType::Plane, 500));
+
+    for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
+        playerShotEmitter_[i]->SetParentTransform(parent);
+    }
 
     // 初期弾数設定
     InitializeAmmo();
@@ -72,6 +81,12 @@ void PlayerBulletShooter::Update(const Player* player) {
 
     // ホーミングミサイルの状態をLockOn
     UpdateHomingMissileStatus();
+
+    // particle
+    for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
+        playerShotEmitter_[i]->Update();
+        playerShotEmitter_[i]->EditorUpdate();
+    }
 }
 
 void PlayerBulletShooter::HandleInput() {
@@ -82,7 +97,6 @@ void PlayerBulletShooter::HandleInput() {
 
     // ミサイル発射
     missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B) || input->IsPressMouse(1);
-
 }
 
 void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
@@ -180,7 +194,7 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
         if (type == BulletType::MISSILE) {
             auto* missile = dynamic_cast<PlayerMissile*>(bullet.get());
             if (missile) {
-				activeMissiles_.push_back(missile);
+                activeMissiles_.push_back(missile);
                 missile->SetMissileParameters(typeSpecificParams_.missile);
 
                 // ターゲットが存在する場合、TargetManagerに登録してIDを取得
@@ -189,6 +203,10 @@ void PlayerBulletShooter::FireBullets(const Player* player, BulletType type) {
                     TargetID targetId = targetManager_->RegisterTarget(*currentTarget);
                     missile->SetTargetID(targetId);
                 }
+            }
+        } else {
+            for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
+                playerShotEmitter_[i]->Emit();
             }
         }
 
@@ -214,7 +232,7 @@ void PlayerBulletShooter::CleanupInactiveBullets() {
             [](BasePlayerBullet* missile) {
                 return !missile || !missile->GetIsActive();
             }),
-		activeMissiles_.end());
+        activeMissiles_.end());
 
     // 非アクティブな弾丸を削除
     activeBullets_.erase(
@@ -350,7 +368,7 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
         ImGui::DragFloat("CooldownTime", &typeSpecificParams_.missileSystem.cooldownTime, 0.01f);
         ImGui::DragFloat("ShootInterval", &typeSpecificParams_.missileSystem.shootInterval, 0.001f);
 
-         for (int32_t i = 0; i < GetMaxMissileSlots(); ++i) {
+        for (int32_t i = 0; i < GetMaxMissileSlots(); ++i) {
             bool canFire    = CanFireMissileFromSlot(i);
             float progress  = GetMissileSlotCooldownProgress(i) * 100.0f;
             float remaining = GetMissileSlotRemainingCooldown(i);
@@ -447,7 +465,7 @@ std::vector<BasePlayerBullet*> PlayerBulletShooter::GetActiveBullets() const {
 }
 
 const std::vector<BasePlayerBullet*>& PlayerBulletShooter::GetActiveMissiles() const {
-	return activeMissiles_;
+    return activeMissiles_;
 }
 
 int32_t PlayerBulletShooter::GetActiveBulletCount() const {

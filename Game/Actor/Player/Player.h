@@ -174,6 +174,7 @@ private:
 
     BoundaryHoleSource holeSource_;
 
+
 public:
     // ゲッター
     const Vector3& GetPosition() const { return baseTransform_.translation_; }

@@ -12,8 +12,6 @@ struct MissileSlotState {
 // ミサイルスロット管理クラス
 class MissileSlotManager {
 public:
-   
-public:
     MissileSlotManager()  = default;
     ~MissileSlotManager() = default;
 
