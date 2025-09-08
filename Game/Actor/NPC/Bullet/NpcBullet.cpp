@@ -5,8 +5,8 @@
 #include "Box.h"
 
 NpcBullet::NpcBullet() {
-	AABBCollider::Init();
-	AABBCollider::isAdaptCollision = false;
+	//AABBCollider::Init();
+	//AABBCollider::isAdaptCollision = false;
 }
 
 /// ===================================================
@@ -58,11 +58,11 @@ void NpcBullet::Move() {
 }
 
 void NpcBullet::Hit() {}
-
-void NpcBullet::OnCollisionEnter(BaseCollider*) {
-	/// 何かに衝突したら消える
-	//Deactivate();
-}
+//
+//void NpcBullet::OnCollisionEnter(BaseCollider*) {
+//	/// 何かに衝突したら消える
+//	//Deactivate();
+//}
 
 /// ===================================================
 /// パラメータ同期

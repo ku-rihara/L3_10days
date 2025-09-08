@@ -6,7 +6,7 @@
         "brakeForwardSpeed": 30.0,
         "downFactor": 11.819999694824219,
         "forwardSpeed": 50.0,
-        "hp": 100,
+        "hp": 100.0,
         "lateralSpeed": 30.420000076293945,
         "maxForwardSpeed": 200.0,
         "minForwardSpeed": 100.0,

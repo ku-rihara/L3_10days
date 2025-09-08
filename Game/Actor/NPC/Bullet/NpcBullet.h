@@ -4,7 +4,7 @@
 
 class GlobalParameter;
 
-class NpcBullet : public BaseObject, public AABBCollider {
+class NpcBullet : public BaseObject/*, public AABBCollider*/ {
 public:
 	/// ===================================================
 	/// public func
@@ -24,7 +24,7 @@ public:
 	void Deactivate() noexcept { isActive_ = false; }
 	bool IsAlive() const noexcept { return isActive_; }
 
-	void OnCollisionEnter(BaseCollider* other) override;
+	//void OnCollisionEnter(BaseCollider* other) override;
 
 	float GetDamage() const { return damage_; }
 

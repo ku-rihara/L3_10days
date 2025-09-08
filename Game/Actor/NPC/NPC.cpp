@@ -104,7 +104,7 @@ void NPC::Init() {
 
 	/// collision 
 	cTransform_.Init();
-	AABBCollider::SetCollisionScale(Vector3{ 1, 1, 1 } *100.0f);
+	AABBCollider::SetCollisionScale(Vector3{ 1, 1, 1 } *10.0f);
 }
 
 /// ===================================================
@@ -359,6 +359,7 @@ void NPC::OnCollisionEnter(BaseCollider* other) {
 				hp_ = 0.0f;
 				// 死亡処理
 				Deactivate();
+				/// エフェクトの生成
 			}
 		}
 		return;
