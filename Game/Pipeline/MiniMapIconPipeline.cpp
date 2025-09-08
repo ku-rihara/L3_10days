@@ -84,7 +84,15 @@ void MiniMapIconPipeline::CreateGraphicsPipeline() {
 	rtBlend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	D3D12_BLEND_DESC blendDescNormal = {};
-	blendDescNormal.RenderTarget[0] = rtBlend;
+	//blendDescNormal.RenderTarget[0] = rtBlend;
+	blendDescNormal.RenderTarget[0].BlendEnable = TRUE;
+	blendDescNormal.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDescNormal.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDescNormal.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDescNormal.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDescNormal.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	// RasterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};

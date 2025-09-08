@@ -42,7 +42,8 @@ public:
 	void Init(class BaseStation* _ally, class BaseStation* _enemy);
 	void Update();
 
-	void DrawMiniMap();
+	void DrawMiniMapFrame();
+	void DrawMiniMapPlayerIcon();
 
 	/// ----- Playerや味方、敵の登録/解除 ----- ///
 	void RegisterPlayer(BaseObject* _player);

@@ -365,12 +365,15 @@ void GameScene::GameSpriteDraw() {
 	player_->ReticleDraw();
 	lockOn_->Draw();
 	/// ミニマップ描画
-	miniMap_->DrawMiniMap();
+	miniMap_->DrawMiniMapFrame();
 
 	/// UI用に
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
 	miniMapIconPipeline->Draw(commandList, miniMap_.get());
+
+	Sprite::PreDraw(commandList);
+	miniMap_->DrawMiniMapPlayerIcon();
 }
 
 void GameScene::PauseModelDraw() {}

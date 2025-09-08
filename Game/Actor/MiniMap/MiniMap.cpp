@@ -72,9 +72,6 @@ void MiniMap::Update() {
 
 	/// ICONに積める
 	Player* player = dynamic_cast<Player*>(playerPtr_);
-	/// 仮
-	//player->SetWorldPosition({-110, 0,0});
-
 	if (player) {
 		/// playerの位置、回転を取得
 		const Vector3& playerPos = player->GetWorldPosition();
@@ -99,7 +96,7 @@ void MiniMap::Update() {
 
 
 
-		float mapScale = 0.05f; /// マップの縮尺
+		float mapScale = 0.1f; /// マップの縮尺
 		float scale = 32.0f;
 		/// 味方のアイコン更新
 		size_t index = 0;
@@ -152,8 +149,11 @@ void MiniMap::Update() {
 
 }
 
-void MiniMap::DrawMiniMap() {
+void MiniMap::DrawMiniMapFrame() {
 	miniMapFrameSprite_->Draw();
+}
+
+void MiniMap::DrawMiniMapPlayerIcon() {
 	miniMapPlayerIconSprite_->Draw();
 }
 
