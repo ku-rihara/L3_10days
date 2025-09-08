@@ -15,12 +15,14 @@
 
 /// game
 #include "TitleActor/FighterAircraft/FighterAircraft.h"
+#include "Option/GameOption.h"
 
 TitleScene::TitleScene() {}
 TitleScene::~TitleScene() {}
 
 void TitleScene::Init() {
 	BaseScene::Init();
+	GameOption::GetInstance()->Init();
 
 	// 生成
 	object3ds_.push_back(std::make_unique<FighterAircraft>(Vector3{}));

@@ -27,7 +27,10 @@
 #include "Pipeline/MiniMapPipeline.h"
 
 #include "Actor/Spline/Spline.h"
+
+/// effects
 #include "Actor/Effects/PlayerEngineEffect/PlayerEngineEffect.h"
+#include "Actor/Effects/PlayerLocus/PlayerLocusEffect.h"
 
 /// option
 #include "Option/GameOption.h"
@@ -70,6 +73,7 @@ void GameScene::Init() {
     /// Effect -----
     outsideWarning_ = std::make_unique<GameScreenEffect>();
     engineEffect_ = std::make_unique<PlayerEngineEffect>();
+	playerLocusEffect_ = std::make_unique<PlayerLocusEffect>();
 
 
     //====================================初期化===================================================
@@ -100,6 +104,8 @@ void GameScene::Init() {
     /// Effect -----
     outsideWarning_->Init();
     engineEffect_->Init();
+    engineEffect_->SetPlayer(player_.get());
+	playerLocusEffect_->Init(player_.get());
 
     // ParticleViewSet
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -123,13 +129,18 @@ void GameScene::Init() {
 }
 
 void GameScene::Update() {
-	engineEffect_->SetPlayer(player_.get());
-    engineEffect_->Update();
     if (!pause_->IsPause()) {
         GameUpdate();
     }
 
     PauseUpdate();
+
+
+    // Scene Change
+    if (input_->TrrigerKey(DIK_RETURN)) {
+        SceneManager::GetInstance()->ChangeScene("TITLE");
+        return;
+    }
 }
 
 /// ===================================================
@@ -225,8 +236,12 @@ void GameScene::GameUpdate() {
     // lockOn更新
     lockOn_->Update(targets, player_.get(), viewProjection_, FactionType::Enemy);
 
+	/// ui update
     miniMap_->Update();
     uis_->Update(player_.get());
+
+	/// effect update
+    playerLocusEffect_->Update();
 
     /// objectの行列の更新をする
     Object3DRegistry::GetInstance()->UpdateAll();
@@ -238,11 +253,6 @@ void GameScene::GameUpdate() {
     // Particle AllUpdate
     ParticleManager::GetInstance()->Update();
 
-    // Scene Change
-    if (input_->TrrigerKey(DIK_RETURN)) {
-        SceneManager::GetInstance()->ChangeScene("TITLE");
-        return;
-    }
 }
 
 void GameScene::PauseUpdate() {

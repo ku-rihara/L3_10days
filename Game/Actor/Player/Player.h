@@ -159,6 +159,7 @@ public:
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
     const SpeedParam& GetSpeedParam() const { return speedParam_; }
     const float& GetRollRotateLimit() const { return rollRotateLimit_; }
+	const Vector3& GetAngleInput() const { return angleInput_; }
 
     void SetGameCamera(GameCamera* camera);
     void SetLockOn(LockOn* lockOn);

@@ -152,6 +152,10 @@ void ParticleEmitter::SetParentBasePos(WorldTransform* parent) {
     emitBoxTransform_.parent_ = parent;
 }
 
+void ParticleEmitter::SetTargetRotate(const Vector3& _targetRotate) {
+	parameters_.targetRotate = _targetRotate;
+}
+
 void ParticleEmitter::SetBlendMode(const BlendMode& blendmode) {
     groupParamaters_.blendMode = blendmode;
 }

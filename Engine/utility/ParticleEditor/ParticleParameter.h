@@ -62,7 +62,9 @@ public:
         const WorldTransform* parentTransform = nullptr;
         const Vector3* followingPos_          = nullptr;
         Vector3 targetPos;
+        Vector3 targetRotate;
         Vector3 emitPos;
+        Vector3 emitterRotate;
         Vector3 baseRotate;
         Vector4 baseColor;
         V3MinMax scaleDistV3;

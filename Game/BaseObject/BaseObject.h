@@ -33,7 +33,8 @@ public:
     /// ===================================================
     /// getter
     /// ===================================================
-    const WorldTransform& GetTransform() { return baseTransform_; }
+    const WorldTransform& GetTransform() const { return baseTransform_; }
+    WorldTransform& GetTransform() { return baseTransform_; }
     Vector3 GetScale() const { return baseTransform_.scale_; }
     /// ===================================================
     /// setter

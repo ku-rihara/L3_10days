@@ -29,26 +29,26 @@
         "Direction Min": [
             0.0,
             0.0,
-            0.0
+            -1.0
         ],
         "Gravity": 0.0,
-        "IntervalTime": 0.10000000149011612,
-        "LifeTime": 1.0,
-        "Particle Count": 1,
+        "IntervalTime": 0.0,
+        "LifeTime": 0.12999999523162842,
+        "Particle Count": 23,
         "Position Base": [
-            -49.79999923706055,
             0.0,
-            125.0
+            0.800000011920929,
+            0.0
         ],
         "Position Max": [
-            0.0,
-            0.0,
+            0.10000000149011612,
+            0.10000000149011612,
             0.0
         ],
         "Position Min": [
-            0.0,
-            0.0,
-            0.0
+            -0.10000000149011612,
+            -0.10000000149011612,
+            -3.4000000953674316
         ],
         "Rotate Base": [
             0.0,
@@ -75,20 +75,20 @@
             0.0,
             0.0
         ],
-        "Scale Max": 0.0,
-        "Scale Min": 0.0,
+        "Scale Max": 0.10000000149011612,
+        "Scale Min": 0.10000000149011612,
         "ScaleV3 Max": [
-            1.0,
-            1.0,
-            32.0
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
         ],
         "ScaleV3 Min": [
-            1.0,
-            1.0,
-            32.0
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
         ],
-        "Speed Max": 0.0,
-        "Speed Min": 0.0,
+        "Speed Max": 52.599998474121094,
+        "Speed Min": 52.599998474121094,
         "SpeedV3 Max": [
             0.0,
             0.0,
@@ -121,8 +121,8 @@
         "isFloatVelocity": true,
         "isMoveForRail": false,
         "isRailRoop": false,
-        "isRotateforDirection": false,
-        "isScalerScale": false,
+        "isRotateforDirection": true,
+        "isScalerScale": true,
         "isShot": false,
         "moveSpeed": 0.0,
         "preBillBordType_": 0,

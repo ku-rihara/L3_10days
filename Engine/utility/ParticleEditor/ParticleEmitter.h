@@ -73,4 +73,6 @@ public:
     void SetIsMoveForRail(const bool& isMoveForRail) { isMoveForRail_ = isMoveForRail; }
     void SetMoveSpeed(const float& moveSpeed) { moveSpeed_ = moveSpeed; }
     void SetTargetPosition(const Vector3& targetPos) { parameters_.targetPos = targetPos; }
+    void SetTargetRotate(const Vector3& _targetRotate);
+	void SetEmitterRotate(const Vector3& emitterRotate) { parameters_.emitterRotate = emitterRotate; }
 };

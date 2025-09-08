@@ -356,6 +356,9 @@ ParticleManager::Particle ParticleManager::MakeParticle(const ParticleEmitter::P
         Random::Range(paramaters.positionDist.min.x, paramaters.positionDist.max.x),
         Random::Range(paramaters.positionDist.min.y, paramaters.positionDist.max.y),
         Random::Range(paramaters.positionDist.min.z, paramaters.positionDist.max.z)};
+    
+	Matrix4x4 emitterRotateMatrix = MakeRotateMatrix(paramaters.emitterRotate);
+	randomTranslate = TransformNormal(randomTranslate, emitterRotateMatrix);
 
     /// adapt
     particle.worldTransform_.translation_ = paramaters.targetPos + paramaters.emitPos + randomTranslate;
@@ -380,7 +383,8 @@ ParticleManager::Particle ParticleManager::MakeParticle(const ParticleEmitter::P
 
         // カメラ回転を適用
         Matrix4x4 cameraRotationMatrix = MakeRotateMatrix(viewProjection_->rotation_);
-        particle.direction_            = TransformNormal(direction, cameraRotationMatrix);
+		Matrix4x4 targetRotateMatrix = MakeRotateMatrix(paramaters.targetRotate);
+        particle.direction_            = TransformNormal(direction, cameraRotationMatrix * targetRotateMatrix);
         particle.speed_                = speed;
 
     } else {
@@ -391,7 +395,7 @@ ParticleManager::Particle ParticleManager::MakeParticle(const ParticleEmitter::P
             Random::Range(paramaters.velocityDistV3.min.z, paramaters.velocityDistV3.max.z)};
 
         // カメラ回転を適用
-        Matrix4x4 cameraRotationMatrix = MakeRotateMatrix(viewProjection_->rotation_);
+        Matrix4x4 cameraRotationMatrix = MakeRotateMatrix(viewProjection_->rotation_ + paramaters.targetRotate);
         velocity                       = TransformNormal(velocity, cameraRotationMatrix);
 
         particle.direction_ = velocity;
@@ -416,7 +420,7 @@ ParticleManager::Particle ParticleManager::MakeParticle(const ParticleEmitter::P
             Random::Range(paramaters.rotateDist.min.z, paramaters.rotateDist.max.z)};
 
         // adapt
-        particle.worldTransform_.rotation_ = ToRadian(paramaters.baseRotate + rotate);
+        particle.worldTransform_.rotation_ = ToRadian(paramaters.baseRotate + rotate) + paramaters.targetRotate;
     }
 
     ///------------------------------------------------------------------------
