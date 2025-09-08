@@ -15,6 +15,7 @@
 #include "Primitive/PrimitiveCylinder.h"
 #include "Primitive/PrimitivePlane.h"
 #include "Primitive/PrimitiveRing.h"
+#include"Primitive/PrimitiveSphere.h"
 // std
 #include <cassert>
 #include <string>
@@ -251,6 +252,9 @@ void ParticleManager::CreatePrimitiveParticle(const std::string& name, Primitive
         break;
     case PrimitiveType::Box:
         particleGroups_[name].primitive_ = std::make_unique<PrimitiveBox>();
+        break;
+    case PrimitiveType::Sphere:
+        particleGroups_[name].primitive_ = std::make_unique<PrimitiveSphere>();
         break;
     }
 

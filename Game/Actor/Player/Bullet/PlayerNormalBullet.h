@@ -19,6 +19,7 @@ public:
     Vector3 GetPosition() const override;
 
     void HitBoundary() override;
+    void OnCollisionStay([[maybe_unused]] BaseCollider* other) override;
 
 private:
     // 弾種別ごとの更新処理

@@ -242,6 +242,7 @@
     <ClCompile Include="Game\Actor\Player\Parts\BasePlayerParts.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWing.cpp" />
     <ClCompile Include="Game\Actor\Player\Effect\PlayerEffects.cpp" />
+    <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -482,6 +483,7 @@
     <ClInclude Include="Game\Actor\Player\Parts\BasePlayerParts.h" />
     <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWing.h" />
     <ClInclude Include="Game\Actor\Player\Effect\PlayerEffects.h" />
+    <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

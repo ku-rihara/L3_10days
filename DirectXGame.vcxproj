@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
     <ClCompile Include="Game\Actor\Player\Effect\PlayerEffects.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\BasePlayerParts.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWing.cpp" />
@@ -219,6 +220,7 @@
     <ClCompile Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
     <ClInclude Include="Game\Actor\Player\Effect\PlayerEffects.h" />
     <ClInclude Include="Game\Actor\Player\Parts\BasePlayerParts.h" />
     <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWing.h" />

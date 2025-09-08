@@ -182,6 +182,13 @@ void PlayerMissile::SetMissileParameters(const MissileParameter& params) {
 }
 
 
+void PlayerMissile::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
+
+    if (dynamic_cast<LockOn::LockOnVariant*>(other)) {
+        Deactivate();
+    }
+}
+
 void PlayerMissile::HitBoundary() {
     auto boundary = Boundary::GetInstance();
 
@@ -190,10 +197,10 @@ void PlayerMissile::HitBoundary() {
 
     if (boundary) {
         const AABB box = boundary->GetWorldAabb();
-        auto hit       = Sweep::SegmentSphereVsAabb(prevPos_, baseTransform_.translation_, param_.breakRadius, box);
+        auto hit       = Sweep::SegmentSphereVsAabb(prevPos_, baseTransform_.translation_, param_.collisionRadiusForBoundary, box);
         if (hit) {
             // 穴内なら無効
-            if (!boundary->IsInHoleXZ(hit->point, param_.breakRadius)) {
+            if (!boundary->IsInHoleXZ(hit->point, param_.collisionRadiusForBoundary)) {
                 // 破壊通知（AddCrack 内部呼び出し）
                 boundary->OnBulletImpact(*hit, param_.damage);
                 Deactivate();

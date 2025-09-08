@@ -1,7 +1,6 @@
 #include "BasePlayerBullet.h"
 
 
-
 BasePlayerBullet::BasePlayerBullet() {
     AABBCollider::Init();
 }

@@ -80,6 +80,14 @@ Vector3 PlayerNormalBullet::GetPosition() const {
     return baseTransform_.GetWorldPos();
 }
 
+
+void PlayerNormalBullet::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
+
+    if (dynamic_cast<LockOn::LockOnVariant*>(other)) {
+        Deactivate();
+    }
+}
+
 void PlayerNormalBullet::HitBoundary() {
     auto boundary = Boundary::GetInstance();
 
@@ -88,10 +96,10 @@ void PlayerNormalBullet::HitBoundary() {
 
     if (boundary) {
         const AABB box = boundary->GetWorldAabb();
-        auto hit       = Sweep::SegmentSphereVsAabb(prevPos_, baseTransform_.translation_, 50, box);
+        auto hit       = Sweep::SegmentSphereVsAabb(prevPos_, baseTransform_.translation_, 5, box);
         if (hit) {
             // 穴内なら無効
-            if (!boundary->IsInHoleXZ(hit->point, 50)) {
+            if (!boundary->IsInHoleXZ(hit->point, 5)) {
                 // 破壊通知（AddCrack 内部呼び出し）
              /*   boundary->OnBulletImpact(*hit, param_.damage);*/
                 Deactivate();
