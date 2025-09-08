@@ -94,9 +94,9 @@ void WorldTransform::BillboardUpdateMatrix(const ViewProjection& viewProjection,
     if (HasParentJoint()) {
         UpdateMatrixWithJoint();
     }
-    // 通常のparent - Billboardでは回転成分を除いて適用
+  
     else if (parent_) {
-        // 親の行列から回転成分だけ取得（位置成分を除去）
+        // 親の行列から回転成分だけ取得
         Matrix4x4 parentRotationOnly = parent_->matWorld_;
         parentRotationOnly.m[3][0]   = 0.0f;
         parentRotationOnly.m[3][1]   = 0.0f;
@@ -105,7 +105,7 @@ void WorldTransform::BillboardUpdateMatrix(const ViewProjection& viewProjection,
         // 親の位置成分を取得
         Vector3 parentPosition = parent_->GetWorldPos();
 
-        // 現在のワールド行列に親の回転のみ適用（ビルボードの回転は保持）
+        // 現在のワールド行列に親の回転のみ適用
         Matrix4x4 tempMatrix = matWorld_;
 
         // 現在の位置を一旦保存
