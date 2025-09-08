@@ -32,10 +32,10 @@ PSOutput main(VertexShaderOutput input) {
 	}
 
 	float2 baseColorUV = input.texcoord * 1.0 + gTime.value * 0.005;
-	float baseColorValue = PerlinNoise(baseColorUV * 100);
+	float baseColorValue = PerlinNoise(baseColorUV * 500);
 	
 	float2 highlightUV = input.texcoord.yx * 3.0 - gTime.value * 0.02;
-	float highlightValue = fbm(highlightUV * 100);
+	float highlightValue = fbm(highlightUV * 500);
 	
 	// --- 既存のalpha計算
 	float alpha = PerlinNoise(baseColorUV) * PerlinNoise(highlightUV);
