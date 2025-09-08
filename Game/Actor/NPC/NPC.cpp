@@ -117,7 +117,7 @@ void NPC::Update() {
 	cTransform_.UpdateMatrix();
 }
 
-void NPC::DebugDraw(const ViewProjection& vp) {
+void NPC::DebugDraw([[maybe_unused]] const ViewProjection& vp) {
 #ifdef _DEBUG
 	if (!lineDrawer_) return;
 
@@ -128,17 +128,17 @@ void NPC::DebugDraw(const ViewProjection& vp) {
 	const Vector3 f = ForwardFromPitchYaw(baseTransform_.rotation_);
 
 	// up が f とほぼ平行なら代替Upを使う
-	Vector3 upHint = { 0,1,0 };
-	if (std::fabs(Vector3::Dot(f, upHint)) > 0.98f) upHint = { 0,0,1 };
+	Vector3 upHint = { 0, 1, 0 };
+	if (std::fabs(Vector3::Dot(f, upHint)) > 0.98f) upHint = { 0, 0, 1 };
 
 	// 直交基底 right / up
 	Vector3 r = Vector3::Cross(upHint, f);
 	float rl = r.Length();
-	r = (rl > 1e-6f) ? (r * (1.0f / rl)) : Vector3{ 1,0,0 };
+	r = (rl > 1e-6f) ? (r * (1.0f / rl)) : Vector3{ 1, 0, 0 };
 
 	Vector3 u = Vector3::Cross(f, r);
 	float ul = u.Length();
-	u = (ul > 1e-6f) ? (u * (1.0f / ul)) : Vector3{ 0,1,0 };
+	u = (ul > 1e-6f) ? (u * (1.0f / ul)) : Vector3{ 0, 1, 0 };
 
 	// FOV/距離
 	const float radH = fireConeHFovDeg_ * 3.1415926535f / 180.0f;
@@ -371,6 +371,7 @@ const BaseObject* NPC::PickFrustumTarget() const {
 void NPC::OnCollisionEnter(BaseCollider* other) {
 	// TODO: 弾との衝突で hp を減らす等
 	(void)other;
+
 }
 
 /// ===================================================

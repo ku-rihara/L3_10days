@@ -92,7 +92,7 @@ void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
         FireBullets(player, BulletType::NORMAL);
 		// 発射SE再生
 		int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/BulletFire.wav");
-		Audio::GetInstance()->PlayWave(handle, 0.05f);
+		Audio::GetInstance()->PlayWave(handle, 0.05f, 0.5f);
 
         // 発射間隔をリセット
         state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
@@ -270,6 +270,7 @@ void PlayerBulletShooter::BindParams() {
         globalParameter_->Bind(groupName_, "lifeTime" + std::to_string(int(i + 1)), &bulletParameters_[i].lifeTime);
         globalParameter_->Bind(groupName_, "speed" + std::to_string(int(i + 1)), &bulletParameters_[i].speed);
         globalParameter_->Bind(groupName_, "damage" + std::to_string(int(i + 1)), &bulletParameters_[i].damage);
+        globalParameter_->Bind(groupName_, "breakRadius" + std::to_string(int(i + 1)), &bulletParameters_[i].collisionRadiusForBoundary);
         // 発射パラメータ
         globalParameter_->Bind(groupName_, "intervalTime" + std::to_string(int(i + 1)), &shooterParameters_[i].intervalTime);
         globalParameter_->Bind(groupName_, "maxBulletNum" + std::to_string(int(i + 1)), &shooterParameters_[i].maxBulletNum);
@@ -286,6 +287,8 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
     ImGui::DragFloat("LifeTime", &bulletParameters_[static_cast<size_t>(type)].lifeTime, 0.01f);
     ImGui::DragFloat("Speed", &bulletParameters_[static_cast<size_t>(type)].speed, 0.01f);
     ImGui::DragFloat("Damage", &bulletParameters_[static_cast<size_t>(type)].damage, 0.01f);
+    ImGui::DragFloat("CollisionRadiusForBoundary", &bulletParameters_[static_cast<size_t>(type)].collisionRadiusForBoundary, 0.01f);
+
 
     // 発射のパラメータ
     ImGui::SeparatorText("ShooterParameter");

@@ -9,10 +9,11 @@
 #include "Matrix4x4.h"
 #include "PlayerBulletShooter.h"
 #include <numbers>
+#include "Physics/SweepAabb.h"
 
 void PlayerMissile::Init() {
     // モデル作成
-    obj3d_.reset(Object3d::CreateModel("cube.obj"));
+    obj3d_.reset(Object3d::CreateModel("Missile.obj"));
 
     // transformの初期化
     baseTransform_.Init();
@@ -49,6 +50,8 @@ void PlayerMissile::Update() {
 
     // 位置を更新
     baseTransform_.translation_ += velocity_ * deltaTime;
+
+    HitBoundary();
 
     // トランスフォーム更新
     BaseObject::Update();
@@ -156,7 +159,7 @@ void PlayerMissile::SetTargetID(TargetID targetId) {
 void PlayerMissile::SetTarget(const Vector3& targetPosition) {
     targetPosition_ = targetPosition;
     hasTarget_      = true;
-    targetId_       = INVALID_TARGET_ID; // 座標指定の場合はIDをクリア
+    targetId_       = INVALID_TARGET_ID; 
 }
 
 void PlayerMissile::ClearTarget() {
@@ -176,4 +179,32 @@ Vector3 PlayerMissile::GetPosition() const {
 void PlayerMissile::SetMissileParameters(const MissileParameter& params) {
     trackingStrength_ = params.trackingStrength;
     maxTurnRate_      = params.maxTurnRate;
+}
+
+
+void PlayerMissile::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
+
+    if (dynamic_cast<LockOn::LockOnVariant*>(other)) {
+        Deactivate();
+    }
+}
+
+void PlayerMissile::HitBoundary() {
+    auto boundary = Boundary::GetInstance();
+
+    Vector3 prevPos_ = baseTransform_.translation_ - velocity_ * Frame::DeltaTime();
+    Vector3 currentPos_ = baseTransform_.GetWorldPos();
+
+    if (boundary) {
+        const AABB box = boundary->GetWorldAabb();
+        auto hit       = Sweep::SegmentSphereVsAabb(prevPos_, baseTransform_.translation_, param_.collisionRadiusForBoundary, box);
+        if (hit) {
+            // 穴内なら無効
+            if (!boundary->IsInHoleXZ(hit->point, param_.collisionRadiusForBoundary)) {
+                // 破壊通知（AddCrack 内部呼び出し）
+                boundary->OnBulletImpact(*hit, param_.damage);
+                Deactivate();
+            }
+        }
+    }
 }

@@ -54,6 +54,9 @@ private:
     std::map<FactionType, std::unique_ptr<BaseStation>> stations_;
     std::unique_ptr<QuotaUnitDirector> director_;
 
+    /// test
+    std::unique_ptr<class PlayerEngineEffect> engineEffect_;
+
     ///========================================================
     /// pause objects
     ///========================================================

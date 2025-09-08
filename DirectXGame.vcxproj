@@ -11,6 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
+    <ClCompile Include="Game\Actor\Player\Effect\PlayerEffects.cpp" />
+    <ClCompile Include="Game\Actor\Player\Parts\BasePlayerParts.cpp" />
+    <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWing.cpp" />
+    <ClCompile Include="Game\GameClearActor\GameClearSprite.cpp" />
+    <ClCompile Include="Game\GameOverActor\GameOverSprite.cpp" />
+    <ClCompile Include="Game\Scene\GameClearScene.cpp" />
+    <ClCompile Include="Game\Scene\GameOverScene.cpp" />
     <ClCompile Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.cpp" />
     <ClCompile Include="Game\Actor\Player\LockOn\LockOn.cpp" />
     <ClCompile Include="Game\Actor\Player\TargetManager\TargetManager.cpp" />
@@ -209,8 +217,17 @@
     <ClCompile Include="Game\Option\Item\SoundOption.cpp" />
     <ClCompile Include="Game\Option\Item\OperationOptionItem.cpp" />
     <ClCompile Include="Game\Actor\NPC\SplineFollwer.cpp" />
+    <ClCompile Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
+    <ClInclude Include="Game\Actor\Player\Effect\PlayerEffects.h" />
+    <ClInclude Include="Game\Actor\Player\Parts\BasePlayerParts.h" />
+    <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWing.h" />
+    <ClInclude Include="Game\GameClearActor\GameClearSprite.h" />
+    <ClInclude Include="Game\GameOverActor\GameOverSprite.h" />
+    <ClInclude Include="Game\Scene\GameClearScene.h" />
+    <ClInclude Include="Game\Scene\GameOverScene.h" />
     <ClInclude Include="Game\Actor\NPC\Bullet\BoundaryBreakerBullet.h" />
     <ClInclude Include="Game\Actor\Player\LockOn\LockOn.h" />
     <ClInclude Include="Game\Actor\Player\TargetManager\TargetManager.h" />
@@ -432,6 +449,7 @@
     <ClInclude Include="Game\Option\Item\SoundOption.h" />
     <ClInclude Include="Game\Option\Item\OperationOptionItem.h" />
     <ClInclude Include="Game\Actor\NPC\SplineFollower.h" />
+    <ClInclude Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

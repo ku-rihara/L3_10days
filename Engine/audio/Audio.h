@@ -28,7 +28,7 @@ public:
 	void Init();
 	int LoadWave(const std::string& filename);
 	void Unload(const int& soundId);
-	void PlayWave(const int& soundId, const float& volume);
+	void PlayWave(const int& soundId, const float& volume, float _pitch = 1.0f);
 	int PlayBGM(const int& soundId, const float& volume);
 	void StopBGM(const int& soundId);
 	void Finalize();

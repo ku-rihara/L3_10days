@@ -18,10 +18,13 @@ public:
     void Deactivate() override;
     Vector3 GetPosition() const override;
 
+    void HitBoundary() override;
+    void OnCollisionStay([[maybe_unused]] BaseCollider* other) override;
+
 private:
     // 弾種別ごとの更新処理
     void UpdateNormalBullet(float deltaTime);
-    void UpdateMissileBullet(float deltaTime);
+   
 
 private:
     float currentLifeTime_ = 0.0f;
