@@ -60,6 +60,9 @@ void MissileIconUI::UpdateAbleShot() {
         return;
     }
 
+    // クーリングカラー
+    sprite_->SetColor(coolingColor_);
+
     // 0.0 ～ 1.0 の割合
     float t = currentTime / maxTime;
     t       = std::clamp(t, 0.0f, 1.0f);
@@ -70,6 +73,7 @@ void MissileIconUI::UpdateAbleShot() {
     if (redLineAlpha_ <= endAlpha_) {
         isColling_     = false;
         isCollEndEase_ = true;
+        sprite_->SetColor(Vector3(1.0f,1.0f,1.0f));
         scaleEase_->Reset();
     }
 }
@@ -99,6 +103,7 @@ void MissileIconUI::BindParams() {
     BasePlayerUI::BindParams();
     globalParameter_->Bind(groupName_, "redLineScale", &redLineScale_);
     globalParameter_->Bind(groupName_, "endAlpha", &endAlpha_);
+    globalParameter_->Bind(groupName_, "coolingColor", &coolingColor_);
 }
 
 void MissileIconUI::AdjustParam() {
@@ -108,4 +113,5 @@ void MissileIconUI::AdjustParam() {
 void MissileIconUI::AdjustUniqueParam() {
     ImGui::DragFloat("endAlpha", &endAlpha_, 0.01f);
     ImGui::DragFloat2("redLineScale", &redLineScale_.x, 0.01f);
+    ImGui::ColorEdit3("coolingColor", &coolingColor_.x);
 }

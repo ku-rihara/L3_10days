@@ -32,6 +32,7 @@ private:
     float endAlpha_;
     Vector2 tempScale_;
     Vector2 redLineScale_;
+    Vector3 coolingColor_;
     std::unique_ptr<Easing<Vector2>> scaleEase_;
     std::unique_ptr<Sprite> redLineSprite_;
     bool isColling_;
