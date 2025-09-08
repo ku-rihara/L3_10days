@@ -40,6 +40,13 @@ void Player::PartsInit() {
     backWingCenter_->Init(&baseTransform_, "BackWingCenter");
 }
 
+void Player::UIInit() {
+    // =========================LifeアイコンUI=========================
+    lifeUI_ = std::make_unique<PlayerLifeUI>();
+    lifeUI_->Init("PlayerLife");
+    lifeUI_->SetPlayer(this);
+}
+
 void Player::Init() {
 
     // グローバルパラメータ
@@ -58,7 +65,10 @@ void Player::Init() {
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
 
+    // パーツ初期化
     PartsInit();
+    // UI初期化
+    UIInit();
 
     // レティクル
     reticle_ = std::make_unique<PlayerReticle>();
@@ -67,6 +77,9 @@ void Player::Init() {
     // 弾初期化
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
     bulletShooter_->Init();
+
+    // hpをSet
+    hp_ = maxHp_;
 
     // moveConstraint
     Boundary* boundary   = Boundary::GetInstance();
@@ -98,6 +111,9 @@ void Player::Update() {
     // パーツ更新
     PartsUpdate();
 
+    // UI更新
+    UIUpdate();
+
     // レティクル
     reticle_->Update(this, viewProjection_);
 
@@ -128,8 +144,8 @@ void Player::MoveUpdate() {
 
 void Player::PartsUpdate() {
     // 入力から目標回転を計算
-    Vector3 backWingInputRotation  = Vector3::ZeroVector();
-    Vector3 frontWingInputRotation = Vector3::ZeroVector();
+    Vector3 backWingInputRotation       = Vector3::ZeroVector();
+    Vector3 frontWingInputRotation      = Vector3::ZeroVector();
     Vector3 backCenterWingInputRotation = Vector3::ZeroVector();
 
     // =========================後ろのWing=========================
@@ -160,9 +176,14 @@ void Player::PartsUpdate() {
     backWingCenter_->SetBaseRotate(obj3d_->transform_.quaternion_.ToEuler());
 }
 
+void Player::UIUpdate() {
+    // =========================LifeアイコンUI=========================
+    lifeUI_->Update();
+}
+
 void Player::HandleInput() {
     Input* input = Input::GetInstance();
-  
+
     // 入力値をリセット
     Vector2 stickL      = Vector2::ZeroVector();
     float pawInputValue = 0.0f;
@@ -438,7 +459,7 @@ void Player::ReticleDraw() {
 }
 
 void Player::BindParams() {
-    globalParameter_->Bind(groupName_, "hp", &hp_);
+    globalParameter_->Bind(groupName_, "hp", &maxHp_);
     globalParameter_->Bind(groupName_, "forwardSpeed", &speedParam_.startForwardSpeed);
     globalParameter_->Bind(groupName_, "pitchSpeed", &speedParam_.pitchSpeed);
     globalParameter_->Bind(groupName_, "yawSpeed", &speedParam_.yawSpeed);
@@ -466,8 +487,8 @@ void Player::AdjustParam() {
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
         ImGui::PushID(groupName_.c_str());
 
-        ImGui::DragFloat("Hp", &hp_);
-
+        ImGui::DragFloat("MaxHp", &maxHp_);
+        ImGui::DragFloat("CurrentHP", &hp_);
         // EditParameter
         ImGui::Separator();
         ImGui::Text("Fighter Controls");
@@ -541,7 +562,10 @@ void Player::AdjustParam() {
 
         ImGui::PopID();
     }
+    ImGui::SeparatorText("UIs");
+    lifeUI_->AdjustParam();
 
+    ImGui::SeparatorText("Parts");
     // backWing
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
         backWing->AdjustParam();
@@ -555,7 +579,7 @@ void Player::AdjustParam() {
     if (backWingCenter_) {
         backWingCenter_->AdjustParam();
     }
-
+    ImGui::SeparatorText("etc");
     // 弾
     if (bulletShooter_) {
         bulletShooter_->AdjustParam();
@@ -566,6 +590,10 @@ void Player::AdjustParam() {
     }
 
 #endif // _DEBUG
+}
+
+void Player::UIDraw() {
+    lifeUI_->Draw();
 }
 
 void Player::SetGameCamera(GameCamera* camera) {

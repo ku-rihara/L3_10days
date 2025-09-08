@@ -364,6 +364,7 @@ void GameScene::GameSpriteDraw() {
 	uis_->Draw();
 	player_->ReticleDraw();
 	lockOn_->Draw();
+    player_->UIDraw();
 	/// ミニマップ描画
 	miniMap_->DrawMiniMap();
 

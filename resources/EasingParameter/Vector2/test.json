@@ -1,5 +1,6 @@
 {
     "test": {
+        "StartTimeOffset": 0.0,
         "adaptVec2AxisType": 1,
         "amplitude": 0.0,
         "backRatio": 0.0,
