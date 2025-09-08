@@ -5,6 +5,8 @@
 #include "Actor/NPC/Pool/NpcPool.h"
 #include "Actor/NPC/EnemyNPC.h"
 
+class Player;
+
 class EnemyStation final : public BaseStation{
 public:
 	/// ===================================================
@@ -19,9 +21,13 @@ public:
 
 	void SpawnNPC(const Vector3& pos)override;
 
+	void SetPlayerPtr(const Player*);
+	void CollectTargets(std::vector<const BaseObject*>& out) const override;
+
 private:
 	/// ===================================================
 	///  private variable
 	/// ===================================================
 	NpcPool<EnemyNPC>pool_;
+	const Player* pPlayer_ = nullptr;
 };

@@ -4,6 +4,7 @@
 #include "Actor/NPC/Pool/NpcPool.h"
 #include "Frame/Frame.h"
 #include "Actor/Boundary/Boundary.h"
+#include "Actor/Player/Player.h"
 
 #include "imgui.h"
 
@@ -66,4 +67,15 @@ void EnemyStation::SpawnNPC(const Vector3& pos) {
 
 	spawned_.push_back(std::move(npc));
 	currentTime_ = 0.0f;
+}
+
+void EnemyStation::SetPlayerPtr(const Player* player) { pPlayer_ = player; }
+
+void EnemyStation::CollectTargets(std::vector<const BaseObject*>& out) const {
+	BaseStation::CollectTargets(out);
+
+	// 自分が Enemy で、プレイヤーが指定されていれば攻撃候補に追加
+	if (GetFactionType() == FactionType::Enemy && pPlayer_) {
+		out.push_back(static_cast<const BaseObject*>(pPlayer_));
+	}
 }

@@ -106,7 +106,7 @@ protected:
 	// ---- game ----
 	const BaseStation* target_ = nullptr;            // 航法上の目標（敵拠点）。nullptr で防衛モード
 	const ITargetProvider* targetProvider_ = nullptr;
-	FireMode fireMode_ = FireMode::Straight;          // 射撃モード
+	FireMode fireMode_ = FireMode::Homing;          // 射撃モード
 
 	FactionType faction_{};
 	bool isActive_ = true;

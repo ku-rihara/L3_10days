@@ -66,7 +66,7 @@ public:
 	}
 
 	// ===== ITargetProvider 実装 =====
-	void CollectTargets(std::vector<const BaseObject*>& out) const override;
+	virtual void CollectTargets(std::vector<const BaseObject*>& out) const override;
 
 	/// ===== Collider =====
 	void OnCollisionEnter(BaseCollider* other) override;
