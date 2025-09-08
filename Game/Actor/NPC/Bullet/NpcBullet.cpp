@@ -45,7 +45,9 @@ void NpcBullet::Update() {
 	Hit();
 
 	lifeRemain_ -= Frame::DeltaTime();
-	if (lifeRemain_ <= 0.0f) Deactivate();
+	if (lifeRemain_ <= 0.0f) {
+		Deactivate(); 
+	}
 
 	BaseObject::Update();
 }

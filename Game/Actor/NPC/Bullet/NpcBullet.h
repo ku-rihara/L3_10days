@@ -20,8 +20,8 @@ public:
 	void SetDirection(const Vector3& dir);
 
 	// アクティブ制御
-	void Activate()   noexcept { isActive_ = true;  lifeRemain_ = maxLifeTime_; }
-	void Deactivate() noexcept { isActive_ = false; }
+	void Activate()   noexcept { isActive_ = true;  lifeRemain_ = maxLifeTime_;obj3d_->SetIsDraw(true); }
+	void Deactivate() noexcept { isActive_ = false;obj3d_->SetIsDraw(false); }
 	bool IsAlive() const noexcept { return isActive_; }
 
 	//void OnCollisionEnter(BaseCollider* other) override;
