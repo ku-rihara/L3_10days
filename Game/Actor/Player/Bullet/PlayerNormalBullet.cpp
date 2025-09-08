@@ -2,6 +2,8 @@
 #include "Frame/Frame.h"
 #include "Actor/Player/Player.h"
 #include "BasePlayerBullet.h"
+#include"Actor/NPC/EnemyNPC.h"
+#include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
 #include "Physics/SweepAabb.h"
 
 void PlayerNormalBullet::Init() {
@@ -83,7 +85,7 @@ Vector3 PlayerNormalBullet::GetPosition() const {
 
 void PlayerNormalBullet::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
 
-    if (dynamic_cast<LockOn::LockOnVariant*>(other)) {
+     if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
         Deactivate();
     }
 }
