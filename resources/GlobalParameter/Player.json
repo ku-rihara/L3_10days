@@ -1,5 +1,6 @@
 {
     "Player": {
+        "autoRecoverSpeed": 400.0,
         "autoRotateSpeed": 200.0,
         "bankRate": 0.8999999761581421,
         "brakeForwardSpeed": 30.0,

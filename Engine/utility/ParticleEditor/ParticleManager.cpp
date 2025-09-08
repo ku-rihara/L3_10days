@@ -1,8 +1,8 @@
 #include "ParticleManager.h"
 #include "3d/ModelManager.h"
+#include "Animation/ModelAnimation.h"
 #include "base/TextureManager.h"
 #include "Pipeline/ParticlePipeline.h"
-#include"Animation/ModelAnimation.h"
 // frame
 #include "Frame/Frame.h"
 // Function
@@ -11,8 +11,8 @@
 #include "MathFunction.h"
 #include "random.h"
 // Primitive
+#include "Primitive/PrimitiveBox.h"
 #include "Primitive/PrimitiveCylinder.h"
-#include"Primitive/PrimitiveBox.h"
 #include "Primitive/PrimitivePlane.h"
 #include "Primitive/PrimitiveRing.h"
 // std
@@ -27,8 +27,8 @@ ParticleManager* ParticleManager::GetInstance() {
 /// 　初期化
 ///============================================================
 void ParticleManager::Init(SrvManager* srvManager) {
-    pSrvManager_     = srvManager;
-  
+    pSrvManager_ = srvManager;
+
     SetAllParticleFile();
 }
 
@@ -91,7 +91,6 @@ void ParticleManager::Update() {
                 }
             }
 
-
             ///------------------------------------------------------------------------
             /// UV更新
             ///------------------------------------------------------------------------
@@ -125,6 +124,7 @@ void ParticleManager::Draw(const ViewProjection& viewProjection) {
 
     for (auto& groupPair : particleGroups_) {
         ParticleGroup& group           = groupPair.second;
+        std::string name               = groupPair.first;
         std::list<Particle>& particles = group.particles;
         ParticleFprGPU* instancingData = group.instancingData;
 
@@ -135,6 +135,10 @@ void ParticleManager::Draw(const ViewProjection& viewProjection) {
             if (it->currentTime_ >= it->lifeTime_) {
                 it = particles.erase(it);
                 continue;
+            }
+
+            if (instanceIndex > particleGroups_[name].num) {
+                return;
             }
 
             // WVP適応
@@ -290,6 +294,7 @@ void ParticleManager::CreateMaterialResource(const std::string& name) {
 void ParticleManager::CreateInstancingResource(const std::string& name, const uint32_t& instanceNum) {
 
     particleGroups_[name].instanceNum = instanceNum;
+    particleGroups_[name].num         = instanceNum;
 
     // Instancing用のTransformationMatrixリソースを作る
     particleGroups_[name].instancingResource = DirectXCommon::GetInstance()->CreateBufferResource(
@@ -351,7 +356,7 @@ ParticleManager::Particle ParticleManager::MakeParticle(const ParticleEmitter::P
     /// adapt
     particle.worldTransform_.translation_ = paramaters.targetPos + paramaters.emitPos + randomTranslate;
     // fllow pos用
-    particle.offSet                       = paramaters.targetPos + paramaters.emitPos + randomTranslate;
+    particle.offSet = paramaters.targetPos + paramaters.emitPos + randomTranslate;
 
     ///------------------------------------------------------------------------
     /// 速度、向き
@@ -458,7 +463,7 @@ ParticleManager::Particle ParticleManager::MakeParticle(const ParticleEmitter::P
     }
 
     // EaseParm Adapt
-    particle.easeTime                       = 0.0f;
+    particle.easeTime                        = 0.0f;
     particle.scaleInfo.easeParam.isScaleEase = paramaters.scaleEaseParm.isScaleEase;
     particle.scaleInfo.easeParam.maxTime     = paramaters.scaleEaseParm.maxTime;
     particle.scaleInfo.easeParam.easeType    = paramaters.scaleEaseParm.easeType;
@@ -528,7 +533,7 @@ void ParticleManager::Emit(
 
     // 指定されたパーティクルグループを取得
     ParticleGroup& particleGroup = particleGroups_[name];
-    particleGroup.param           = groupParamaters;
+    particleGroup.param          = groupParamaters;
 
     // 生成、グループ追加
     std::list<Particle> particles;

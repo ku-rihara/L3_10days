@@ -77,10 +77,12 @@ private:
 
     struct ParticleGroup { /// パーティクルグループ
         Model* model = nullptr;
+        std::string name;
         std::unique_ptr<IPrimitive> primitive_=nullptr;
         ParticleMaterial material;
         uint32_t instanceNum;
         uint32_t srvIndex;
+        uint32_t num;
         uint32_t textureHandle;
         ParticleFprGPU* instancingData;
         std::list<Particle> particles;
