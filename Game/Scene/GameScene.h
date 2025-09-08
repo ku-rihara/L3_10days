@@ -43,6 +43,10 @@ private:
     /// game objects
     Boundary* boundary_ = nullptr;
     std::vector<std::unique_ptr<BoundaryBreaker>> boundaryBreakers_;
+    std::map<FactionType, std::unique_ptr<BaseStation>> stations_;
+    std::unique_ptr<QuotaUnitDirector> director_;
+    /// Controller
+    std::unique_ptr<class GameController> gameController_ = nullptr;
 
     /// ----- UI ----- ///
     std::unique_ptr<MiniMap> miniMap_ = nullptr;
@@ -53,11 +57,7 @@ private:
     std::unique_ptr<class PlayerEngineEffect> engineEffect_;
     std::unique_ptr<class PlayerLocusEffect> playerLocusEffect_= nullptr;
 
-    std::map<FactionType, std::unique_ptr<BaseStation>> stations_;
-    std::unique_ptr<QuotaUnitDirector> director_;
-
-	/// Controller
-	std::unique_ptr<class GameController> gameController_ = nullptr;
+	int bgmId_;
 
     ///========================================================
     /// pause objects

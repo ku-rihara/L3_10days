@@ -18,7 +18,9 @@
 #include "Option/GameOption.h"
 
 TitleScene::TitleScene() {}
-TitleScene::~TitleScene() {}
+TitleScene::~TitleScene() {
+	audio_->StopBGM(bgmId_);
+}
 
 void TitleScene::Init() {
 	BaseScene::Init();
@@ -44,8 +46,8 @@ void TitleScene::Init() {
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
 	/// このシーンのBGMを再生
-	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
-	audio_->PlayBGM(soundId, 0.1f);
+	bgmId_ = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	audio_->PlayBGM(bgmId_, 0.1f);
 
 
 	fade_ = std::make_unique<Fade>();

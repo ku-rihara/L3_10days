@@ -40,7 +40,9 @@
 #include <vector>
 
 GameScene::GameScene() {}
-GameScene::~GameScene() {}
+GameScene::~GameScene() {
+	audio_->StopBGM(bgmId_);
+}
 
 void GameScene::Init() {
 	BaseScene::Init();
@@ -130,10 +132,9 @@ void GameScene::Init() {
 	pause_->Init();
 
 
-
 	/// BGMの再生
-	int bgmId = audio_->LoadWave("./resources/Sound/BGM/InGameBGM.wav");
-	audio_->PlayBGM(bgmId, 0.5f);
+	bgmId_ = audio_->LoadWave("./resources/Sound/BGM/InGameBGM.wav");
+	audio_->PlayBGM(bgmId_, 0.05f);
 }
 
 void GameScene::Update() {
