@@ -46,12 +46,18 @@ void Player::UIInit() {
     lifeUI_->Init("PlayerLife");
     lifeUI_->SetPlayer(this);
     // =========================MissileアイコンUI=========================
-    for (size_t i = 0; i < missileUIs_.size();++i) {
+    for (size_t i = 0; i < missileUIs_.size(); ++i) {
         missileUIs_[i] = std::make_unique<MissileIconUI>();
-        missileUIs_[i]->Init("MissileUI",i);
+        missileUIs_[i]->Init("MissileUI", i);
         missileUIs_[i]->SetPlayer(this);
     }
-    
+    // =========================DMGテキストUI=========================
+    dmgTextUI_ = std::make_unique<DMGTextUI>();
+    dmgTextUI_->Init("DamageText");
+    // =========================DMGParUI=========================
+    dmgParUI_ = std::make_unique<PlayerDamageParUI>();
+    dmgParUI_->Init("DamageParUI");
+    dmgParUI_->SetPlayer(this);
 }
 
 void Player::Init() {
@@ -187,11 +193,15 @@ void Player::UIUpdate() {
     // =========================LifeアイコンUI=========================
     lifeUI_->Update();
 
-     // =========================MissileアイコンUI=========================
-     for (size_t i = 0; i < missileUIs_.size(); ++i) {
+    // =========================MissileアイコンUI=========================
+    for (size_t i = 0; i < missileUIs_.size(); ++i) {
         missileUIs_[i]->Update();
-      
     }
+    // =========================DMGテキストUI=========================
+    dmgTextUI_->Update();
+    // =========================DMGParUI=========================
+ 
+    dmgParUI_->Update();
 }
 
 void Player::HandleInput() {
@@ -580,6 +590,8 @@ void Player::AdjustParam() {
     for (std::unique_ptr<MissileIconUI>& missileUI : missileUIs_) {
         missileUI->AdjustParam();
     }
+    dmgTextUI_->AdjustParam();
+    dmgParUI_->AdjustParam();
 
     ImGui::SeparatorText("Parts");
     // backWing
@@ -613,6 +625,8 @@ void Player::UIDraw() {
     for (std::unique_ptr<MissileIconUI>& missileUI : missileUIs_) {
         missileUI->Draw();
     }
+    dmgTextUI_->Draw();
+    dmgParUI_->Draw();
 }
 
 void Player::SetGameCamera(GameCamera* camera) {
