@@ -24,6 +24,7 @@ public:
 	void SetColor(const Vector4& _color);
 	void SetScale(const Vector2& _scale);
 
+	void SetIsDrawAll(bool _isDrawAll);
 private:
 
 	std::vector<std::unique_ptr<Sprite>> numSprites_;
@@ -39,6 +40,8 @@ private:
 
 	Vector2 texSize_;
 	Vector2 size_;
+
+	bool isDrawAll_; // 全桁表示するかどうか
 
 };
 

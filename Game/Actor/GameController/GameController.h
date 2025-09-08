@@ -3,6 +3,9 @@
 /// std
 #include <memory>
 
+/// engine
+#include "2d/Sprite.h"
+
 /// game
 #include "Actor/UI/NumDraw/NumDraw.h"
 
@@ -47,6 +50,8 @@ private:
 	bool isPlayerOutOfField_ = false;
 	std::unique_ptr<NumDraw> outOfFieldWarningTimeIntNumDraw_;   // 整数部分
 	std::unique_ptr<NumDraw> outOfFieldWarningTimeFracNumDraw_;  // 小数部分
+	std::unique_ptr<Sprite> commaSprite_; // 小数点
+
 
 public:
 	/// getter

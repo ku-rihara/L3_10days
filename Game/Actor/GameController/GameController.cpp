@@ -2,6 +2,7 @@
 
 /// engine
 #include "Frame/Frame.h"
+#include "base/TextureManager.h"
 
 /// game
 #include "Actor/Player/Player.h"
@@ -12,20 +13,35 @@ GameController::GameController() {
 	outOfFieldWarningTimeIntNumDraw_ = std::make_unique<NumDraw>();
 	outOfFieldWarningTimeFracNumDraw_ = std::make_unique<NumDraw>();
 
-	outOfFieldWarningTimeIntNumDraw_->Init(3);
-	outOfFieldWarningTimeFracNumDraw_->Init(3);
+	outOfFieldWarningTimeIntNumDraw_->Init(2);
+	outOfFieldWarningTimeFracNumDraw_->Init(2);
 
-	float scale = 2.0f;
+	float scale = 3.0f;
 	outOfFieldWarningTimeIntNumDraw_->SetScale({ scale, scale });
 	outOfFieldWarningTimeFracNumDraw_->SetScale({ scale, scale });
 
 	/// 二つの数字の間隔
-	Vector2 offset = { 10.0f, 0.0f };
-	outOfFieldWarningTimeIntNumDraw_->SetBasePosition({ 1280.0f - 200.0f - offset.x, 50.0f });
-	outOfFieldWarningTimeFracNumDraw_->SetBasePosition({ 1280.0f - 200.0f + offset.x, 50.0f });
+	Vector2 offset = { 28.0f, 0.0f };
+	Vector2 basePos = { 640.0f, 360.0f - 30.0f };
+	outOfFieldWarningTimeIntNumDraw_->SetBasePosition(basePos - offset);
+	outOfFieldWarningTimeFracNumDraw_->SetBasePosition(basePos + offset);
 
-	outOfFieldWarningTimeIntNumDraw_->SetDigitSpacing(12.0f);
-	outOfFieldWarningTimeFracNumDraw_->SetDigitSpacing(12.0f);
+	float spacing = 20.0f;
+	outOfFieldWarningTimeIntNumDraw_->SetDigitSpacing(spacing);
+	outOfFieldWarningTimeFracNumDraw_->SetDigitSpacing(spacing);
+
+	outOfFieldWarningTimeFracNumDraw_->SetIsDrawAll(true);
+
+	outOfFieldWarningTimeIntNumDraw_->SetColor(Vector4(0.56f, 0.12f, 0.09f, 1.0f));
+	outOfFieldWarningTimeFracNumDraw_->SetColor(Vector4(0.56f, 0.12f, 0.09f, 1.0f));
+
+	/// カンマ
+	uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/UI/Comma.png");
+	commaSprite_.reset(Sprite::Create(textureHandle, basePos + Vector2(0, 4.0f), {1, 1, 1, 1}));
+	commaSprite_->anchorPoint_ = { 0.5f, 0.5f };
+	Vector2 texSize = commaSprite_->GetTextureSize();
+	Vector2 size    = Vector2{ 32.0f, 32.0f };
+	commaSprite_->SetScale(size / texSize);
 
 }
 GameController::~GameController() = default;
@@ -54,8 +70,14 @@ void GameController::Update() {
 
 void GameController::DrawOutOfFieldWarningTime() {
 
+	/// フィールド外に出ているときだけ表示
+	if (!isPlayerOutOfField_) {
+		return;
+	}
+
 	outOfFieldWarningTimeIntNumDraw_->Draw();
 	outOfFieldWarningTimeFracNumDraw_->Draw();
+	commaSprite_->Draw();
 }
 
 bool GameController::CheckIsGameOver() {
