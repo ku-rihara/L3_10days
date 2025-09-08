@@ -172,4 +172,5 @@ public:
     void SetGameCamera(GameCamera* camera);
     void SetLockOn(LockOn* lockOn);
     void SetViewProjection(const ViewProjection* viewProjection);
+	void SetHP(float hp) { hp_ = hp; }
 };

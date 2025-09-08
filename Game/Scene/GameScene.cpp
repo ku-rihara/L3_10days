@@ -156,6 +156,11 @@ void GameScene::Update() {
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
+
+	/// debug command
+	if (input_->TrrigerKey(DIK_0)) {
+		player_->SetHP(0.0f);
+	}
 #endif /// Scene Change (Debug)
 }
 
