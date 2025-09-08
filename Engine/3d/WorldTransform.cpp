@@ -91,19 +91,33 @@ void WorldTransform::BillboardUpdateMatrix(const ViewProjection& viewProjection,
     // ワールド行列を計算
     matWorld_ = scaleMatrix * billboardMatrix_ * translateMatrix;
 
-    // 親の処理を修正
     if (HasParentJoint()) {
         UpdateMatrixWithJoint();
     }
-    // 通常のparent - Billboardの場合は位置のみ適用
+    // 通常のparent - Billboardでは回転成分を除いて適用
     else if (parent_) {
-        // 親のワールド位置を取得
-        Vector3 parentWorldPos = parent_->GetWorldPos();
+        // 親の行列から回転成分だけ取得（位置成分を除去）
+        Matrix4x4 parentRotationOnly = parent_->matWorld_;
+        parentRotationOnly.m[3][0]   = 0.0f;
+        parentRotationOnly.m[3][1]   = 0.0f;
+        parentRotationOnly.m[3][2]   = 0.0f;
 
-        // 現在のワールド位置に親の位置を加算
-        matWorld_.m[3][0] += parentWorldPos.x;
-        matWorld_.m[3][1] += parentWorldPos.y;
-        matWorld_.m[3][2] += parentWorldPos.z;
+        // 親の位置成分を取得
+        Vector3 parentPosition = parent_->GetWorldPos();
+
+        // 現在のワールド行列に親の回転のみ適用（ビルボードの回転は保持）
+        Matrix4x4 tempMatrix = matWorld_;
+
+        // 現在の位置を一旦保存
+        Vector3 currentPos = Vector3(tempMatrix.m[3][0], tempMatrix.m[3][1], tempMatrix.m[3][2]);
+
+        // 親の回転を現在の位置（オフセット）に適用
+        Vector3 rotatedOffset = TransformNormal(currentPos, parentRotationOnly);
+
+        // 最終位置 = 親の位置 + 回転されたオフセット
+        matWorld_.m[3][0] = parentPosition.x + rotatedOffset.x;
+        matWorld_.m[3][1] = parentPosition.y + rotatedOffset.y;
+        matWorld_.m[3][2] = parentPosition.z + rotatedOffset.z;
     }
 
     // 定数バッファに転送する
