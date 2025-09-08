@@ -226,32 +226,49 @@ void NPC::ClearDefendAnchor() {
 void NPC::StartOrbit(const Vector3& center) {
 	navigator_.StartOrbit(center);
 }
-void NPC::Move() {
+void NPC::Move(){
 	if (!isActive_) return;
 
 	const float dt = Frame::DeltaTime();
-
 	const Vector3 npcPos = GetWorldPosition();
-	const Vector3 tgtPos = (target_)
-		? target_->GetWorldPosition()
-		: (hasDefendAnchor_ ? defendAnchor_ : npcPos);
 
+	NpcNavigator::StationSide side {};
+	side.allyBase = hasDefendAnchor_ ? defendAnchor_ : npcPos;                 // 防衛アンカー（無ければ現在地）
+	side.enemyBase = target_ ? target_->GetWorldPosition() : npcPos;            // 敵拠点（無ければダミー）
+	navigator_.SetStationSide(side);
+
+	// ---- センシングされた戦術ターゲットを計算 ----
+	// 1) 視錐台から拾えた敵（NPC/拠点）を優先
+	// 2) なければ攻撃指示中は敵拠点
+	// 3) それも無ければ自分（＝無効扱い）
+	Vector3 sensedTgt = npcPos;
+	if (const BaseObject* ft = PickFrustumTarget()){
+		sensedTgt = ft->GetWorldPosition();
+	} else if (target_){
+		sensedTgt = side.enemyBase;
+	}
+
+	// ---- 穴収集 ----
 	const Boundary* boundary = Boundary::GetInstance();
 	const std::vector<Hole>& holes = boundary->GetHoles();
 
-	if (speed_ != navConfig_.speed) { navConfig_.speed = speed_; }
+	// ---- 速度同期（GUI等からの変更をNavigatorへ反映）----
+	if (speed_ != navConfig_.speed){ navConfig_.speed = speed_; }
 
-	const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, tgtPos, holes);
+	// ---- 役割駆動ナビゲーション ----
+	const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, sensedTgt, holes);
 
+	// ---- 目的地へ移動（制約を通す）----
 	Vector3 from = baseTransform_.translation_;
 	Vector3 to = from + desiredDelta;
 
-	if (moveConstraint_) { to = moveConstraint_->FilterMove(from, to); }
+	// 境界にぶつかったら押し戻す
+	if (moveConstraint_){ to = moveConstraint_->FilterMove(from, to); }
 
-	// === 進行方向へ向ける ===
+	// === 進行方向へ機体を向ける ===
 	const Vector3 v = to - from;
 	const float vLen = v.Length();
-	if (vLen > 1e-6f) {
+	if (vLen > 1e-6f){
 		const Vector3 dir = v * (1.0f / vLen);
 
 		const float targetYaw = std::atan2(dir.x, dir.z);
@@ -266,6 +283,7 @@ void NPC::Move() {
 		rot.y = MoveTowardsAngle(rot.y, targetYaw, maxStep);
 		rot.x = MoveTowardsAngle(rot.x, targetPitch, maxStep);
 
+		// バンク（ヨー誤差に比例）
 		const float bankGain = 0.6f;
 		const float bankMax = std::numbers::pi_v<float> *0.35f;
 		float yawErr = WrapPi(targetYaw - rot.y);
@@ -276,12 +294,6 @@ void NPC::Move() {
 
 	// 位置反映
 	baseTransform_.translation_ = to;
-
-	// 防衛待機（ターゲット無し）時は、アンカーがあればアンカー中心に旋回
-	if (!target_) {
-		const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
-		StartOrbit(center);
-	}
 }
 
 /// ===================================================
@@ -304,7 +316,6 @@ void NPC::TryFire() {
 
 	const Vector3 muzzle = GetWorldPosition();
 
-	// 実弾発射：既存の NpcFierController API に合わせて呼び出し
 	switch (fireMode_) {
 		case FireMode::Homing:
 			{
@@ -315,13 +326,15 @@ void NPC::TryFire() {
 			break;
 		case FireMode::Straight:
 		default:
-			// Straight: 前方へ直進弾
-			// 前方ベクトルが未確定なら目標方向で打つ
 			{
-				Vector3 dir = (target->GetWorldPosition() - muzzle);
-				if (dir.LengthSq() < 1e-6f) dir = Vector3(0, 0, 1);
-				dir.Normalize();
-				fireController_->SpawnStraight(muzzle, dir);
+			// 自機の回転から前方ベクトルを得る
+			Vector3 forward = ForwardFromPitchYaw(baseTransform_.rotation_);
+			if (forward.Length() < 1e-6f){
+				forward = Vector3(0, 0, 1); // 万一ゼロならデフォルト前方
+			}
+			forward.Normalize();
+
+			fireController_->SpawnStraight(muzzle, forward);
 			}
 			break;
 	}
@@ -329,21 +342,49 @@ void NPC::TryFire() {
 	shootCooldown_ = shootInterval_;
 }
 
-/// 視錐台チェック（前方ベクトルの取り方が未共有のため、まずは距離のみ判定）
-bool NPC::IsInFiringFrustum(const Vector3& worldPt) const {
-	const Vector3 p = GetWorldPosition();
-	const float d2 = (worldPt - p).LengthSq();
-	if (d2 < fireConeNear_ * fireConeNear_) return false;
-	if (d2 > fireConeFar_ * fireConeFar_)  return false;
+bool NPC::IsInFiringFrustum(const Vector3& worldPt) const{
+	const Vector3 origin = GetWorldPosition();
+	const Vector3 v = worldPt - origin;
 
-	// TODO: 前方ベクトル（例：baseTransform_ から forward を取得）と角度で
-	// HFOV/VFOV を掛けたい場合はここで判定を拡張
+	// 距離（near/far）
+	const float d2 = Vector3::Dot(v, v);
+	if (d2 < fireConeNear_ * fireConeNear_) return false;
+	if (d2 > fireConeFar_ * fireConeFar_) return false;
+
+	// 前方ベクトル
+	const Vector3 f = ForwardFromPitchYaw(baseTransform_.rotation_);
+
+	// f とほぼ平行な up を避ける
+	Vector3 upHint = {0, 1, 0};
+	if (std::fabs(Vector3::Dot(f, upHint)) > 0.98f) upHint = {0, 0, 1};
+
+	// 直交基底 right / up
+	Vector3 r = Vector3::Cross(upHint, f);
+	const float rl = r.Length();
+	r = (rl > 1e-6f) ? (r * (1.0f / rl)) : Vector3 {1,0,0};
+
+	Vector3 u = Vector3::Cross(f, r);
+	const float ul = u.Length();
+	u = (ul > 1e-6f) ? (u * (1.0f / ul)) : Vector3 {0,1,0};
+
+	// v を基底に投影
+	const float zf = Vector3::Dot(v, f); // 前後成分（前方が正）
+	if (zf <= 0.0f) return false;        // 背面は不可
+
+	const float xr = Vector3::Dot(v, r); // 右左成分
+	const float yu = Vector3::Dot(v, u); // 上下成分
+
+	// FOV 判定：|xr| <= zf * tan(HFOV), |yu| <= zf * tan(VFOV)
+	const float tanH = std::tan(fireConeHFovDeg_ * 3.1415926535f / 180.0f);
+	const float tanV = std::tan(fireConeVFovDeg_ * 3.1415926535f / 180.0f);
+
+	if (std::fabs(xr) > zf * tanH) return false; // 水平方向に外
+	if (std::fabs(yu) > zf * tanV) return false; // 垂直方向に外
+
 	return true;
 }
 
-/// 最適ターゲット（最も近い射程内）
-/// targetProvider_ から都度取得する実装に合わせ、ここで再取得する
-const BaseObject* NPC::PickFrustumTarget() const {
+const BaseObject* NPC::PickFrustumTarget() const{
 	if (!targetProvider_) return nullptr;
 
 	std::vector<const BaseObject*> candidates;
@@ -354,13 +395,13 @@ const BaseObject* NPC::PickFrustumTarget() const {
 	const BaseObject* best = nullptr;
 	float bestD2 = std::numeric_limits<float>::infinity();
 
-	for (auto* c : candidates) {
+	for (auto* c : candidates){
 		if (!c) continue;
 		const Vector3 cp = c->GetWorldPosition();
-		if (!IsInFiringFrustum(cp)) continue;
+		if (!IsInFiringFrustum(cp)) continue; // ← ここでしっかり絞る
 
-		const float d2 = (cp - p).LengthSq();
-		if (d2 < bestD2) { bestD2 = d2; best = c; }
+		const float d2 = Vector3::Dot(cp - p, cp - p);
+		if (d2 < bestD2){ bestD2 = d2; best = c; }
 	}
 	return best;
 }

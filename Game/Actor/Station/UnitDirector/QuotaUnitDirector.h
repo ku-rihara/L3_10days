@@ -13,16 +13,12 @@ struct UnitDirectorConfig {
 	bool  preferSticky = true;
 	float defendHoldRadius = 8.0f;
 
-	// ★ 追加：AI比率に関係なく常に残す防衛人数（絶対下限）
 	int   defenseFloorCount = 0;
 
-	// ★ 追加：同時に攻撃へ出してよい人数の絶対上限（0=無制限）
 	int   attackCapAbsolute = 0;
 
-	// ★ 追加：等距離の並びを崩す微小ジッター（0で無効）
 	float distanceJitter = 0.25f;
 
-	// ★ 追加：攻撃には“穴”が必要（true推奨）
 	bool  requireGateForAttack = true;
 };
 

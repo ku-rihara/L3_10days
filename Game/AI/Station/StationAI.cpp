@@ -96,12 +96,21 @@ void StationAI::UpdateWeighted(float dt,
 	}
 }
 
-void StationAI::ApplyQuotas(const Vector3& defendAt, float ratio) {
+void StationAI::ApplyQuotas(const Vector3& defendAt, float ratio){
 	out_.attackRatio = ratio;
-	const int total = (std::max)(0, director_->GetControllableUnitCount(owner_));
-	int defenders = (std::max)(cfg_.minDefenders,
-							   static_cast<int>(std::round(total * (1.0f - out_.attackRatio))));
+
+	const int total = ( std::max ) (0, director_->GetControllableUnitCount(owner_));
+
+	// 通常の計算（minDefenders と攻撃比で防衛数を決める）
+	int defenders = ( std::max ) (cfg_.minDefenders,
+								  static_cast< int >(std::round(total * (1.0f - out_.attackRatio))));
 	defenders = std::min(defenders, total);
+
+	// ★ここが追加：攻撃対象が居る場合は最低1体を攻撃に回す
+	if (rivalCached_ != nullptr && total > 0){
+		defenders = std::min(defenders, total - 1);
+	}
+
 	const int attackers = total - defenders;
 
 	out_.desiredDefenders = defenders;
@@ -110,7 +119,6 @@ void StationAI::ApplyQuotas(const Vector3& defendAt, float ratio) {
 	director_->AssignDefenseQuota(owner_, defenders, defendAt);
 	director_->AssignAttackQuota(owner_, attackers, rivalCached_);
 }
-
 // ===== BaseStation 依存ヘルパ =====
 float   StationAI::GetHp(BaseStation* s)    const { return s->GetHp(); }
 float   StationAI::GetMaxHp(BaseStation* s) const { return s->GetMaxHp(); }

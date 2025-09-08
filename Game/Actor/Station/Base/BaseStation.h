@@ -23,7 +23,10 @@
 
 class NPC;
 
-class BaseStation : public BaseObject, public ITargetProvider, public AABBCollider {
+class BaseStation :
+	public BaseObject,
+	public ITargetProvider,
+	public AABBCollider {
 public:
 	BaseStation(const std::string& name = "UnnamedStation");
 	virtual ~BaseStation() override;
@@ -50,7 +53,7 @@ public:
 	void    SetUnitDirector(IUnitDirector* d) { unitDirector_ = d; }
 	float   GetHp()       const { return hp_; }
 	float   GetMaxHp()    const { return maxLife_; }
-	Vector3 GetPosition() const { return baseTransform_.translation_; } // 必要なら GetWorldPos()
+	Vector3 GetPosition() const { return baseTransform_.translation_; } 
 
 	// NPC 管理
 	std::vector<NPC*> GetLiveNpcs() const;

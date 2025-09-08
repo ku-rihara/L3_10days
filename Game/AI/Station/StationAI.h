@@ -20,7 +20,6 @@ struct StationAiConfig {
 
 	// シグモイド温度（大=なだらか、小=鋭い）
 	float temperature = 0.8f;
-
 	// 正規化
 	float refAttackRange = 200.0f;  // この距離で D=1.0
 	float dpsNormSelf = 0.15f;   // HP割合/秒 0.15 で “重い被弾”
@@ -28,13 +27,13 @@ struct StationAiConfig {
 
 	// 重み
 	struct W {
-		float selfLowHp = 1.0f;  // S = 1 - HPs
-		float rivalLowHp = 1.2f;  // R = 1 - HPr
-		float selfDmgRate = 1.0f;  // Sd（自被弾レート）
-		float rivalDmgRate = 1.2f;  // Rd（相手被弾レート）
-		float homeThreat = 1.2f;  // H  （自陣危険度 0..1）
-		float distance = 0.7f;  // D  （遠いほど攻めにくい）
-		float biasAttack = 0.0f;  // 攻撃バイアス
+		float selfLowHp = 1.0f;		//< S = 1 - HPs
+		float rivalLowHp = 1.2f;	//< R = 1 - HPr
+		float selfDmgRate = 1.0f;	//< Sd（自被弾レート）
+		float rivalDmgRate = 1.2f;	//< Rd（相手被弾レート）
+		float homeThreat = 1.2f;	//< H  （自陣危険度 0..1）
+		float distance = 0.7f;		//< D  （遠いほど攻めにくい）
+		float biasAttack = 0.0f;	//< 攻撃バイアス
 	} w;
 };
 

@@ -130,7 +130,7 @@ void QuotaUnitDirector::AssignDefenseQuota(BaseStation* station, int count, cons
 void QuotaUnitDirector::AssignAttackQuota(BaseStation* station, int count, BaseStation* rivalStation) {
 	if (!station) return;
 
-	// ★ 穴が必要な設定なら、穴が無い時は全員防衛へ
+	// 穴が必要な設定なら、穴が無い時は全員防衛へ
 	if (cfg_.requireGateForAttack) {
 		const auto& holes = Boundary::GetInstance()->GetHoles();
 		if (holes.empty()) {
@@ -154,11 +154,11 @@ void QuotaUnitDirector::AssignAttackQuota(BaseStation* station, int count, BaseS
 	std::vector<NPC*> defC, atkC, unkC;
 	SplitByDuty(ps, live, defC, atkC, unkC);
 
-	// ★ 攻撃上限を適用（0=無制限）
+	// 攻撃上限を適用（0=無制限）
 	int cap = count;
 	if (cfg_.attackCapAbsolute > 0) cap = std::min(cap, cfg_.attackCapAbsolute);
 
-	// ★ 防衛下限を守るため cap をさらに制限
+	// 防衛下限を守るため cap をさらに制限
 	const int total = (int)live.size();
 	const int keep = std::min(cfg_.defenseFloorCount, total);
 	cap = std::min(cap, (std::max)(0, total - keep));
