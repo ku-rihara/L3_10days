@@ -26,9 +26,11 @@ void EditorScene::Init() {
 	easingEditor_.Init();
 
 	// Particle初期化(ファイル名,形状,Particle数上限)
-	testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("EnemyDefeat", PrimitiveType::Box, 500));
-	testEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("test2", PrimitiveType::Box, 500));
 	testEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("test3", PrimitiveType::Box, 500));
+	testEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("test2", PrimitiveType::Box, 500));
+	testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("EnemyDefeat", PrimitiveType::Box, 500));
+	testEmitter_[3].reset(ParticleEmitter::CreateParticlePrimitive("Sphere", PrimitiveType::Box, 500));
+	testEmitter_[4].reset(ParticleEmitter::CreateParticlePrimitive("Iocus", PrimitiveType::Box, 500));
 
 	easingEditor_.SetVector3Target(&easingTestObject_->GetEasingData());
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);

@@ -16,7 +16,7 @@ class EditorScene :public BaseScene {
 private:
 
 	/// Particle追加
-    std::array<std::unique_ptr<ParticleEmitter>, 3> testEmitter_;
+    std::array<std::unique_ptr<ParticleEmitter>, 5> testEmitter_;
  
     std::unique_ptr<EasingTestObj> easingTestObject_;
     EasingEditor easingEditor_;
