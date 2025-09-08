@@ -95,7 +95,6 @@ void BoundaryBreaker::BindParms() {
     globalParam_->Bind(groupName_, "moveDuration", &moveDuration_);
     globalParam_->Bind(groupName_, "breakerDamage", &breakerDamage_);
     globalParam_->Bind(groupName_, "turningRadius", &turningRadius_);
-    // phase_ や anchorPosition_ を GUI で触りたい場合は、必要に応じて Bind を追加してください
 }
 
 // ==============================
