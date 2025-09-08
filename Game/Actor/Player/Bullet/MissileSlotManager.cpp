@@ -2,7 +2,7 @@
 #include <algorithm>
 
 void MissileSlotManager::Initialize(int32_t maxSlots, float cooldownTime) {
-    maxSlots_     = std::clamp(maxSlots, 1, MAX_MISSILE_SLOTS);
+    maxSlots_     = std::clamp(maxSlots, 1, maxSlots_);
     cooldownTime_ = cooldownTime;
 
     // 全スロットを利用可能状態で初期化
@@ -13,7 +13,7 @@ void MissileSlotManager::Initialize(int32_t maxSlots, float cooldownTime) {
     }
 
     // 使用しないスロットは無効化
-    for (int32_t i = maxSlots_; i < MAX_MISSILE_SLOTS; ++i) {
+    for (int32_t i = maxSlots_; i < maxSlots_; ++i) {
         slots_[i].isAvailable   = false;
         slots_[i].cooldownTimer = 0.0f;
         slots_[i].isReloading   = false;
@@ -43,7 +43,7 @@ int32_t MissileSlotManager::GetAvailableSlot() const {
             return i;
         }
     }
-    return -1; // 利用可能なスロットなし
+    return -1;
 }
 
 bool MissileSlotManager::FireMissile(int32_t slotIndex) {
@@ -106,4 +106,17 @@ int32_t MissileSlotManager::GetAvailableSlotCount() const {
 
 bool MissileSlotManager::HasAnyAvailableSlot() const {
     return GetAvailableSlot() != -1;
+}
+
+bool MissileSlotManager::CanFireFromSlot(int32_t slotIndex) const {
+    return IsSlotAvailable(slotIndex);
+}
+
+float MissileSlotManager::GetSlotRemainingCooldown(int32_t slotIndex) const {
+    if (slotIndex < 0 || slotIndex >= maxSlots_) {
+        return 0.0f;
+    }
+
+    const auto& slot = slots_[slotIndex];
+    return slot.isReloading ? slot.cooldownTimer : 0.0f;
 }

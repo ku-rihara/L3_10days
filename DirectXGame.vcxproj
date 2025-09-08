@@ -21,6 +21,7 @@
     <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWingCenter.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\PlayerFrontWing.cpp" />
     <ClCompile Include="Game\Actor\Player\UI\BasePlayerUI.cpp" />
+    <ClCompile Include="Game\Actor\Player\UI\MissileIconUI.cpp" />
     <ClCompile Include="Game\Actor\Player\UI\PlayerLifeUI.cpp" />
     <ClCompile Include="Game\GameClearActor\GameClearSprite.cpp" />
     <ClCompile Include="Game\GameOverActor\GameOverSprite.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWingCenter.h" />
     <ClInclude Include="Game\Actor\Player\Parts\PlayerFrontWing.h" />
     <ClInclude Include="Game\Actor\Player\UI\BasePlayerUI.h" />
+    <ClInclude Include="Game\Actor\Player\UI\MissileIconUI.h" />
     <ClInclude Include="Game\Actor\Player\UI\PlayerLifeUI.h" />
     <ClInclude Include="Game\GameClearActor\GameClearSprite.h" />
     <ClInclude Include="Game\GameOverActor\GameOverSprite.h" />

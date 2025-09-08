@@ -83,14 +83,6 @@ void PlayerBulletShooter::HandleInput() {
     // ミサイル発射
     missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B) || input->IsPressMouse(1);
 
-    // 手動リロード
-    // if (input->TrrigerKey(DIK_R)) {
-    //    // 通常弾のリロード
-    //    StartReload(BulletType::NORMAL);
-
-    //    // ミサイルの手動リロード
-    //    missileSlotManager_.StartManualReload();
-    //}
 }
 
 void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
@@ -357,6 +349,18 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
         ImGui::InputInt("MaxSlots", &typeSpecificParams_.missileSystem.maxSlots);
         ImGui::DragFloat("CooldownTime", &typeSpecificParams_.missileSystem.cooldownTime, 0.01f);
         ImGui::DragFloat("ShootInterval", &typeSpecificParams_.missileSystem.shootInterval, 0.001f);
+
+         for (int32_t i = 0; i < GetMaxMissileSlots(); ++i) {
+            bool canFire    = CanFireMissileFromSlot(i);
+            float progress  = GetMissileSlotCooldownProgress(i) * 100.0f;
+            float remaining = GetMissileSlotRemainingCooldown(i);
+
+            ImGui::Text("Slot %d: %s", i + 1, canFire ? "READY" : "RELOADING");
+            if (!canFire && remaining > 0.0f) {
+                ImGui::SameLine();
+                ImGui::Text("(%.1fs remaining, %.1f%%)", remaining, progress);
+            }
+        }
     }
 }
 

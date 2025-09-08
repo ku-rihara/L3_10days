@@ -6,16 +6,10 @@
 #include <memory>
 #include <string>
 
-enum class LifeStep {
-    FULL,
-    MIDDLE,
-    DAUNGER,
-};
-
-class PlayerLifeUI : public BasePlayerUI {
+class MissileIconUI : public BasePlayerUI {
 public:
-    PlayerLifeUI()           = default;
-    ~PlayerLifeUI() override = default;
+    MissileIconUI()           = default;
+    ~MissileIconUI() override = default;
 
     // init,update,draw
     void Init(const std::string& fileName, const size_t& num = 0) override;
@@ -28,18 +22,19 @@ public:
     void AdjustUniqueParam() override;
 
     void UpdateLifeStep();
+    void UpdateAbleShot();
 
     void EasingSet();
+    void CollingStart();
 
 private:
-    std::array<float, 3> lifeStepPar_;
-    std::array<Vector3, 3> colorByLifeStep_;
-    LifeStep lifeStep_ = LifeStep::FULL;
-    float alpha_       = 1.0f;
+    float redLineAlpha_;
+    float endAlpha_;
     Vector2 tempScale_;
-    std::unique_ptr<Easing<float>> alphaEase_;
+    Vector2 redLineScale_;
     std::unique_ptr<Easing<Vector2>> scaleEase_;
-
-private:
-    std::string ToString(const size_t& stepIndex);
+    std::unique_ptr<Sprite> redLineSprite_;
+    bool isColling_;
+    bool isCollEndEase_;
+    size_t index_;
 };
