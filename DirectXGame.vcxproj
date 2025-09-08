@@ -15,6 +15,8 @@
     <ClCompile Include="Game\Actor\Player\Effect\PlayerEffects.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\BasePlayerParts.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWing.cpp" />
+    <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWingCenter.cpp" />
+    <ClCompile Include="Game\Actor\Player\Parts\PlayerFrontWing.cpp" />
     <ClCompile Include="Game\GameClearActor\GameClearSprite.cpp" />
     <ClCompile Include="Game\GameOverActor\GameOverSprite.cpp" />
     <ClCompile Include="Game\Scene\GameClearScene.cpp" />
@@ -224,6 +226,8 @@
     <ClInclude Include="Game\Actor\Player\Effect\PlayerEffects.h" />
     <ClInclude Include="Game\Actor\Player\Parts\BasePlayerParts.h" />
     <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWing.h" />
+    <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWingCenter.h" />
+    <ClInclude Include="Game\Actor\Player\Parts\PlayerFrontWing.h" />
     <ClInclude Include="Game\GameClearActor\GameClearSprite.h" />
     <ClInclude Include="Game\GameOverActor\GameOverSprite.h" />
     <ClInclude Include="Game\Scene\GameClearScene.h" />

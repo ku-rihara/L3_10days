@@ -1,8 +1,8 @@
 #include "GameCamera.h"
 // Function
 #include "Actor/Player/Player.h"
+#include "Easing/EasingFunction.h"
 #include "MathFunction.h"
-#include"Easing/EasingFunction.h"
 // math
 #include "Matrix4x4.h"
 // input
@@ -77,8 +77,10 @@ void GameCamera::BindParams() {
     globalParameter_->Bind(groupName_, "cameraZOffsetMax", &offsetParam_.cameraZOffsetMax);
     globalParameter_->Bind(groupName_, "cameraXOffsetMin", &offsetParam_.cameraXOffsetMin);
     globalParameter_->Bind(groupName_, "cameraXOffsetMax", &offsetParam_.cameraXOffsetMax);
+    globalParameter_->Bind(groupName_, "smoothness", &smoothness_);
+    globalParameter_->Bind(groupName_, "cameraXSmoothness", &cameraXSmoothnessInRotating_);
+    globalParameter_->Bind(groupName_, "cameraXSmoothnessInNoRotate", &cameraXSmoothnessInNoRotate_);
 }
-
 void GameCamera::SetTarget(const WorldTransform* target) {
     target_ = target;
 
@@ -106,6 +108,8 @@ void GameCamera::AdjustParam() {
         ImGui::DragFloat("Camera OffsetXMax", &offsetParam_.cameraXOffsetMax, 0.01f);
         ImGui::DragFloat3("Rotation Offset", &offsetParam_.rotationOffset.x, 0.01f);
         ImGui::DragFloat("Smoothness", &smoothness_, 0.01f, 0.01f, 1.0f);
+        ImGui::DragFloat("cameraXSmoothnessInRotate", &cameraXSmoothnessInRotating_, 0.01f);
+        ImGui::DragFloat("cameraXSmoothnessInNoRotate", &cameraXSmoothnessInNoRotate_, 0.01f, 0.01f, 1.0f);
 
         globalParameter_->ParamSaveForImGui(groupName_);
         globalParameter_->ParamLoadForImGui(groupName_);
@@ -133,22 +137,36 @@ void GameCamera::OffsetInvRangeCalc() {
 
 void GameCamera::CameraOffsetCalc() {
 
-    float zMin = pPlayer_->GetSpeedParam().minForwardSpeed;
+    // Camera Z
+    float zMin            = pPlayer_->GetSpeedParam().minForwardSpeed;
     float zOffsetInvRange = offsetParam_.offsetZInvRange;
+    float zT              = (pPlayer_->GetSpeedParam().currentForwardSpeed - zMin) * zOffsetInvRange;
 
-    float xMin = -pPlayer_->GetRollRotateLimit();
+    // Camera X
+    float xMin            = -pPlayer_->GetRollRotateLimit();
     float xOffsetInvRange = offsetParam_.offsetXInvRange;
+    float currentX        = pPlayer_->GetRollDegree();
+    float xT              = (currentX - xMin) * xOffsetInvRange;
 
-    float currentX = pPlayer_->GetRollDegree();
+    // 目標のカメラオフセットを計算
+    float targetCameraOffsetX;
 
-    float xT = (currentX - xMin) * xOffsetInvRange;
-    float zT = (pPlayer_->GetSpeedParam().currentForwardSpeed - zMin) * zOffsetInvRange;
+    if (pPlayer_->CheckIsRollMax()) {
+        // ロール最大時
+        currentCameraXSmoothness_ = cameraXSmoothnessInRotating_;
+        targetCameraOffsetX = offsetParam_.baseOffset.x - Lerp(offsetParam_.cameraXOffsetMin, offsetParam_.cameraXOffsetMax, xT);
+    } else {
+        // ロール最大でない時
+        currentCameraXSmoothness_ = cameraXSmoothnessInNoRotate_;
+        targetCameraOffsetX = offsetParam_.baseOffset.x;
+    }
 
-    offsetParam_.cameraOffset.x = offsetParam_.baseOffset.x - Lerp(offsetParam_.cameraXOffsetMin, offsetParam_.cameraXOffsetMax, xT);
+    // 滑らかに補間
+    offsetParam_.cameraOffset.x = EaseInSine(offsetParam_.cameraOffset.x, targetCameraOffsetX, currentCameraXSmoothness_, 1.0f);
+
     offsetParam_.cameraOffset.y = offsetParam_.baseOffset.y;
     offsetParam_.cameraOffset.z = offsetParam_.baseOffset.z + Lerp(offsetParam_.cameraZOffsetMin, offsetParam_.cameraZOffsetMax, zT);
 }
-
 // ================================= その他のメソッド ================================= //
 
 void GameCamera::GetIsCameraMove() {

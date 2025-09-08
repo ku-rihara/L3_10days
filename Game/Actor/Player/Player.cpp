@@ -8,6 +8,7 @@
 
 // behavior
 #include "Behavior/PlayerAcceleUnattended.h"
+#include <cmath>
 #include <imgui.h>
 #include <numbers>
 
@@ -17,13 +18,26 @@ const std::vector<Hole>& Player::BoundaryHoleSource::GetHoles() const {
 }
 
 void Player::PartsInit() {
-    // Parts
+    // =========================後ろのWing=========================
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
         backWing = std::make_unique<PlayerBackWing>();
     }
     // init
     backWings_[0]->Init(&baseTransform_, "BackWingLeft");
     backWings_[1]->Init(&baseTransform_, "BackWingRight");
+
+    // =========================手前のWing=========================
+    for (std::unique_ptr<PlayerFrontWing>& frontWing : frontWings_) {
+        frontWing = std::make_unique<PlayerFrontWing>();
+    }
+    // init
+    frontWings_[0]->Init(&baseTransform_, "LeftWing");
+    frontWings_[1]->Init(&baseTransform_, "RightWing");
+
+    // =========================中心のWing=========================
+    backWingCenter_ = std::make_unique<PlayerBackWingCenter>();
+    // init
+    backWingCenter_->Init(&baseTransform_, "BackWingCenter");
 }
 
 void Player::Init() {
@@ -115,22 +129,41 @@ void Player::MoveUpdate() {
 
 void Player::PartsUpdate() {
     // 入力から目標回転を計算
-    Vector3 wingInputRotation = Vector3::ZeroVector();
+    Vector3 backWingInputRotation  = Vector3::ZeroVector();
+    Vector3 frontWingInputRotation = Vector3::ZeroVector();
+    Vector3 backCenterWingInputRotation = Vector3::ZeroVector();
 
+    // =========================後ろのWing=========================
     // 上下入力をX回転に変換
-    wingInputRotation.x = -angleInput_.x * 0.2f;
+    backWingInputRotation.x = -angleInput_.x * 0.2f;
 
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
-        backWing->SetInputRotation(wingInputRotation);
+        backWing->SetInputRotation(backWingInputRotation);
         backWing->Update();
         backWing->SetBaseRotate(obj3d_->transform_.quaternion_.ToEuler());
     }
+
+    // =========================手前のWing=========================
+    // 上下入力をX回転に変換
+    frontWingInputRotation.x = -angleInput_.x * 0.2f;
+
+    for (std::unique_ptr<PlayerFrontWing>& frontWing : frontWings_) {
+        frontWing->SetInputRotation(frontWingInputRotation);
+        frontWing->Update();
+        frontWing->SetBaseRotate(obj3d_->transform_.quaternion_.ToEuler());
+    }
+
+    // =========================後ろのWing=========================
+    // 上下入力をX回転に変換
+    backCenterWingInputRotation.y = -angleInput_.y * 0.2f;
+    backWingCenter_->SetInputRotation(backCenterWingInputRotation);
+    backWingCenter_->Update();
+    backWingCenter_->SetBaseRotate(obj3d_->transform_.quaternion_.ToEuler());
 }
 
 void Player::HandleInput() {
     Input* input = Input::GetInstance();
-  /*  input->SetJoystickDeadZone(0, 20000, 9000);*/
-
+  
     // 入力値をリセット
     Vector2 stickL      = Vector2::ZeroVector();
     float pawInputValue = 0.0f;
@@ -172,9 +205,9 @@ void Player::HandleInput() {
         stickL = {0.0f, 0.0f};
     }
 
-    if (Input::IsPressPad(0, XINPUT_GAMEPAD_LEFT_SHOULDER)) {
+    if (Input::IsPressPad(0, XINPUT_GAMEPAD_LEFT_SHOULDER) || input->PushKey(DIK_Q)) {
         pawInputValue = -1.0f;
-    } else if (Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER)) {
+    } else if (Input::IsPressPad(0, XINPUT_GAMEPAD_RIGHT_SHOULDER) || input->PushKey(DIK_E)) {
         pawInputValue = 1.0f;
     }
 
@@ -285,6 +318,10 @@ void Player::CorrectionHorizon() {
     }
 }
 
+bool Player::CheckIsRollMax() const {
+    return fabsf(ToDegree(currentRoll_)) >= rollRotateLimit_ - rollRotateOffset_;
+}
+
 void Player::ReboundByBoundary() {
 
     // from,toを計算
@@ -303,7 +340,6 @@ void Player::ReboundByBoundary() {
 
     // 跳ね返り処理
     if (isRebound_) {
-
         // Y だけ跳ね返す
         const float inVy   = velocity_.y;
         reboundVelocity_.y = -inVy * reboundPower_;
@@ -423,6 +459,7 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "minReboundVelocity", &minReboundVelocity_);
     globalParameter_->Bind(groupName_, "autoRotateSpeed", &reboundCorrectionParam_.autoRotateSpeed_);
     globalParameter_->Bind(groupName_, "autoRecoverSpeed", &invCorrectionParam_.autoRotateSpeed_);
+    globalParameter_->Bind(groupName_, "rollRotateLimitOffset", &rollRotateOffset_);
 }
 
 void Player::AdjustParam() {
@@ -453,11 +490,14 @@ void Player::AdjustParam() {
         ImGui::DragFloat("rebound Decay", &reboundDecay_, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("min Rebound Velocity", &minReboundVelocity_, 0.01f, 0.0f, 10.0f);
 
+        ImGui::SeparatorText("Roll");
+        ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
+        ImGui::DragFloat("rollRotateOffset", &rollRotateOffset_, 0.01f);
+
         ImGui::SeparatorText("etc");
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
         ImGui::DragFloat("pitchBackTime", &pitchBackTime_, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
         ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_, 0.01f, -1.0f, 0.0f);
         ImGui::DragFloat("bankRate", &bankRate_, 0.01f);
@@ -503,9 +543,18 @@ void Player::AdjustParam() {
         ImGui::PopID();
     }
 
-    // パーツ
+    // backWing
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
         backWing->AdjustParam();
+    }
+
+    // frontWing
+    for (std::unique_ptr<PlayerFrontWing>& frontWing : frontWings_) {
+        frontWing->AdjustParam();
+    }
+    // backWingCenter
+    if (backWingCenter_) {
+        backWingCenter_->AdjustParam();
     }
 
     // 弾

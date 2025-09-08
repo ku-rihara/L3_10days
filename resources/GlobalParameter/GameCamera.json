@@ -15,6 +15,8 @@
         ],
         "cameraXOffsetMax": 6.0,
         "cameraXOffsetMin": -6.0,
+        "cameraXSmoothness": 0.2549999952316284,
+        "cameraXSmoothnessInNoRotate": 0.2549999952316284,
         "cameraXYOffset": [
             0.0,
             3.890000104904175,
@@ -40,6 +42,7 @@
             0.0,
             0.0
         ],
-        "rotationSmoothness": 0.15000000596046448
+        "rotationSmoothness": 0.15000000596046448,
+        "smoothness": 0.18000000715255737
     }
 }
