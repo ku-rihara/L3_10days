@@ -16,7 +16,7 @@ void SkyDome::Init() {
 	obj3d_->CreateMaterialResource();
 
 	obj3d_->material_.materialData_->enableLighting = false;
-	float scale = 1500.0f;
+	float scale = 1500.0f * 3.0f;
 	obj3d_->transform_.scale_ = { scale, scale, scale };
 	obj3d_->Update();
 }
