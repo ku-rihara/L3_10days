@@ -7,7 +7,25 @@
 #include "Actor/Player/Player.h"
 #include "Actor/Station/Base/BaseStation.h"
 
-GameController::GameController() = default;
+GameController::GameController() {
+	/// NumDraw
+	outOfFieldWarningTimeIntNumDraw_ = std::make_unique<NumDraw>();
+	outOfFieldWarningTimeFracNumDraw_ = std::make_unique<NumDraw>();
+
+	outOfFieldWarningTimeIntNumDraw_->Init(3);
+	outOfFieldWarningTimeFracNumDraw_->Init(3);
+
+	float scale = 5.0f;
+	outOfFieldWarningTimeIntNumDraw_->SetScale({ scale, scale });
+	outOfFieldWarningTimeFracNumDraw_->SetScale({ scale, scale });
+
+	outOfFieldWarningTimeIntNumDraw_->SetBasePosition({ 1280.0f / 2.0f - 50.0f, 720.0f / 2.0f + 100.0f });
+	outOfFieldWarningTimeFracNumDraw_->SetBasePosition({ 1280.0f / 2.0f + 10.0f, 720.0f / 2.0f + 100.0f });
+
+	outOfFieldWarningTimeIntNumDraw_->SetDigitSpacing(12.0f);
+	outOfFieldWarningTimeFracNumDraw_->SetDigitSpacing(12.0f);
+
+}
 GameController::~GameController() = default;
 
 void GameController::Update() {
@@ -18,6 +36,24 @@ void GameController::Update() {
 	if (isPlayerOutOfField_) {
 		outOfFieldTime_ += Frame::DeltaTime();
 	}
+
+
+	/// 現在の経過時間を整数部分と小数部分に分ける
+	float remainingTime = kMaxOutOfFieldTime_ - outOfFieldTime_;
+	if (remainingTime < 0.0f) remainingTime = 0.0f;
+	int intPart = static_cast<int>(remainingTime);
+	int fracPart = static_cast<int>((remainingTime - intPart) * 100.0f); // 小数点以下2桁
+	outOfFieldWarningTimeIntNumDraw_->SetNumber(intPart);
+	outOfFieldWarningTimeFracNumDraw_->SetNumber(fracPart);
+
+	outOfFieldWarningTimeIntNumDraw_->Update();
+	outOfFieldWarningTimeFracNumDraw_->Update();
+}
+
+void GameController::DrawOutOfFieldWarningTime() {
+
+	outOfFieldWarningTimeIntNumDraw_->Draw();
+	outOfFieldWarningTimeFracNumDraw_->Draw();
 }
 
 bool GameController::CheckIsGameOver() {

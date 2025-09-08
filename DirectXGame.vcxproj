@@ -223,6 +223,7 @@
     <ClCompile Include="Game\Actor\NPC\SplineFollwer.cpp" />
     <ClCompile Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.cpp" />
     <ClCompile Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.cpp" />
+    <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutOfFieldWarningEffectPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
@@ -460,6 +461,7 @@
     <ClInclude Include="Game\Actor\NPC\SplineFollower.h" />
     <ClInclude Include="Game\Actor\Effects\PlayerEngineEffect\PlayerEngineEffect.h" />
     <ClInclude Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.h" />
+    <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutOfFieldWarningEffectPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

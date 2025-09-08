@@ -1,5 +1,11 @@
 #pragma once
 
+/// std
+#include <memory>
+
+/// game
+#include "Actor/UI/NumDraw/NumDraw.h"
+
 /// 前方宣言
 class Player;
 class BaseStation;
@@ -14,6 +20,9 @@ public:
 
 	/// 更新
 	void Update();
+
+	/// 残り時間の表示
+	void DrawOutOfFieldWarningTime();
 
 	/// チェック
 	bool CheckIsGameOver();
@@ -36,6 +45,8 @@ private:
 	float playerToCenterDistance_ = 0.0f;
 	const float kMaxPlayerToCenterDistance_ = 4000.0f;// 中心からn以上離れたらout of field扱い
 	bool isPlayerOutOfField_ = false;
+	std::unique_ptr<NumDraw> outOfFieldWarningTimeIntNumDraw_;   // 整数部分
+	std::unique_ptr<NumDraw> outOfFieldWarningTimeFracNumDraw_;  // 小数部分
 
 public:
 	/// getter

@@ -25,6 +25,7 @@
 #include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryShardPipeline.h"
 #include "Pipeline/EffectPipelines/GameScreenEffectPipeline.h"
+#include "Pipeline/EffectPipelines/PlayerOutOfFieldWarningEffectPipeline.h"
 #include "Pipeline/Line3DPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
 #include "Pipeline/MiniMapPipeline.h"
@@ -351,7 +352,12 @@ void GameScene::GameSpriteDraw() {
 	outsideWarning->PreDraw(commandList);
 	outsideWarning->Draw(commandList, outsideWarning_.get());
 
+	PlayerOutOfFieldWarningEffectPipeline* playerOutOfFieldWarning = PlayerOutOfFieldWarningEffectPipeline::GetInstance();
+	playerOutOfFieldWarning->PreDraw(commandList);
+	playerOutOfFieldWarning->Draw(commandList, gameController_.get());
+
 	Sprite::PreDraw(commandList);
+	gameController_->DrawOutOfFieldWarningTime();
 	uis_->Draw();
 	player_->ReticleDraw();
 	lockOn_->Draw();
