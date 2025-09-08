@@ -39,6 +39,10 @@ private:
 
 	std::vector<USprite> itemIcons_;
 	size_t selectIndex_ = 0;
+	const size_t kMaxIcons_ = 3;
+
+	Vector2 startPos_;
+	Vector2 offset_;
 
 };
 

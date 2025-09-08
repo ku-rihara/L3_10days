@@ -31,33 +31,31 @@ void GameOverSprite::Init() {
 		itemFrame_->SetPosition({ 40.0f, 680.0f });
 	}
 
+	offset_ = { 0.0f, 60.0f };
+	startPos_ = { 65.0f, 500.0f };
+
 	{	/// selected frame
 		uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture(
 			"./resources/Texture/GameResult/GameOverSelectUI.png");
 		selectedFrame_.reset(Sprite::Create(textureHandle, Vector2(0, 0), { 1, 1, 1, 1 }));
-		selectedFrame_->anchorPoint_ = { 0.5f, 0.5f };
-		selectedFrame_->SetPosition({ 640.0f, 500.0f });
+		selectedFrame_->anchorPoint_ = { 0.0f, 1.0f };
+		selectedFrame_->SetPosition(startPos_);
 	}
 
 	{	/// icons
-		const size_t maxIcons = 3;
 		const std::vector<std::string> iconPaths = {
 			"./resources/Texture/GameResult/GameOverTextCheckPoint.png",
 			"./resources/Texture/GameResult/GameOverTextRetryGame.png",
 			"./resources/Texture/GameResult/GameOverTextReturnTitle.png"
 		};
 
-		float offset = 60.0f;
-		float posY = 680.0f - 150.0f - offset;
-
-		for (size_t i = 0; i < maxIcons; i++) {
+		for (size_t i = 0; i < kMaxIcons_; i++) {
 			auto& icon = itemIcons_.emplace_back();
 			uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture(iconPaths[i]);
 			icon.reset(Sprite::Create(textureHandle, Vector2(0, 0), { 1, 1, 1, 1 }));
 			icon->anchorPoint_ = { 0.0f, 1.0f };
-			icon->SetPosition({ 80.0f, posY + i * offset });
+			icon->SetPosition(startPos_ + offset_ * static_cast<float>(i));
 		}
-
 	}
 
 }
@@ -75,13 +73,12 @@ void GameOverSprite::Update() {
 
 	if (input->TrrigerKey(DIK_S) ||
 		input->TrrigerKey(DIK_DOWN)) {
-		if (selectIndex_ < 2) {
+		if (selectIndex_ < kMaxIcons_ - 1) {
 			++selectIndex_;
 		}
 	}
 
-	selectedFrame_->SetPosition({ 640.0f, 300.0f + selectIndex_ * 100.0f });
-
+	selectedFrame_->SetPosition(startPos_ + offset_ * static_cast<float>(selectIndex_));
 
 }
 
