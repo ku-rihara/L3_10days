@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+class Player;
 class BasePlayerUI {
 public:
     BasePlayerUI()          = default;
@@ -18,11 +19,11 @@ public:
     // editor
     virtual void AdjustParam();
     virtual void BindParams();
-
-private:
-    const std::string filePath_ = "Resources/Texture/PlayerUI/";
+    virtual void AdjustUniqueParam() = 0;
 
 protected:
+    const std::string filePath_ = "Resources/Texture/PlayerUI/";
+
     GlobalParameter* globalParameter_;
     std::string groupName_;
 
@@ -30,5 +31,8 @@ protected:
     Vector2 basePosition_;
     Vector2 baseScale_;
 
+    Player* pPlayer_ = nullptr;
+
 public:
+    void SetPlayer(Player* player);
 };

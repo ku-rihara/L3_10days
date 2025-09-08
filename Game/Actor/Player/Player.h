@@ -4,13 +4,14 @@
 #include "BaseObject/BaseObject.h"
 #include "Behavior/BasePlayerSpeedBehavior.h"
 #include "Bullet/PlayerBulletShooter.h"
-#include "Easing/Easing.h"
 #include "Reticle/PlayerReticle.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 // parts
 #include "Parts/PlayerBackWing.h"
 #include "Parts/PlayerBackWingCenter.h"
 #include "Parts/PlayerFrontWing.h"
+// UI
+#include "UI/PlayerLifeUI.h"
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -52,8 +53,13 @@ public:
     // 初期化、更新
     void Init();
     void PartsInit();
+    void UIInit();
+
     void Update();
     void PartsUpdate();
+    void UIUpdate();
+
+    void UIDraw();
 
     void ReticleDraw();
 
@@ -76,8 +82,8 @@ public:
     float GetRollDegree() const;
 
     // Check
-    void CheckIsUpsideDown();   //<逆さ判定
-    bool CheckIsRollMax()const; //<ロールMAX判定
+    void CheckIsUpsideDown(); //<逆さ判定
+    bool CheckIsRollMax() const; //<ロールMAX判定
 
     // Behavior management
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
@@ -98,7 +104,10 @@ private:
     // Parts
     std::array<std::unique_ptr<PlayerBackWing>, 2> backWings_;
     std::array<std::unique_ptr<PlayerFrontWing>, 2> frontWings_;
-    std::unique_ptr<PlayerBackWingCenter> backWingCenter_;
+    std::unique_ptr<PlayerBackWingCenter> backWingCenter_ = nullptr;
+
+    // UIs
+    std::unique_ptr<PlayerLifeUI> lifeUI_ = nullptr;
 
     // globalParameter
     GlobalParameter* globalParameter_;
@@ -107,6 +116,7 @@ private:
 
     // Parameter
     float hp_;
+    float maxHp_;
 
     // speed
     SpeedParam speedParam_;
@@ -166,11 +176,12 @@ public:
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
     const SpeedParam& GetSpeedParam() const { return speedParam_; }
     const float& GetRollRotateLimit() const { return rollRotateLimit_; }
-	const Vector3& GetAngleInput() const { return angleInput_; }
-	float GetHP() const { return hp_; }
+    const Vector3& GetAngleInput() const { return angleInput_; }
+    float GetHP() const { return hp_; }
+    const float& GetMaxHP() const { return maxHp_; }
 
     void SetGameCamera(GameCamera* camera);
     void SetLockOn(LockOn* lockOn);
     void SetViewProjection(const ViewProjection* viewProjection);
-	void SetHP(float hp) { hp_ = hp; }
+    void SetHP(float hp) { hp_ = hp; }
 };

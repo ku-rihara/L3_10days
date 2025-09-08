@@ -1,11 +1,10 @@
 #include "BasePlayerUI.h"
 #include "base/TextureManager.h"
-#include <Vector4.h>
 #include <imgui.h>
-
+#include <Vector4.h>
 
 void BasePlayerUI::Init(const std::string& fileName) {
-
+    groupName_ = fileName;
     // globalParameter
     globalParameter_ = GlobalParameter::GetInstance();
     globalParameter_->CreateGroup(groupName_, false);
@@ -13,8 +12,8 @@ void BasePlayerUI::Init(const std::string& fileName) {
     globalParameter_->SyncParamForGroup(groupName_);
 
     // テクスチャ読み込み
-    uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture(filePath_+fileName);
-    sprite_.reset(Sprite::Create(textureHandle,Vector2::ZeroVector(),Vector4::kWHITE()));
+    uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture(filePath_ + fileName + ".png");
+    sprite_.reset(Sprite::Create(textureHandle, Vector2::ZeroVector(), Vector4::kWHITE()));
     sprite_->anchorPoint_ = Vector2(0.5f, 0.5f);
 }
 
@@ -35,8 +34,10 @@ void BasePlayerUI::AdjustParam() {
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
         ImGui::PushID(groupName_.c_str());
 
-        ImGui::DragFloat2("basePosition", &basePosition_.x,0.5f);
+        ImGui::DragFloat2("basePosition", &basePosition_.x, 0.5f);
         ImGui::DragFloat2("baseScale", &baseScale_.x, 0.01f);
+
+        AdjustUniqueParam();
 
         // セーブ・ロード
         globalParameter_->ParamSaveForImGui(groupName_);
@@ -46,3 +47,7 @@ void BasePlayerUI::AdjustParam() {
     }
 #endif // _DEBUG
 }
+
+void BasePlayerUI::SetPlayer(Player* player) {
+    pPlayer_ = player;
+  }
