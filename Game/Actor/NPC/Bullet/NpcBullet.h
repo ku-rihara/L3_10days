@@ -9,7 +9,7 @@ public:
 	/// ===================================================
 	/// public func
 	/// ===================================================
-	NpcBullet() = default;
+	NpcBullet();
 	virtual ~NpcBullet() override = default;
 
 	virtual void Init() override;	//< パラメータ束縛＋ロード
