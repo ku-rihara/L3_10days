@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "utility/ParticleEditor/ParticleEmitter.h"
 
 class LockOn;
 class BasePlayerBullet;
@@ -54,7 +55,7 @@ public:
     ~PlayerBulletShooter() = default;
 
 public:
-    void Init();
+    void Init( WorldTransform* parent);
     void Update(const Player* player);
 
     ///-------------------------------------------------------------------------------------
@@ -105,6 +106,9 @@ private:
     std::array<BulletParameter, static_cast<int32_t>(BulletType::COUNT)> bulletParameters_;
     std::array<ShooterParameter, static_cast<int32_t>(BulletType::COUNT)> shooterParameters_;
     std::array<std::string, static_cast<int32_t>(BulletType::COUNT)> typeNames_;
+
+    // particle
+    std::array<std::unique_ptr<ParticleEmitter>, 3> playerShotEmitter_;
 
     // 弾種別専用パラメータ
     TypeSpecificParameters typeSpecificParams_;

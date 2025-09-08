@@ -89,7 +89,7 @@ void Player::Init() {
 
     // 弾初期化
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
-    bulletShooter_->Init();
+    bulletShooter_->Init(&baseTransform_);
 
     // hpをSet
     hp_ = maxHp_;

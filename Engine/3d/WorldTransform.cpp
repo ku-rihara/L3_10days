@@ -52,14 +52,12 @@ void WorldTransform::BillboardUpdateMatrix(const ViewProjection& viewProjection,
     case BillboardType::XYZ:
         // 全ビルボード
         billboardMatrix_ = cameraMatrix;
-
         break;
 
     case BillboardType::Y: {
         // Y軸ビルボード
         float angleY     = std::atan2(toCamera.x, toCamera.z);
         billboardMatrix_ = MakeRotateYMatrix(angleY);
-
         break;
     }
 
@@ -93,18 +91,24 @@ void WorldTransform::BillboardUpdateMatrix(const ViewProjection& viewProjection,
     // ワールド行列を計算
     matWorld_ = scaleMatrix * billboardMatrix_ * translateMatrix;
 
+    // 親の処理を修正
     if (HasParentJoint()) {
         UpdateMatrixWithJoint();
     }
-    // 通常のparent
+    // 通常のparent - Billboardの場合は位置のみ適用
     else if (parent_) {
-        matWorld_ *= parent_->matWorld_;
+        // 親のワールド位置を取得
+        Vector3 parentWorldPos = parent_->GetWorldPos();
+
+        // 現在のワールド位置に親の位置を加算
+        matWorld_.m[3][0] += parentWorldPos.x;
+        matWorld_.m[3][1] += parentWorldPos.y;
+        matWorld_.m[3][2] += parentWorldPos.z;
     }
 
     // 定数バッファに転送する
     TransferMatrix();
 }
-
 void WorldTransform::SetParent(const WorldTransform* parent) {
     parent_ = parent;
 }
