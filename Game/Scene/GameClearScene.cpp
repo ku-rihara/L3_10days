@@ -1,5 +1,8 @@
 #include "GameClearScene.h"
 
+/// engine
+#include "Scene/Manager/SceneManager.h"
+
 /// actors
 #include "GameClearActor/GameClearSprite.h"
 
@@ -17,27 +20,30 @@ void GameClearScene::Init() {
 }
 
 void GameClearScene::Update() {
+
+	/// タイトルに戻る処理
+	if (input_->TrrigerKey(DIK_RETURN) ||
+		input_->TrrigerKey(DIK_SPACE) ||
+		input_->IsTriggerPad(0, Gamepad::A)) {
+		SceneManager::GetInstance()->ChangeScene("TITLE");
+		return;
+	}
+
 }
 
-void GameClearScene::ModelDraw() {
-}
+void GameClearScene::ModelDraw() {}
 
 void GameClearScene::SpriteDraw() {
 	gameClearSprite_->Draw();
 }
 
-void GameClearScene::SkyBoxDraw() {
-}
+void GameClearScene::SkyBoxDraw() {}
 
-void GameClearScene::DrawShadow() {
-}
+void GameClearScene::DrawShadow() {}
 
-void GameClearScene::Debug() {
-}
+void GameClearScene::Debug() {}
 
-void GameClearScene::ViewProjectionUpdate() {
-}
+void GameClearScene::ViewProjectionUpdate() {}
 
-void GameClearScene::ViewProssess() {
-}
+void GameClearScene::ViewProssess() {}
 

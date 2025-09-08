@@ -38,7 +38,7 @@ bool GameController::CheckIsGameClear() {
 		result = true;
 	}
 
-	return false;
+	return result;
 }
 
 bool GameController::GetIsGameOver() const {

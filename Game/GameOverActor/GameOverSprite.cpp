@@ -31,8 +31,8 @@ void GameOverSprite::Init() {
 		itemFrame_->SetPosition({ 40.0f, 680.0f });
 	}
 
-	offset_ = { 0.0f, 60.0f };
-	startPos_ = { 65.0f, 500.0f };
+	offset_ = { 0.0f, 60.0f * 1.5f };
+	startPos_ = { 65.0f, 515.0f };
 
 	{	/// selected frame
 		uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture(
@@ -44,7 +44,6 @@ void GameOverSprite::Init() {
 
 	{	/// icons
 		const std::vector<std::string> iconPaths = {
-			"./resources/Texture/GameResult/GameOverTextCheckPoint.png",
 			"./resources/Texture/GameResult/GameOverTextRetryGame.png",
 			"./resources/Texture/GameResult/GameOverTextReturnTitle.png"
 		};
@@ -95,4 +94,8 @@ void GameOverSprite::Draw() {
 		icon->Draw();
 	}
 
+}
+
+size_t GameOverSprite::GetSelectIndex() const {
+	return selectIndex_;
 }
