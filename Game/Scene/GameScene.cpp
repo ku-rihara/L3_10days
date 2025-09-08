@@ -150,6 +150,11 @@ void GameScene::Update() {
 	}
 
 
+	if (pause_->IsSceneChange()) {
+		SceneManager::GetInstance()->ChangeScene("TITLE");
+		return;
+	}
+
 #ifdef _DEBUG /// Scene Change (Debug)
 	// Scene Change
 	if (input_->TrrigerKey(DIK_RETURN)) {
@@ -287,13 +292,7 @@ void GameScene::GameUpdate() {
 
 void GameScene::PauseUpdate() {
 	pause_->Update();
-
 	GameOption::GetInstance()->Update();
-
-	if (pause_->IsSceneChange()) {
-		SceneManager::GetInstance()->ChangeScene("TITLE");
-		return;
-	}
 }
 
 void GameScene::GameModelDraw() {

@@ -37,6 +37,7 @@ void TitleScene::Init() {
 	titleSprite_->Init();
 
 	/// カメラの位置を調整
+	//viewProjection_.Init();
 	viewProjection_.translation_ = Vector3(4.02f, 2.61f, -7.57f);
 	viewProjection_.rotation_ = Vector3(0.24f, -0.55f, 0.0f);
 
@@ -52,6 +53,7 @@ void TitleScene::Init() {
 
 
 	Frame::ResetDeltaTime();
+	ViewProjectionUpdate();
 }
 
 void TitleScene::Update() {
