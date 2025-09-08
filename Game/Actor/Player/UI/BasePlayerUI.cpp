@@ -3,8 +3,8 @@
 #include <imgui.h>
 #include <Vector4.h>
 
-void BasePlayerUI::Init(const std::string& fileName) {
-    groupName_ = fileName;
+void BasePlayerUI::Init(const std::string& fileName, const size_t& num) {
+    groupName_ = fileName + std::to_string(num);
     // globalParameter
     globalParameter_ = GlobalParameter::GetInstance();
     globalParameter_->CreateGroup(groupName_, false);
@@ -50,4 +50,4 @@ void BasePlayerUI::AdjustParam() {
 
 void BasePlayerUI::SetPlayer(Player* player) {
     pPlayer_ = player;
-  }
+}

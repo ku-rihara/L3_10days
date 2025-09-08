@@ -3,8 +3,8 @@
 #include "Frame/Frame.h"
 #include <imgui.h>
 
-void PlayerLifeUI::Init(const std::string& fileName) {
-    BasePlayerUI::Init(fileName);
+void PlayerLifeUI::Init(const std::string& fileName, const size_t& num) {
+    BasePlayerUI::Init(fileName,num);
     EasingSet();
 }
 

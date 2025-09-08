@@ -253,6 +253,9 @@
     <ClCompile Include="Game\Actor\Player\Bullet\MissileSlotManager.cpp" />
     <ClCompile Include="Game\Actor\Player\UI\PlayerLifeUI.cpp" />
     <ClCompile Include="Game\Actor\GameController\GameScore.cpp" />
+    <ClCompile Include="Game\Actor\Player\UI\MissileIconUI.cpp" />
+    <ClCompile Include="Game\Actor\Player\UI\DMGTextUI.cpp" />
+    <ClCompile Include="Game\Actor\Player\UI\PlayerDamageParUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -504,6 +507,9 @@
     <ClInclude Include="Game\Actor\Player\Bullet\MissileSlotManager.h" />
     <ClInclude Include="Game\Actor\Player\UI\PlayerLifeUI.h" />
     <ClInclude Include="Game\Actor\GameController\GameScore.h" />
+    <ClInclude Include="Game\Actor\Player\UI\MissileIconUI.h" />
+    <ClInclude Include="Game\Actor\Player\UI\DMGTextUI.h" />
+    <ClInclude Include="Game\Actor\Player\UI\PlayerDamageParUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

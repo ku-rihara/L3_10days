@@ -45,6 +45,19 @@ void Player::UIInit() {
     lifeUI_ = std::make_unique<PlayerLifeUI>();
     lifeUI_->Init("PlayerLife");
     lifeUI_->SetPlayer(this);
+    // =========================MissileアイコンUI=========================
+    for (size_t i = 0; i < missileUIs_.size(); ++i) {
+        missileUIs_[i] = std::make_unique<MissileIconUI>();
+        missileUIs_[i]->Init("MissileUI", i);
+        missileUIs_[i]->SetPlayer(this);
+    }
+    // =========================DMGテキストUI=========================
+    dmgTextUI_ = std::make_unique<DMGTextUI>();
+    dmgTextUI_->Init("DamageText");
+    // =========================DMGParUI=========================
+    dmgParUI_ = std::make_unique<PlayerDamageParUI>();
+    dmgParUI_->Init("DamageParUI");
+    dmgParUI_->SetPlayer(this);
 }
 
 void Player::Init() {
@@ -84,7 +97,7 @@ void Player::Init() {
     // moveConstraint
     Boundary* boundary   = Boundary::GetInstance();
     holeSource_.boundary = boundary;
-    moveConstraint_ = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, boundary->GetRectXZWorld(), 0.01f);
+    moveConstraint_      = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, boundary->GetRectXZWorld(), 0.01f);
 
     // Speed Init
     SpeedInit();
@@ -179,6 +192,16 @@ void Player::PartsUpdate() {
 void Player::UIUpdate() {
     // =========================LifeアイコンUI=========================
     lifeUI_->Update();
+
+    // =========================MissileアイコンUI=========================
+    for (size_t i = 0; i < missileUIs_.size(); ++i) {
+        missileUIs_[i]->Update();
+    }
+    // =========================DMGテキストUI=========================
+    dmgTextUI_->Update();
+    // =========================DMGParUI=========================
+ 
+    dmgParUI_->Update();
 }
 
 void Player::HandleInput() {
@@ -564,6 +587,11 @@ void Player::AdjustParam() {
     }
     ImGui::SeparatorText("UIs");
     lifeUI_->AdjustParam();
+    for (std::unique_ptr<MissileIconUI>& missileUI : missileUIs_) {
+        missileUI->AdjustParam();
+    }
+    dmgTextUI_->AdjustParam();
+    dmgParUI_->AdjustParam();
 
     ImGui::SeparatorText("Parts");
     // backWing
@@ -594,6 +622,11 @@ void Player::AdjustParam() {
 
 void Player::UIDraw() {
     lifeUI_->Draw();
+    for (std::unique_ptr<MissileIconUI>& missileUI : missileUIs_) {
+        missileUI->Draw();
+    }
+    dmgTextUI_->Draw();
+    dmgParUI_->Draw();
 }
 
 void Player::SetGameCamera(GameCamera* camera) {

@@ -18,7 +18,7 @@ public:
     ~PlayerLifeUI() override = default;
 
     // init,update,draw
-    void Init(const std::string& fileName) override;
+    void Init(const std::string& fileName, const size_t& num = 0) override;
     void Update() override;
     void Draw() override;
 
