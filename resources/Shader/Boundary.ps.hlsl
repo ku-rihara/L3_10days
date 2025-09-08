@@ -32,13 +32,23 @@ PSOutput main(VertexShaderOutput input) {
 	}
 
 	float2 baseColorUV = input.texcoord * 1.0 + gTime.value * 0.005;
-	float baseColorValue = PerlinNoise(baseColorUV * 100);
+	float baseColorValue = PerlinNoise(baseColorUV * 500);
 	
 	float2 highlightUV = input.texcoord.yx * 3.0 - gTime.value * 0.02;
-	float highlightValue = fbm(highlightUV * 100);
+	float highlightValue = fbm(highlightUV * 500);
 	
+	// --- 既存のalpha計算
 	float alpha = PerlinNoise(baseColorUV) * PerlinNoise(highlightUV);
-	alpha = clamp(alpha, 0.4f, 0.8f);
+	alpha = clamp(alpha, 0.6f, 0.8f);
+
+	// --- 外に行くほどAlphaを減衰させる処理を追加
+	// 中心を原点と仮定（必要に応じて別の中心位置を指定）
+	float maxRadius = 1500.0f * 5.0f; // ここはシーンに合わせて調整
+	float distFromCenter = length(input.worldPosition.xz); // Yは高さなのでXZ平面の距離を使う想定
+	float falloff = saturate(1.0 - distFromCenter / maxRadius);
+
+	// alphaに掛け合わせる
+	alpha *= falloff;
 
 	float3 color = (gBaseColor * baseColorValue) * (gHighlightColor * highlightValue);
 		

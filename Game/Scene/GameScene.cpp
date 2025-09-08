@@ -25,6 +25,7 @@
 #include "Pipeline/BoundaryPipeline.h"
 #include "Pipeline/BoundaryShardPipeline.h"
 #include "Pipeline/EffectPipelines/GameScreenEffectPipeline.h"
+#include "Pipeline/EffectPipelines/PlayerOutOfFieldWarningEffectPipeline.h"
 #include "Pipeline/Line3DPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
 #include "Pipeline/MiniMapPipeline.h"
@@ -40,7 +41,8 @@
 #include <vector>
 
 GameScene::GameScene() {}
-GameScene::~GameScene() {}
+GameScene::~GameScene() {
+}
 
 void GameScene::Init() {
 	BaseScene::Init();
@@ -128,6 +130,11 @@ void GameScene::Init() {
 
 	pause_ = std::make_unique<Pause>();
 	pause_->Init();
+
+
+	/// BGMの再生
+	bgmId_ = audio_->LoadWave("./resources/Sound/BGM/InGameBGM.wav");
+	audio_->PlayBGM(bgmId_, 0.05f);
 }
 
 void GameScene::Update() {
@@ -142,17 +149,26 @@ void GameScene::Update() {
 	/// ゲームの状態チェック
 	/// TODO: 各演出が終了してから遷移する
 	if (gameController_->GetIsGameClear()) {
+		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
 		return;
 	} else if (gameController_->GetIsGameOver()) {
+		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
 		return;
 	}
 
 
+	if (pause_->IsSceneChange()) {
+		audio_->StopBGM(bgmId_);
+		SceneManager::GetInstance()->ChangeScene("TITLE");
+		return;
+	}
+
 #ifdef _DEBUG /// Scene Change (Debug)
 	// Scene Change
 	if (input_->TrrigerKey(DIK_RETURN)) {
+		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
@@ -283,17 +299,12 @@ void GameScene::GameUpdate() {
 	// Particle AllUpdate
 	ParticleManager::GetInstance()->Update();
 
+
 }
 
 void GameScene::PauseUpdate() {
 	pause_->Update();
-
 	GameOption::GetInstance()->Update();
-
-	if (pause_->IsSceneChange()) {
-		SceneManager::GetInstance()->ChangeScene("TITLE");
-		return;
-	}
 }
 
 void GameScene::GameModelDraw() {
@@ -344,7 +355,12 @@ void GameScene::GameSpriteDraw() {
 	outsideWarning->PreDraw(commandList);
 	outsideWarning->Draw(commandList, outsideWarning_.get());
 
+	PlayerOutOfFieldWarningEffectPipeline* playerOutOfFieldWarning = PlayerOutOfFieldWarningEffectPipeline::GetInstance();
+	playerOutOfFieldWarning->PreDraw(commandList);
+	playerOutOfFieldWarning->Draw(commandList, gameController_.get());
+
 	Sprite::PreDraw(commandList);
+	gameController_->DrawOutOfFieldWarningTime();
 	uis_->Draw();
 	player_->ReticleDraw();
 	lockOn_->Draw();

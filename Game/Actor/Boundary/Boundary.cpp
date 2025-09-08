@@ -15,12 +15,21 @@ Boundary* Boundary::GetInstance() {
 Boundary::Boundary() {
 	indexBuffer_.Create(6, DirectXCommon::GetInstance()->GetDxDevice());
 	vertexBuffer_.Create(4, DirectXCommon::GetInstance()->GetDxDevice());
+
+	float scale = 5.0f;
 	vertexBuffer_.SetVertices({
-		{ { -1500, 0, +1500, 1 }, { 0, 0 }, { 0, 1, 0 } },
-		{ { +1500, 0, +1500, 1 }, { 1, 0 }, { 0, 1, 0 } },
-		{ { -1500, 0, -1500, 1 }, { 0, 1 }, { 0, 1, 0 } },
-		{ { +1500, 0, -1500, 1 }, { 1, 1 }, { 0, 1, 0 } }
+		{ { -1500 * scale, 0, +1500 * scale, 1 }, { 0, 0 }, { 0, 1, 0 } },
+		{ { +1500 * scale, 0, +1500 * scale, 1 }, { 1, 0 }, { 0, 1, 0 } },
+		{ { -1500 * scale, 0, -1500 * scale, 1 }, { 0, 1 }, { 0, 1, 0 } },
+		{ { +1500 * scale, 0, -1500 * scale, 1 }, { 1, 1 }, { 0, 1, 0 } }
 		});
+
+	localRectXZ_ = {
+		-1500.0f * scale,
+		+1500.0f * scale,
+		-1500.0f * scale,
+		+1500.0f * scale
+	};
 
 	vertexBuffer_.Map();
 
@@ -169,7 +178,7 @@ size_t Boundary::GetMaxHoleCount() const {
 AABB Boundary::GetWorldAabb(float halfThicknessY) const {
 	RectXZ r = GetRectXZWorld();
 	Vector3 origin, n;
-	GetDividePlane(origin, n); 
+	GetDividePlane(origin, n);
 	AABB box;
 	box.min = { r.minX, origin.y - halfThicknessY, r.minZ };
 	box.max = { r.maxX, origin.y + halfThicknessY, r.maxZ };
@@ -177,7 +186,7 @@ AABB Boundary::GetWorldAabb(float halfThicknessY) const {
 }
 
 bool Boundary::IsInHoleXZ(const Vector3& p, float radius) const {
-	const auto& holes = GetHoles(); 
+	const auto& holes = GetHoles();
 	for (const auto& h : holes) {
 		Vector3 d{ p.x - h.position.x, 0.0f, p.z - h.position.z };
 		float rr = h.radius + radius;

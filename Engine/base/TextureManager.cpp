@@ -181,7 +181,13 @@ const DirectX::TexMetadata& TextureManager::GetMetaData(uint32_t textureIndex) {
 
     // 指定されたインデックスのエントリを取得
     auto it = textureDatas_.begin();
-    std::advance(it, textureIndex);
+    //std::advance(it, textureIndex);
+    for (auto& texData : textureDatas_) {
+        if (texData.second.index == textureIndex) {
+            it = textureDatas_.find(texData.first);
+            break;
+        }
+    }
 
     // 値部分の参照を返す
     return it->second.metadata;

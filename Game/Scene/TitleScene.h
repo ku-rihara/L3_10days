@@ -27,6 +27,8 @@ private:
 
 	std::unique_ptr<Fade> fade_ = nullptr;
 
+	int bgmId_;
+
 public:
 	///========================================================
 	/// Construct Destruct

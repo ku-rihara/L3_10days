@@ -248,6 +248,7 @@
     <ClCompile Include="Game\Actor\GameController\GameController.cpp" />
     <ClCompile Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.cpp" />
     <ClCompile Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.cpp" />
+    <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutOfFieldWarningEffectPipeline.cpp" />
     <ClCompile Include="Game\Actor\Player\UI\BasePlayerUI.cpp" />
     <ClCompile Include="Game\Actor\Player\Bullet\MissileSlotManager.cpp" />
   </ItemGroup>
@@ -496,6 +497,7 @@
     <ClInclude Include="Game\Actor\GameController\GameController.h" />
     <ClInclude Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.h" />
     <ClInclude Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.h" />
+    <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutOfFieldWarningEffectPipeline.h" />
     <ClInclude Include="Game\Actor\Player\UI\BasePlayerUI.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\MissileSlotManager.h" />
   </ItemGroup>

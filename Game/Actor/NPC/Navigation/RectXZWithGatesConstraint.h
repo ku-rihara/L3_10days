@@ -53,7 +53,7 @@ private:
 
 private:
 	const IHoleSource* holeSrc_ = nullptr; ///< 穴一覧の供給元
-	RectXZ rect_{-1500.f, 1500.f, -1500.f, 1500.f}; ///< 矩形領域
+	RectXZ rect_{-1500.f * 5.0f, 1500.f * 5.0f, -1500.f * 5.0f, 1500.f * 5.0f }; ///< 矩形領域
 	float eps_ = 0.01f; ///< 押し戻し距離（誤差防止）
 
 	mutable bool blocked_ = false; ///< 直前の FilterMove でブロックされたかどうか

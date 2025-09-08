@@ -18,7 +18,8 @@
 #include "Option/GameOption.h"
 
 TitleScene::TitleScene() {}
-TitleScene::~TitleScene() {}
+TitleScene::~TitleScene() {
+}
 
 void TitleScene::Init() {
 	BaseScene::Init();
@@ -37,14 +38,15 @@ void TitleScene::Init() {
 	titleSprite_->Init();
 
 	/// カメラの位置を調整
+	//viewProjection_.Init();
 	viewProjection_.translation_ = Vector3(4.02f, 2.61f, -7.57f);
 	viewProjection_.rotation_ = Vector3(0.24f, -0.55f, 0.0f);
 
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
 	/// このシーンのBGMを再生
-	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
-	audio_->PlayBGM(soundId, 0.1f);
+	bgmId_ = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	audio_->PlayBGM(bgmId_, 0.1f);
 
 
 	fade_ = std::make_unique<Fade>();
@@ -52,6 +54,7 @@ void TitleScene::Init() {
 
 
 	Frame::ResetDeltaTime();
+	ViewProjectionUpdate();
 }
 
 void TitleScene::Update() {
@@ -84,6 +87,7 @@ void TitleScene::Update() {
 		/// 効果音の再生
 		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
 		audio_->PlayWave(soundId, 0.2f);
+		audio_->StopBGM(bgmId_);
 
 		/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");

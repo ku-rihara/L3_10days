@@ -15,6 +15,8 @@ void NumDraw::Init(size_t _maxNumDigit) {
 		numSprites_[i]->SetScale({ size_.x / texSize_.x, size_.y / texSize_.y });
 		numSprites_[i]->SetColor({ 0.239f, 1.0f, 0.239f });
 	}
+
+	isDrawAll_ = false;
 }
 
 void NumDraw::Update() {
@@ -33,20 +35,44 @@ void NumDraw::Update() {
 			num /= 10;
 		}
 
-		// 表示処理
-		for (int32_t i = 0; i < static_cast<int32_t>(maxNumDigit_); ++i) {
-			if (i < digitNum_) {
-				int32_t digit = digits[i];
+
+		if (isDrawAll_) {
+			// --- 全桁表示（ゼロ埋めあり）
+			for (size_t i = 0; i < maxNumDigit_; ++i) {
+				int32_t digitIndex = static_cast<int32_t>(i - (maxNumDigit_ - digitNum_));
+
+				int32_t digit = 0;
+				if (digitIndex >= 0) {
+					// digits[] から値を取る（有効桁）
+					digit = digits[digitIndex];
+				}
+				// 桁をセット
 				numSprites_[i]->uvTransform_.pos = { digit / 10.0f, 0.0f };
 				numSprites_[i]->uvTransform_.scale = { 1.0f / 10.0f, 1.0f };
+
+				// 位置は maxNumDigit_ を基準に中央揃え
 				numSprites_[i]->SetPosition({
-					basePosition_.x - digitSpacing_ * (digitNum_ - 1) / 2.0f + digitSpacing_ * i,
+					basePosition_.x - digitSpacing_ * (maxNumDigit_ - 1) / 2.0f + digitSpacing_ * i,
 					basePosition_.y
 					});
 				numSprites_[i]->uvTransform_.rotate = { 0.0f, 0.0f, 0.0f };
-			} else {
-				numSprites_[i]->uvTransform_.pos = { 1.0f, 0.0f };
-				numSprites_[i]->uvTransform_.scale = { 0.0f, 0.0f };
+			}
+		} else {
+			// --- 有効桁だけ表示（従来処理）
+			for (size_t i = 0; i < (maxNumDigit_); ++i) {
+				if (i < digitNum_) {
+					int32_t digit = digits[i];
+					numSprites_[i]->uvTransform_.pos = { digit / 10.0f, 0.0f };
+					numSprites_[i]->uvTransform_.scale = { 1.0f / 10.0f, 1.0f };
+					numSprites_[i]->SetPosition({
+						basePosition_.x - digitSpacing_ * (digitNum_ - 1) / 2.0f + digitSpacing_ * i,
+						basePosition_.y
+						});
+					numSprites_[i]->uvTransform_.rotate = { 0.0f, 0.0f, 0.0f };
+				} else {
+					numSprites_[i]->uvTransform_.pos = { 1.0f, 0.0f };
+					numSprites_[i]->uvTransform_.scale = { 0.0f, 0.0f };
+				}
 			}
 		}
 	}
@@ -100,4 +126,8 @@ void NumDraw::SetScale(const Vector2& _scale) {
 	for (size_t i = 0; i < maxNumDigit_; ++i) {
 		numSprites_[i]->SetScale(scale);
 	}
+}
+
+void NumDraw::SetIsDrawAll(bool _isDrawAll) {
+	isDrawAll_ = _isDrawAll;
 }
