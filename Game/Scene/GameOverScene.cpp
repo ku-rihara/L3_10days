@@ -20,13 +20,22 @@ void GameOverScene::Init() {
 
 }
 void GameOverScene::Update() {
-
 	gameOverSprite_->Update();
 
-	/// シーン切り替え
-	if (input_->TrrigerKey(DIK_Y) || input_->IsTriggerPad(0, Gamepad::A)) {
-		SceneManager::GetInstance()->ChangeScene("TITLE");
-		return;
+
+	/// 選択したときの処理
+	if (input_->TrrigerKey(DIK_RETURN) ||
+		input_->TrrigerKey(DIK_SPACE) ||
+		input_->IsTriggerPad(0, Gamepad::A)) {
+
+		switch (gameOverSprite_->GetSelectIndex()) {
+		case GameOverSprite::RetryGame:
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+			return;
+		case GameOverSprite::ReturnTitle:
+			SceneManager::GetInstance()->ChangeScene("TITLE");
+			return;
+		}
 	}
 
 }
