@@ -21,6 +21,11 @@ void PlayerBulletShooter::Init() {
     typeNames_[static_cast<int32_t>(BulletType::NORMAL)]  = "Normal";
     typeNames_[static_cast<int32_t>(BulletType::MISSILE)] = "Missile";
 
+    // ミサイルスロットシステムの初期化
+    missileSlotManager_.Initialize(
+        typeSpecificParams_.missileSystem.maxSlots,
+        typeSpecificParams_.missileSystem.cooldownTime);
+
     // 初期弾数設定
     InitializeAmmo();
 
@@ -39,6 +44,16 @@ void PlayerBulletShooter::Update(const Player* player) {
         return;
     }
 
+    float deltaTime = Frame::DeltaTime();
+
+    // ミサイルスロットマネージャーの更新
+    missileSlotManager_.Update(deltaTime);
+
+    // ミサイル発射タイマー更新
+    if (missileShootTimer_ > 0.0f) {
+        missileShootTimer_ -= deltaTime;
+    }
+
     // 入力処理
     HandleInput();
 
@@ -49,7 +64,7 @@ void PlayerBulletShooter::Update(const Player* player) {
     // 弾丸の更新
     UpdateBullets();
 
-    // リロード処理
+    // 通常弾のリロード処理
     UpdateReload();
 
     // 非アクティブな弾丸を削除
@@ -69,11 +84,13 @@ void PlayerBulletShooter::HandleInput() {
     missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B) || input->IsPressMouse(1);
 
     // 手動リロード
-    if (input->TrrigerKey(DIK_R)) {
-        // 両方の弾種をリロード
-        StartReload(BulletType::NORMAL);
-        StartReload(BulletType::MISSILE);
-    }
+    // if (input->TrrigerKey(DIK_R)) {
+    //    // 通常弾のリロード
+    //    StartReload(BulletType::NORMAL);
+
+    //    // ミサイルの手動リロード
+    //    missileSlotManager_.StartManualReload();
+    //}
 }
 
 void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
@@ -107,32 +124,52 @@ void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
 }
 
 void PlayerBulletShooter::UpdateMissileShooting(const Player* player) {
-    float deltaTime     = Frame::DeltaTime();
-    size_t typeIndex    = static_cast<size_t>(BulletType::MISSILE);
-    ShooterState& state = shooterStates_[typeIndex];
 
-    // 発射間隔の更新
-    if (state.intervalTimer > 0.0f) {
-        state.intervalTimer -= deltaTime;
+    if (missileInput_ && CanShootMissile()) {
+        FireMissile(player);
+    }
+}
+
+void PlayerBulletShooter::FireMissile(const Player* player) {
+    // 利用可能なスロットを取得
+    int32_t availableSlot = missileSlotManager_.GetAvailableSlot();
+    if (availableSlot == -1) {
+        return; // 利用可能なスロットがない
     }
 
-    // 通常弾の発射処理
-    if (missileInput_ && CanShoot(BulletType::MISSILE) && state.intervalTimer <= 0.0f) {
-        FireBullets(player, BulletType::MISSILE);
+    // スロットを使用してミサイルを発射
+    if (missileSlotManager_.FireMissile(availableSlot)) {
+        // 新しいミサイルを生成
+        auto bullet = BulletFactory::CreateBullet(BulletType::MISSILE);
+        if (bullet) {
+            bullet->Init();
+            bullet->SetParameter(BulletType::MISSILE, bulletParameters_[static_cast<size_t>(BulletType::MISSILE)]);
 
-        // 発射SE再生
-        int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/MissileFire.wav");
-        Audio::GetInstance()->PlayWave(handle, 0.1f);
+            // ミサイル固有のパラメータを設定
+            auto* missile = dynamic_cast<PlayerMissile*>(bullet.get());
+            if (missile) {
+                missile->SetMissileParameters(typeSpecificParams_.missile);
 
-        // 発射間隔をリセット
-        state.intervalTimer = shooterParameters_[typeIndex].intervalTime;
+                // ターゲットが存在する場合、TargetManagerに登録してIDを取得
+                const LockOn::LockOnVariant* currentTarget = pLockOn_->GetCurrentTarget();
+                if (currentTarget && targetManager_) {
+                    TargetID targetId = targetManager_->RegisterTarget(*currentTarget);
+                    missile->SetTargetID(targetId);
+                }
+            }
 
-        // 弾数を減らす
-        state.currentAmmo = std::max(0, state.currentAmmo - 1);
+            // 発射
+            bullet->Fire(*player, pLockOn_->GetCurrentTarget());
 
-        // 弾切れチェック
-        if (state.currentAmmo <= 0) {
-            StartReload(BulletType::MISSILE);
+            // 発射SEの再生
+            int handle = Audio::GetInstance()->LoadWave("./resources/Sound/SE/MissileFire.wav");
+            Audio::GetInstance()->PlayWave(handle, 0.1f);
+
+            // 弾丸リストに追加
+            activeBullets_.push_back(std::move(bullet));
+
+            // 発射間隔タイマーを設定
+            missileShootTimer_ = typeSpecificParams_.missileSystem.shootInterval;
         }
     }
 }
@@ -218,8 +255,7 @@ bool PlayerBulletShooter::CanShoot(BulletType type) const {
 }
 
 bool PlayerBulletShooter::CanShootMissile() const {
-    const ShooterState& state = shooterStates_[static_cast<size_t>(BulletType::MISSILE)];
-    return !state.isReloading && state.currentAmmo > 0 && !missileBurstState_.isBursting && state.intervalTimer <= 0.0f;
+    return missileSlotManager_.HasAnyAvailableSlot() && missileShootTimer_ <= 0.0f;
 }
 
 void PlayerBulletShooter::StartReload(BulletType type) {
@@ -230,11 +266,11 @@ void PlayerBulletShooter::StartReload(BulletType type) {
         state.isReloading = true;
         state.reloadTimer = shooterParameters_[typeIndex].reloadTime;
 
-        // ミサイルの連射状態リセット
-        if (type == BulletType::MISSILE) {
-            missileBurstState_.isBursting        = false;
-            missileBurstState_.currentBurstCount = 0;
-        }
+        //// ミサイルの連射状態リセット
+        // if (type == BulletType::MISSILE) {
+        //     missileBurstState_.isBursting        = false;
+        //     missileBurstState_.currentBurstCount = 0;
+        // }
     }
 }
 
@@ -279,6 +315,11 @@ void PlayerBulletShooter::BindParams() {
     globalParameter_->Bind(groupName_, "missileMaxTurnRate", &typeSpecificParams_.missile.maxTurnRate);
     globalParameter_->Bind(groupName_, "missileAcceleration", &typeSpecificParams_.missile.acceleration);
     globalParameter_->Bind(groupName_, "missileMaxSpeed", &typeSpecificParams_.missile.maxSpeed);
+
+    // ミサイルスロットシステムパラメータ
+    globalParameter_->Bind(groupName_, "missileMaxSlots", &typeSpecificParams_.missileSystem.maxSlots);
+    globalParameter_->Bind(groupName_, "missileCooldownTime", &typeSpecificParams_.missileSystem.cooldownTime);
+    globalParameter_->Bind(groupName_, "missileShootInterval", &typeSpecificParams_.missileSystem.shootInterval);
 }
 
 void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
@@ -302,6 +343,11 @@ void PlayerBulletShooter::DrawEnemyParamUI(BulletType type) {
         ImGui::DragFloat("MaxTurnRate", &typeSpecificParams_.missile.maxTurnRate, 0.01f);
         ImGui::DragFloat("Acceleration", &typeSpecificParams_.missile.acceleration, 0.01f);
         ImGui::DragFloat("MaxSpeed", &typeSpecificParams_.missile.maxSpeed, 0.01f);
+
+        ImGui::SeparatorText("MissileSystemParameter");
+        ImGui::InputInt("MaxSlots", &typeSpecificParams_.missileSystem.maxSlots);
+        ImGui::DragFloat("CooldownTime", &typeSpecificParams_.missileSystem.cooldownTime, 0.01f);
+        ImGui::DragFloat("ShootInterval", &typeSpecificParams_.missileSystem.shootInterval, 0.001f);
     }
 }
 
@@ -335,16 +381,34 @@ void PlayerBulletShooter::AdjustParam() {
 }
 
 int32_t PlayerBulletShooter::GetCurrentAmmo(BulletType type) const {
+    if (type == BulletType::MISSILE) {
+        return GetAvailableMissileSlots();
+    }
+
     size_t typeIndex = static_cast<size_t>(type);
     return shooterStates_[typeIndex].currentAmmo;
 }
 
 bool PlayerBulletShooter::IsReloading(BulletType type) const {
+    if (type == BulletType::MISSILE) {
+        // 全スロットが使用不可能かどうかをチェック
+        return !missileSlotManager_.HasAnyAvailableSlot();
+    }
+
     size_t typeIndex = static_cast<size_t>(type);
     return shooterStates_[typeIndex].isReloading;
 }
 
 float PlayerBulletShooter::GetReloadProgress(BulletType type) const {
+    if (type == BulletType::MISSILE) {
+        // 最も進んでいるスロットの進行状況を返す
+        float maxProgress = 0.0f;
+        for (int32_t i = 0; i < GetMaxMissileSlots(); ++i) {
+            maxProgress = std::max(maxProgress, GetMissileSlotCooldownProgress(i));
+        }
+        return maxProgress;
+    }
+
     size_t typeIndex          = static_cast<size_t>(type);
     const ShooterState& state = shooterStates_[typeIndex];
 

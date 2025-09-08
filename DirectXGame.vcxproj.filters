@@ -245,6 +245,11 @@
     <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\PlayerBackWingCenter.cpp" />
     <ClCompile Include="Game\Actor\Player\Parts\PlayerFrontWing.cpp" />
+    <ClCompile Include="Game\Actor\GameController\GameController.cpp" />
+    <ClCompile Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.cpp" />
+    <ClCompile Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.cpp" />
+    <ClCompile Include="Game\Actor\Player\UI\BasePlayerUI.cpp" />
+    <ClCompile Include="Game\Actor\Player\Bullet\MissileSlotManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -488,6 +493,11 @@
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
     <ClInclude Include="Game\Actor\Player\Parts\PlayerBackWingCenter.h" />
     <ClInclude Include="Game\Actor\Player\Parts\PlayerFrontWing.h" />
+    <ClInclude Include="Game\Actor\GameController\GameController.h" />
+    <ClInclude Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.h" />
+    <ClInclude Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.h" />
+    <ClInclude Include="Game\Actor\Player\UI\BasePlayerUI.h" />
+    <ClInclude Include="Game\Actor\Player\Bullet\MissileSlotManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
