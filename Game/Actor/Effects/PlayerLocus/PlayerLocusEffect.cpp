@@ -9,7 +9,7 @@ PlayerLocusEffect::~PlayerLocusEffect() = default;
 void PlayerLocusEffect::Init(Player* _ptr) {
 	emitters_.resize(2);
 	for (auto& emitter : emitters_) {
-		emitter.reset(ParticleEmitter::CreateParticlePrimitive("Iocus", PrimitiveType::Box, 1000));
+		emitter.reset(ParticleEmitter::CreateParticlePrimitive("Iocus", PrimitiveType::Box, 2000));
 	}
 	pPlayer_ = _ptr;
 }
@@ -32,14 +32,18 @@ void PlayerLocusEffect::Update() {
 	for (size_t i = 0; i < emitters_.size(); i++) {
 		emitters_[i]->SetEmitterRotate(eRot);
 		emitters_[i]->SetTargetPosition(playerPos_ + TransformMatrix(offsets[i], matRot));
+       
 	}
-
+    emitters_[0]->EditorUpdate();
 	for (auto& emitter : emitters_) {
 		emitter->SetTargetRotate(eRot);
 		emitter->Update(); // 更新
+    
 
 		/// Playerの入力があったときのみ発生
 		if (pPlayer_->GetAngleInput().Length() > 0.001f) {
+			emitter->Emit(); // 発射
+		} else if(pPlayer_->GetRollInput() != 0.0f) {
 			emitter->Emit(); // 発射
 		}
 	}

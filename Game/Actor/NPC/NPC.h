@@ -34,10 +34,11 @@ public:
 	void DebugDraw(const class ViewProjection& vp);
 
 	// --------- accessor --------------------------------
-	void SetTarget(const BaseStation* target);  // 攻撃先（敵拠点）。nullptrで解除＝防衛側へ
+	void SetTarget(const BaseStation* target);
 	void SetFaction(FactionType faction) { faction_ = faction; }
 	FactionType GetFaction() const { return faction_; }
 	bool GetIsAlive() const { return isActive_; }
+	NpcFireController* GetFireController()const;
 
 	void Activate();
 	void Deactivate();

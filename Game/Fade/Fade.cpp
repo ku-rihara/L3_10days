@@ -11,6 +11,7 @@ void Fade::Init() {
 	sprite_->SetScale(winSize);
 
 	speed_ = 0.0f;
+	sprite_->SetAlpha(0.0f);
 }
 
 void Fade::Update() {
@@ -39,9 +40,7 @@ void Fade::Update() {
 }
 
 void Fade::Draw() {
-	if (isFade_) {
-		sprite_->Draw();
-	}
+	sprite_->Draw();
 }
 
 void Fade::FadeIn(float speed) {

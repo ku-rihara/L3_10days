@@ -36,8 +36,8 @@ void BasePlayerSpeedBehavior::TransferStateFrom(BasePlayerSpeedBehavior* previou
 void BasePlayerSpeedBehavior::UpdateInputState() {
     wasRTPressed_ = isRTPressed_;
     wasLTPressed_ = isLTPressed_;
-    isRTPressed_  = Input::IsPressRightTrigger(0, 1);
-    isLTPressed_  = Input::IsPressLeftTrigger(0, 1);
+    isRTPressed_  = Input::IsPressRightTrigger(0, 1)||Input::GetInstance()->PushKey(DIK_C);
+    isLTPressed_  = Input::IsPressLeftTrigger(0, 1)||Input::GetInstance()->PushKey(DIK_Z);
 }
 
 Input* BasePlayerSpeedBehavior::GetInput() {

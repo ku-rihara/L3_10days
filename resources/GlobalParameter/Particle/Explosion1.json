@@ -1,12 +1,12 @@
 {
-    "Iocus": {
+    "Explosion1": {
         "AdaptRotateIsX": false,
         "AdaptRotateIsY": false,
         "AdaptRotateIsZ": false,
         "BaseColor": [
-            0.9313725233078003,
-            0.9313725233078003,
-            0.9313725233078003,
+            0.8186274766921997,
+            0.12711383402347565,
+            0.06019320711493492,
             0.0
         ],
         "Color Max": [
@@ -29,26 +29,26 @@
         "Direction Min": [
             0.0,
             0.0,
-            -1.0
-        ],
-        "Gravity": 244.10000610351563,
-        "IntervalTime": 0.0,
-        "LifeTime": 0.1599999964237213,
-        "Particle Count": 28,
-        "Position Base": [
-            0.0,
-            0.4000000059604645,
-            0.30000001192092896
-        ],
-        "Position Max": [
-            0.10000000149011612,
-            0.10000000149011612,
             0.0
         ],
+        "Gravity": -20.0,
+        "IntervalTime": 4.0,
+        "LifeTime": 2.0,
+        "Particle Count": 7,
+        "Position Base": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Position Max": [
+            3.0,
+            3.0,
+            3.0
+        ],
         "Position Min": [
-            -0.10000000149011612,
-            -0.10000000149011612,
-            -7.699999809265137
+            -3.0,
+            -3.0,
+            -3.0
         ],
         "Rotate Base": [
             0.0,
@@ -56,9 +56,9 @@
             0.0
         ],
         "Rotate Max": [
-            0.0,
-            0.0,
-            0.0
+            90.0,
+            90.0,
+            90.0
         ],
         "Rotate Min": [
             0.0,
@@ -66,38 +66,38 @@
             0.0
         ],
         "RotateSpeed Max": [
-            0.0,
-            0.0,
-            0.0
+            3.0,
+            3.0,
+            3.0
         ],
         "RotateSpeed Min": [
             0.0,
             0.0,
             0.0
         ],
-        "Scale Max": 0.20000000298023224,
-        "Scale Min": 0.20000000298023224,
+        "Scale Max": 1.0,
+        "Scale Min": 1.0,
         "ScaleV3 Max": [
-            0.10000000149011612,
-            0.10000000149011612,
-            0.10000000149011612
+            1.0,
+            1.0,
+            1.0
         ],
         "ScaleV3 Min": [
-            0.10000000149011612,
-            0.10000000149011612,
-            0.10000000149011612
+            1.0,
+            1.0,
+            1.0
         ],
-        "Speed Max": 26.799999237060547,
-        "Speed Min": 30.600000381469727,
+        "Speed Max": 7.0,
+        "Speed Min": -7.0,
         "SpeedV3 Max": [
-            0.0,
-            0.0,
-            0.0
+            30.0,
+            50.0,
+            30.0
         ],
         "SpeedV3 Min": [
+            -30.0,
             0.0,
-            0.0,
-            0.0
+            -30.0
         ],
         "UV IsRoop": false,
         "UV NumOfFrame": 1,
@@ -115,14 +115,14 @@
         "UV isFlipY": false,
         "UV isScrool": false,
         "UV isScroolEachPixel": false,
-        "blendMode": 0,
+        "blendMode": 1,
         "isAlphaNoMove": false,
         "isBillBord": false,
-        "isFloatVelocity": true,
+        "isFloatVelocity": false,
         "isMoveForRail": false,
         "isRailRoop": false,
-        "isRotateforDirection": true,
-        "isScalerScale": true,
+        "isRotateforDirection": false,
+        "isScalerScale": false,
         "isShot": false,
         "moveSpeed": 0.0,
         "preBillBordType_": 0,
@@ -141,6 +141,6 @@
         ],
         "scaleEaseParm.isScaleEase": false,
         "scaleEaseParm.maxTime": 0.0,
-        "selectedTexturePath_": "Resources/texture/NoiseTex.png"
+        "selectedTexturePath_": "Resources/texture/default.png"
     }
 }

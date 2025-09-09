@@ -73,3 +73,23 @@ void NpcFireController::Tick(){
 		bullets_.end()
 	);
 }
+
+std::vector<const NpcBullet*> NpcFireController::GetAliveBullets() const {
+	std::vector<const NpcBullet*> result;
+	result.reserve(bullets_.size());
+
+	for (auto& handle : bullets_) {
+		if (handle && handle->IsAlive()) {
+			result.push_back(handle.get());
+		}
+	}
+	return result;
+}
+
+void NpcFireController::CollectAliveBullets(std::vector<const NpcBullet*>& out) const {
+	for (auto& handle : bullets_) {
+		if (handle && handle->IsAlive()) {
+			out.push_back(handle.get());
+		}
+	}
+}

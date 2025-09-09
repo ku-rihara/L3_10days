@@ -18,6 +18,8 @@ private:
 
 	std::unique_ptr<class GameOverSprite> gameOverSprite_; ///< ゲームオーバースプライト
 
+	int bgmId_;
+
 public:
 	GameOverScene();
 	~GameOverScene() override;

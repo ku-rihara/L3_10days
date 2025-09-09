@@ -97,7 +97,7 @@ void MiniMap::Update() {
 
 
 		float mapScale = 0.1f; /// マップの縮尺
-		float scale = 32.0f;
+		float scale = 24.0f;
 		/// 味方のアイコン更新
 		size_t index = 0;
 		for (auto& fd : friends_) {

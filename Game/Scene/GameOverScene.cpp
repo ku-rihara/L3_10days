@@ -14,10 +14,11 @@ void GameOverScene::Init() {
 	/// インスタンスの生成
 	gameOverSprite_ = std::make_unique<GameOverSprite>();
 
-
 	/// 各種初期化
 	gameOverSprite_->Init();
 
+	bgmId_ = audio_->LoadWave("./resources/Sound/BGM/GameOverBGM.wav");
+	audio_->PlayBGM(bgmId_, 0.1f);
 }
 void GameOverScene::Update() {
 	gameOverSprite_->Update();
@@ -27,6 +28,13 @@ void GameOverScene::Update() {
 	if (input_->TrrigerKey(DIK_RETURN) ||
 		input_->TrrigerKey(DIK_SPACE) ||
 		input_->IsTriggerPad(0, Gamepad::A)) {
+
+		/// 効果音の再生
+		int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
+		audio_->PlayWave(soundId, 0.1f);
+
+		///  bgm stop
+		audio_->StopBGM(bgmId_);
 
 		switch (gameOverSprite_->GetSelectIndex()) {
 		case GameOverSprite::RetryGame:

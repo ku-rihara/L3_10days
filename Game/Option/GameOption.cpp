@@ -96,19 +96,22 @@ void GameOption::Init() {
 	soundOption->Init();
 	menuItems_.emplace_back(std::move(soundOption));
 
+	isDirtyThisFrame_ = false;
 
 	Load();
 }
 
 void GameOption::Update() {
-
-	/// Closeする処理
 	Input* input = Input::GetInstance();
-	if (input->TrrigerKey(DIK_ESCAPE) ||
-		input->IsTriggerPad(0, Gamepad::Start)) {
 
-		if (GetIsOpen()) {
-			Close();
+	/// 同一フレーム内でのOpen, Closeを防止
+	if (!isDirtyThisFrame_) {
+		/// Closeする処理
+		if (input->TrrigerKey(DIK_ESCAPE) ||
+			input->IsTriggerPad(0, Gamepad::Start)) {
+			if (GetIsOpen()) {
+				Close();
+			}
 		}
 	}
 
@@ -151,6 +154,7 @@ void GameOption::Update() {
 		menuItems_[i]->Update(currentIndex_);
 	}
 
+	isDirtyThisFrame_ = false;
 }
 
 void GameOption::Draw() {
@@ -186,6 +190,7 @@ float GameOption::GetSEVolume() const {
 
 void GameOption::Open() {
 	isOpen_ = true;
+	isDirtyThisFrame_ = true;
 
 	/// SEの再生
 	Audio* audio_ = Audio::GetInstance();
@@ -195,6 +200,7 @@ void GameOption::Open() {
 
 void GameOption::Close() {
 	isOpen_ = false;
+	isDirtyThisFrame_ = true;
 
 	/// SEの再生
 	Audio* audio_ = Audio::GetInstance();
@@ -202,7 +208,6 @@ void GameOption::Close() {
 	audio_->PlayWave(soundId, 0.2f);
 
 	Save();
-
 }
 
 bool GameOption::GetIsOpen() const {

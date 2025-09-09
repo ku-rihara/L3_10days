@@ -1,13 +1,13 @@
 #pragma once
 
 // engine
-#include "utility/ParameterEditor/GlobalParameter.h"
 #include "Collider/AABBCollider.h"
 
 // game
 #include "BaseObject/BaseObject.h"
 #include "Details/Faction.h"
 #include "Actor/NPC/Pool/NpcPool.h"
+#include "utility/ParameterEditor/GlobalParameter.h"
 
 // AI
 #include "Actor/Station/UnitDirector/IUnitDirector.h"
@@ -19,10 +19,10 @@
 // std
 #include <string>
 #include <vector>
-#include <algorithm>
 
 class NPC;
 class RouteCollection;
+class NpcBullet;
 
 class BaseStation :
 	public BaseObject,
@@ -60,7 +60,7 @@ public:
 
 	// NPC 管理
 	std::vector<NPC*> GetLiveNpcs() const;
-
+	std::vector<const NpcBullet*> GetLiveNpcBullets() const;
 	template<class Fn>
 	void ForEachNpc(Fn&& fn) {
 		for (auto& h : spawned_) {

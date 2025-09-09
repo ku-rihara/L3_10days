@@ -9,6 +9,7 @@
 #undef max
 #include <algorithm>
 #include <imgui.h>
+#include <array>
 
 void PlayerBulletShooter::Init(WorldTransform* parent) {
     /// グローバルパラメータ
@@ -26,12 +27,12 @@ void PlayerBulletShooter::Init(WorldTransform* parent) {
         typeSpecificParams_.missileSystem.maxSlots,
         typeSpecificParams_.missileSystem.cooldownTime);
 
-    // 通常弾用particle
+    // 通常弾用Particle
     playerShotEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot1", PrimitiveType::Plane, 500));
     playerShotEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot2", PrimitiveType::Plane, 500));
     playerShotEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot3", PrimitiveType::Plane, 500));
 
-    // ミサイル用particle
+    // ミサイル用Particle
     playerMissileEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile1", PrimitiveType::Plane, 11));
     playerMissileEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile2", PrimitiveType::Box, 2000));
     playerMissileEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile3", PrimitiveType::Plane, 11));
@@ -39,8 +40,6 @@ void PlayerBulletShooter::Init(WorldTransform* parent) {
     for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
         playerShotEmitter_[i]->SetParentTransform(parent);
     }
-
- /* playerMissileEmitter_[0]->SetParentTransform(parent);*/
 
     // 初期弾数設定
     InitializeAmmo();
@@ -89,13 +88,13 @@ void PlayerBulletShooter::Update(const Player* player) {
     // ホーミングミサイルの状態をLockOn
     UpdateHomingMissileStatus();
 
-    // 通常弾particle
+    // 通常弾Particle
     for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
         playerShotEmitter_[i]->Update();
         playerShotEmitter_[i]->EditorUpdate();
     }
 
-    // ミサイル用particle
+    // ミサイル用Particle
     for (int32_t i = 0; i < playerMissileEmitter_.size(); ++i) {
         playerMissileEmitter_[i]->Update();
         playerMissileEmitter_[i]->EditorUpdate();
@@ -109,7 +108,7 @@ void PlayerBulletShooter::HandleInput() {
     normalBulletInput_ = input->PushKey(DIK_J) || Input::IsPressPad(0, XINPUT_GAMEPAD_A) || input->IsPressMouse(0);
 
     // ミサイル発射
-    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B) || input->IsPressMouse(1);
+    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B) || input->IsTriggerMouse(1);
 }
 
 void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {
@@ -330,10 +329,11 @@ void PlayerBulletShooter::UpdateHomingMissileStatus() {
 }
 
 // ミサイルから呼び出されるパーティクル発射メソッド
-void PlayerBulletShooter::EmitMissileParticle(const Vector3& position) {
-  
-  /*  playerMissileEmitter_[0]->Emit();*/
+void PlayerBulletShooter::EmitMissileParticle(const Vector3& position, const Vector3& rotate) {
+
     for (int32_t i = 0; i < playerMissileEmitter_.size(); ++i) {
+        playerMissileEmitter_[i]->SetEmitterRotate(rotate);
+        playerMissileEmitter_[i]->SetTargetRotate(rotate);
         playerMissileEmitter_[i]->SetTargetPosition(position);
         playerMissileEmitter_[i]->Emit();
     }

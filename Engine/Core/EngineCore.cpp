@@ -145,6 +145,7 @@ void EngineCore::BeginFrame() {
     imguiManager_->Begin();
 #endif
     input_->Update();
+	audio_->Update();
     light_->Update();
 }
 
