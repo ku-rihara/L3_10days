@@ -18,6 +18,7 @@
 #include "Actor/NPC/EnemyNPC.h"
 #include "Actor/GameController/GameController.h"
 #include "Actor/GameController/GameScore.h"
+#include "Actor/ExpEmitter/ExpEmitter.h"
 
 #include "Animation/AnimationRegistry.h"
 #include "ShadowMap/ShadowMap.h"
@@ -41,9 +42,8 @@
 #include <imgui.h>
 #include <vector>
 
-GameScene::GameScene() {}
-GameScene::~GameScene() {
-}
+GameScene::GameScene() = default;
+GameScene::~GameScene() = default;
 
 void GameScene::Init() {
 	BaseScene::Init();
@@ -53,6 +53,9 @@ void GameScene::Init() {
 
 	gameController_ = std::make_unique<GameController>();
 	GameScore::GetInstance()->ScoreReset();
+
+	// 爆発エミッター
+	ExpEmitter::GetInstance()->Init();
 
 	// 生成
 	//====================================生成===================================================
@@ -179,6 +182,8 @@ void GameScene::Update() {
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
+
+	ExpEmitter::GetInstance()->Update();
 
 #ifdef _DEBUG /// Scene Change (Debug)
 	// Scene Change
@@ -319,7 +324,13 @@ void GameScene::GameUpdate() {
 
 void GameScene::PauseUpdate() {
 	pause_->Update();
-	GameOption::GetInstance()->Update();
+	GameOption* option = GameOption::GetInstance();
+	option->Update();
+	if ((option->GetIsDirtyThisFrame()
+		|| option->GetPrevIsDirtyThisFrame())
+		&& !option->GetIsOpen()) {
+		player_->ClosedPaused();
+	}
 }
 
 void GameScene::GameModelDraw() {

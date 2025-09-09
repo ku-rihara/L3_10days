@@ -1,8 +1,4 @@
 #include "Player.h"
-
-/// externals
-#include <json.hpp>
-
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/GameCamera/GameCamera.h"
 #include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
@@ -17,7 +13,6 @@
 #include <cmath>
 #include <imgui.h>
 #include <numbers>
-#include <fstream>
 
 const std::vector<Hole>& Player::BoundaryHoleSource::GetHoles() const {
     static const std::vector<Hole> kEmpty;
@@ -74,7 +69,6 @@ void Player::Init() {
     globalParameter_->CreateGroup(groupName_, false);
     BindParams();
     globalParameter_->SyncParamForGroup(groupName_);
-    ReadJsonInversePitch();
 
     // モデル作成
     obj3d_.reset(Object3d::CreateModel("Player.obj"));
@@ -310,27 +304,17 @@ void Player::RotateUpdate() {
     // ---- 通常のピッチ・ヨー回転処理 ----
     Vector3 targetAngularVelocity = angleInput_;
     const float damping           = 0.95f;
-
-    // 入力がない場合は減衰
     if (angleInput_.Length() < 0.001f) {
         targetAngularVelocity = angularVelocity_ * damping;
     }
-
-    // 角速度を補間
     angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);
 
-    // 現在の姿勢を基に回転を計算
-    Vector3 localRight   = GetRightVector();
-    Vector3 localUp      = GetUpVector();
-    Vector3 localForward = GetForwardVector();
+    Vector3 localRight = GetRightVector();
+    Vector3 localUp    = GetUpVector();
 
-    // ピッチ回転（X軸）
     Quaternion pitchRotation = Quaternion::MakeRotateAxisAngle(localRight, angularVelocity_.x * deltaTime);
+    Quaternion yawRotation   = Quaternion::MakeRotateAxisAngle(localUp, angularVelocity_.y * deltaTime);
 
-    // ヨー回転（Y軸）
-    Quaternion yawRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), angularVelocity_.y * deltaTime);
-
-    // 回転を適用
     Quaternion deltaRotation = yawRotation * pitchRotation;
     targetRotation_          = deltaRotation * baseTransform_.quaternion_;
     targetRotation_          = targetRotation_.Normalize();
@@ -338,7 +322,7 @@ void Player::RotateUpdate() {
     // 補正処理
     CorrectionHorizon();
 
-    // クォータニオンを補間して適用
+    // 適応
     baseTransform_.quaternion_ = Quaternion::Slerp(
         baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
@@ -346,7 +330,6 @@ void Player::RotateUpdate() {
     // ---- ロールを補間 ----
     currentRoll_ = Lerp(currentRoll_, targetRoll_, speedParam_.rollSpeed * deltaTime);
 
-    // ロールによるヨー補正
     float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
     if (fabs(yawFromRoll) > 0.0001f) {
         Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), yawFromRoll);
@@ -359,6 +342,7 @@ void Player::RotateUpdate() {
     obj3d_->transform_.quaternion_ = visualRoll;
     obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
 }
+
 void Player::CorrectionHorizon() {
 
     // 補正開始フラグ
@@ -447,20 +431,6 @@ void Player::ReboundByBoundary() {
     }
 }
 
-void Player::ReadJsonInversePitch() {
-    /// ----- json ----- ///
-	nlohmann::json json;
-	std::ifstream file("./resources/Option/Operation.json");
-    if (!file.is_open()) {
-        inversePitch_ = false;
-        return;
-	}
-
-	file >> json;
-	inversePitch_ = json.value("inversePitch", false);
-	file.close();
-}
-
 void Player::CheckIsUpsideDown() {
     // 機体の上方向ベクトルを取得
     Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
@@ -505,11 +475,6 @@ void Player::UpdateSpeedBehavior() {
 
         ChangeSpeedBehavior(std::move(newBehavior));
     }
-}
-
-void Player::ClosedPaused() {
-	/// ----- ポーズを閉じたときに呼ばれる ----- ///
-	ReadJsonInversePitch();
 }
 
 void Player::SpeedInit() {

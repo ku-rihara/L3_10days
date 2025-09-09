@@ -100,8 +100,6 @@ public:
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
     void UpdateSpeedBehavior();
 
-	/// ポーズを閉じたときに呼ばれる
-    void ClosedPaused();
     void TakeDamageForBoundary();
 
     // collision
@@ -115,8 +113,6 @@ private:
     void RotateUpdate();
     void MoveUpdate();
     void ReboundByBoundary();
-
-	void ReadJsonInversePitch();
 
 private:
     // ブースト
@@ -161,7 +157,6 @@ private:
     // ピッチ
     float pitchBackTime_;
     float pitchReturnThreshold_;
-	bool inversePitch_ = false;
 
     // バンク強さ、逆さ判定の値
     float bankRate_;
@@ -214,11 +209,9 @@ public:
     float GetHP() const { return hp_; }
     const float& GetMaxHP() const { return maxHp_; }
 	float GetRollInput() const { return rollInput_; }
-	bool GetInversePitch() const { return inversePitch_; }
 
     void SetGameCamera(GameCamera* camera);
     void SetLockOn(LockOn* lockOn);
     void SetViewProjection(const ViewProjection* viewProjection);
     void SetHP(float hp) { hp_ = hp; }
-	void SetInversePitch(bool inv) { inversePitch_ = inv; }
 };

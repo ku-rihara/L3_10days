@@ -94,7 +94,6 @@ void TitleScene::Update() {
 			/// 効果音の再生
 			int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
 			audio_->PlayWave(soundId, 0.2f);
-			audio_->StopBGM(bgmId_);
 
 			/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
 			fade_->FadeOut(1.0f);
@@ -104,7 +103,8 @@ void TitleScene::Update() {
 
 	/// フェードアウトが終わったらシーンチェンジ
 	if (fade_->IsFadeEnd()) {
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		audio_->StopBGM(bgmId_);
+		SceneManager::GetInstance()->ChangeScene("TUTORIAL");
 		return;
 	}
 }

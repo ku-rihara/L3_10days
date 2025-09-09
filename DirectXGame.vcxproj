@@ -277,6 +277,7 @@
     <ClCompile Include="Game\Scene\GameScene.cpp" />
     <ClCompile Include="Game\Scene\Manager\SceneManager.cpp" />
     <ClCompile Include="Game\Scene\TitleScene.cpp" />
+    <ClCompile Include="Game\Scene\TutorialScene.cpp" />
     <ClCompile Include="Game\SkyBox\SkyBox.cpp" />
     <ClCompile Include="Game\TitleActor\FighterAircraft\FighterAircraft.cpp" />
     <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
@@ -526,6 +527,7 @@
     <ClInclude Include="Game\Scene\GameScene.h" />
     <ClInclude Include="Game\Scene\Manager\SceneManager.h" />
     <ClInclude Include="Game\Scene\TitleScene.h" />
+    <ClInclude Include="Game\Scene\TutorialScene.h" />
     <ClInclude Include="Game\SkyBox\SkyBox.h" />
     <ClInclude Include="Game\TitleActor\FighterAircraft\FighterAircraft.h" />
     <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
