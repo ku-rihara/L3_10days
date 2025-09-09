@@ -317,6 +317,7 @@
     <ClInclude Include="Game\Actor\GameController\GameController.h" />
     <ClInclude Include="Game\Actor\Effects\EnemyDefeatEffect\EnemyDefeatEffect.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\Route\Route.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\Route\RouteBinder.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\Route\RouteCollection.h" />
     <ClInclude Include="Game\Actor\Player\Bullet\MissileSlotManager.h" />
     <ClInclude Include="Game\Actor\Player\Effect\PlayerEffects.h" />

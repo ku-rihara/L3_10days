@@ -15,13 +15,11 @@ RouteCollection::~RouteCollection() = default;
 //		初期化
 /////////////////////////////////////////////////////////////////////////////////////////
 void RouteCollection::Init(){
-	// 既定ディレクトリ（Route::Init(type, dir) に渡す）
-	const std::string kDir = "resources/GlobalParameter/GameActor/NpcRoute";
-
-	// 既存クリア
 	routes_.clear();
 
-	// 対象となる RouteType 一覧
+	// 基底ディレクトリ（あなたの環境に合わせて）
+	const std::string kBaseDir = "resources/GlobalParameter/GameActor/NpcRoute";
+
 	const RouteType all[] = {
 		RouteType::AllyDifence,
 		RouteType::AllyAttack,
@@ -29,10 +27,9 @@ void RouteCollection::Init(){
 		RouteType::EnemyAttack
 	};
 
-	// 各 RouteType ごとに Route を生成・初期化して登録
-	for (auto t : all){
+	for (auto t : all) {
 		auto r = std::make_unique<Route>();
-		r->Init(t, kDir);
+		r->Init(t, kBaseDir);
 		routes_.emplace(t, std::move(r));
 	}
 }
@@ -54,7 +51,6 @@ void RouteCollection::DebugDraw(const ViewProjection& vp) const{
 		if (kv.second){ kv.second->DrawDebug(vp); }
 	}
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //		accessor
