@@ -69,6 +69,7 @@ void GameScene::Init() {
 	cfg.preferSticky = true; // 既存ロール優先で揺れを減らす
 	cfg.defendHoldRadius = 8.0f; // この距離以内なら防衛はその場オービット
 	director_ = std::make_unique<QuotaUnitDirector>(cfg);
+	routesCollection_ = std::make_unique<RouteCollection>();
 
 	/// UI -----
 	miniMap_ = std::make_unique<MiniMap>();
@@ -84,6 +85,7 @@ void GameScene::Init() {
 	skyDome_->Init();
 	player_->Init();
 	lockOn_->Init();
+	routesCollection_->Init();
 
 	Installer::InstallStations(stations_[FactionType::Ally].get(),
 		stations_[FactionType::Enemy].get(),

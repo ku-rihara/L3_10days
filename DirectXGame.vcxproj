@@ -94,6 +94,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>C:\10days\L3_10days\Engine;C:\10days\L3_10days\externals\DirectXTex;C:\10days\L3_10days\externals\assimp\include;C:\10days\L3_10days\Game;C:\10days\L3_10days\math;</AdditionalIncludeDirectories>
       <LinkCompiled>true</LinkCompiled>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Game;$(ProjectDir)math;$(ProjectDir)externals\assimp\include;$(ProjectDir)externals\DirectXTex;$(ProjectDir)Engine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Game;$(ProjectDir)math;$(ProjectDir)externals\assimp\include;$(ProjectDir)externals\DirectXTex;$(ProjectDir)Engine</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="Game\Actor\Player\Bullet\MissileSlotManager.cpp" />
     <ClCompile Include="Game\Actor\Player\Effect\PlayerEffects.cpp" />
