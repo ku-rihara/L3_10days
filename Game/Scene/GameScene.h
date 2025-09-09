@@ -18,12 +18,14 @@
 #include "Actor/Station/UnitDirector/QuotaUnitDirector.h"
 #include "Actor/UI/GameUIs.h"
 #include "DebugGround/TestGround.h"
+#include "Actor/NPC/Navigation/Route/RouteCollection.h"
 
 /// pause
 #include "PauseActor/Pause.h"
 
 #include "Actor/Spline/Spline.h"
 #include <map>
+#include <array>
 
 class GameScene : public BaseScene {
 private:
@@ -47,6 +49,7 @@ private:
     std::unique_ptr<QuotaUnitDirector> director_;
     /// Controller
     std::unique_ptr<class GameController> gameController_ = nullptr;
+    std::unique_ptr<RouteCollection> routesCollection_ = nullptr;
 
     /// ----- UI ----- ///
     std::unique_ptr<MiniMap> miniMap_ = nullptr;

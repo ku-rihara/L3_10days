@@ -18,6 +18,7 @@
 #include "Actor/NPC/EnemyNPC.h"
 #include "Actor/GameController/GameController.h"
 #include "Actor/GameController/GameScore.h"
+#include "Actor/ExpEmitter/ExpEmitter.h"
 
 #include "Animation/AnimationRegistry.h"
 #include "ShadowMap/ShadowMap.h"
@@ -53,6 +54,9 @@ void GameScene::Init() {
 	gameController_ = std::make_unique<GameController>();
 	GameScore::GetInstance()->ScoreReset();
 
+	// 爆発エミッター
+	ExpEmitter::GetInstance()->Init();
+
 	// 生成
 	//====================================生成===================================================
 	skyDome_ = std::make_unique<SkyDome>();
@@ -60,14 +64,15 @@ void GameScene::Init() {
 	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
 	gameCamera_ = std::make_unique<GameCamera>();
-
 	lockOn_ = std::make_unique<LockOn>();
+    std::array<std::unique_ptr<ParticleEmitter>, 5> expEmitter_;
 
 	UnitDirectorConfig cfg;
 	cfg.squadSize = 4; // 攻撃小隊の目安
 	cfg.preferSticky = true; // 既存ロール優先で揺れを減らす
 	cfg.defendHoldRadius = 8.0f; // この距離以内なら防衛はその場オービット
 	director_ = std::make_unique<QuotaUnitDirector>(cfg);
+	routesCollection_ = std::make_unique<RouteCollection>();
 
 	/// UI -----
 	miniMap_ = std::make_unique<MiniMap>();
@@ -83,6 +88,7 @@ void GameScene::Init() {
 	skyDome_->Init();
 	player_->Init();
 	lockOn_->Init();
+	routesCollection_->Init();
 
 	Installer::InstallStations(stations_[FactionType::Ally].get(),
 		stations_[FactionType::Enemy].get(),
@@ -169,6 +175,8 @@ void GameScene::Update() {
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
+
+	ExpEmitter::GetInstance()->Update();
 
 #ifdef _DEBUG /// Scene Change (Debug)
 	// Scene Change

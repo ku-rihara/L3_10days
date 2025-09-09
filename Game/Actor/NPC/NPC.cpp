@@ -242,10 +242,6 @@ void NPC::Move(){
 	side.enemyBase = target_ ? target_->GetWorldPosition() : npcPos;            // 敵拠点（無ければダミー）
 	navigator_.SetStationSide(side);
 
-	// ---- センシングされた戦術ターゲットを計算 ----
-	// 1) 視錐台から拾えた敵（NPC/拠点）を優先
-	// 2) なければ攻撃指示中は敵拠点
-	// 3) それも無ければ自分（＝無効扱い）
 	Vector3 sensedTgt = npcPos;
 	if (const BaseObject* ft = PickFrustumTarget()){
 		sensedTgt = ft->GetWorldPosition();
@@ -310,12 +306,12 @@ void NPC::TryFire() {
 	if (!targetProvider_) return;
 	if (!fireController_) return;
 
-	// 射撃候補を集める（敵NPC + 敵拠点）
+	// 射撃候補を集める
 	std::vector<const BaseObject*> candidates;
 	targetProvider_->CollectTargets(candidates);
 	if (candidates.empty()) return;
 
-	// 最適ターゲットを選ぶ（とりあえず「最も近い & 射程内」）
+	// 最適ターゲットを選ぶ
 	const BaseObject* target = PickFrustumTarget();
 	if (!target) return;
 
@@ -337,9 +333,7 @@ void NPC::TryFire() {
 			if (forward.Length() < 1e-6f){
 				forward = Vector3(0, 0, 1); // 万一ゼロならデフォルト前方
 			}
-			forward.Normalize();
-
-			fireController_->SpawnStraight(muzzle, forward);
+			fireController_->SpawnStraight(muzzle, forward.Normalize());
 			}
 			break;
 	}
@@ -379,7 +373,6 @@ bool NPC::IsInFiringFrustum(const Vector3& worldPt) const{
 	const float xr = Vector3::Dot(v, r); // 右左成分
 	const float yu = Vector3::Dot(v, u); // 上下成分
 
-	// FOV 判定：|xr| <= zf * tan(HFOV), |yu| <= zf * tan(VFOV)
 	const float tanH = std::tan(fireConeHFovDeg_ * 3.1415926535f / 180.0f);
 	const float tanV = std::tan(fireConeVFovDeg_ * 3.1415926535f / 180.0f);
 
@@ -403,7 +396,7 @@ const BaseObject* NPC::PickFrustumTarget() const{
 	for (auto* c : candidates){
 		if (!c) continue;
 		const Vector3 cp = c->GetWorldPosition();
-		if (!IsInFiringFrustum(cp)) continue; // ← ここでしっかり絞る
+		if (!IsInFiringFrustum(cp)) continue;
 
 		const float d2 = Vector3::Dot(cp - p, cp - p);
 		if (d2 < bestD2){ bestD2 = d2; best = c; }

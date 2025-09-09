@@ -4,15 +4,15 @@
         "AdaptRotateIsY": false,
         "AdaptRotateIsZ": false,
         "BaseColor": [
-            0.6470588445663452,
-            0.6470588445663452,
-            0.6470588445663452,
+            0.8235294222831726,
+            0.2764095366001129,
+            0.04844290390610695,
             0.0
         ],
         "Color Max": [
-            0.5735294222831726,
-            0.5735294222831726,
-            0.5735294222831726,
+            0.37254899740219116,
+            0.35063436627388,
+            0.35063436627388,
             0.0
         ],
         "Color Min": [
@@ -31,14 +31,14 @@
             0.0,
             -1.0
         ],
-        "Gravity": -50.5,
-        "IntervalTime": 0.009999999776482582,
-        "LifeTime": 0.23999999463558197,
-        "Particle Count": 23,
+        "Gravity": 244.10000610351563,
+        "IntervalTime": 0.0,
+        "LifeTime": 0.1599999964237213,
+        "Particle Count": 45,
         "Position Base": [
             0.0,
-            0.800000011920929,
-            0.0
+            0.4000000059604645,
+            0.30000001192092896
         ],
         "Position Max": [
             0.10000000149011612,
@@ -48,7 +48,7 @@
         "Position Min": [
             -0.10000000149011612,
             -0.10000000149011612,
-            -3.4000000953674316
+            -7.699999809265137
         ],
         "Rotate Base": [
             0.0,
@@ -87,8 +87,8 @@
             0.10000000149011612,
             0.10000000149011612
         ],
-        "Speed Max": 69.0,
-        "Speed Min": 87.0,
+        "Speed Max": 26.799999237060547,
+        "Speed Min": 30.600000381469727,
         "SpeedV3 Max": [
             0.0,
             0.0,
@@ -117,7 +117,7 @@
         "UV isScroolEachPixel": false,
         "blendMode": 1,
         "isAlphaNoMove": false,
-        "isBillBord": true,
+        "isBillBord": false,
         "isFloatVelocity": true,
         "isMoveForRail": false,
         "isRailRoop": false,

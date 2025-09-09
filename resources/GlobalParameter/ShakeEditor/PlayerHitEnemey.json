@@ -1,0 +1,10 @@
+{
+    "PlayerHitEnemey": {
+        "axisFlag": 7,
+        "easeType": 6,
+        "maxTime": 1.0,
+        "shakeLength": 1.0,
+        "shakeType": 1,
+        "startTime": 1.0
+    }
+}

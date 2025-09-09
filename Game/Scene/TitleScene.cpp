@@ -104,7 +104,7 @@ void TitleScene::Update() {
 	/// フェードアウトが終わったらシーンチェンジ
 	if (fade_->IsFadeEnd()) {
 		audio_->StopBGM(bgmId_);
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		SceneManager::GetInstance()->ChangeScene("TUTORIAL");
 		return;
 	}
 }

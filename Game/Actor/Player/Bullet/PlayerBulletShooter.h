@@ -68,7 +68,7 @@ public:
     ///-------------------------------------------------------------------------------------
     /// Particle Methods (Missileから呼び出し用)
     ///-------------------------------------------------------------------------------------
-    void EmitMissileParticle(const Vector3& position);
+    void EmitMissileParticle(const Vector3& position, const Vector3& rotate);
 
 private:
     // 初期化関数

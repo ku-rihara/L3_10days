@@ -5,6 +5,7 @@
 #include "../SplineFollower.h"
 
 struct Hole;
+class Route;
 
 // 航法設定
 struct NpcNavConfig{
@@ -77,14 +78,13 @@ public:
     void     StartOrbit(const Vector3& center) noexcept;
     State    GetState() const noexcept{ return state_; }
 
-    // ※ tgtPos は「センシングされた戦術ターゲット（敵機/拠点など）」として扱う
     Vector3  Tick(float dt,
                   const Vector3& npcPos,
                   const Vector3& tgtPos,
                   const std::vector<Hole>& holes);
 
     // ===== Orbit用：外からスプラインルートを登録できるAPI =====
-    int  AddOrbitRoute(const SplineFollower::RouteParam& rp){ return follower_.AddRoute(rp); }
+    void BindOrbitRoute(Route* route){ follower_.BindRoute(route); }
     void SelectInitialOrbitRoute(){ follower_.SelectInitialRouteWeighted(); }
     void RandomizeOrbitIndividual(float speedJitter = 0.10f, float lateralMax = 3.0f,
                                   float switchPeriod = 4.0f, float switchProb = 0.35f, uint32_t seed = 0){
@@ -95,9 +95,9 @@ public:
 private:
     // 戦術ゴール（役割により目標/越境/穴選好を決める）
     struct TacticalGoal{
-        Vector3 target {};     // 実際に向かう最終目標（敵拠点/自陣アンカー/迎撃対象）
-        bool    needCross = false; // 境界を越すべきか
-        float   holeBias = 1.0f;  // 穴選好強度
+        Vector3 target {};          // 実際に向かう最終目標（敵拠点/自陣アンカー/迎撃対象）
+        bool    needCross = false;  // 境界を越すべきか
+        float   holeBias = 1.0f;    // 穴選好強度
     };
     TacticalGoal BuildTacticalGoal_(const Vector3& npcPos,
                                     const Vector3& sensedTgt,

@@ -1,9 +1,17 @@
 {
     "Player": {
+        "CollisionCoolTime": 0.44999998807907104,
+        "CollisionDamageValue": 10.079999923706055,
         "autoRecoverSpeed": 400.0,
         "autoRotateSpeed": 200.0,
         "bankRate": 0.8999999761581421,
         "brakeForwardSpeed": 70.0,
+        "collisionSize": [
+            1.3700000047683716,
+            2.4000000953674316,
+            0.18000000715255737
+        ],
+        "damageValueByBoundary": 20.059999465942383,
         "downFactor": 11.819999694824219,
         "forwardSpeed": 50.0,
         "hp": 100.0,
@@ -25,6 +33,11 @@
         "rotationSmoothness": 0.30000001192092896,
         "sideFactor": 4.079999923706055,
         "speed": 50.0,
+        "startPos": [
+            0.0,
+            -37.0,
+            -13.380000114440918
+        ],
         "turnFactor": 5.769999980926514,
         "yawSpeed": 100.0
     }

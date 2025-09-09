@@ -4,9 +4,9 @@
         "AdaptRotateIsY": false,
         "AdaptRotateIsZ": false,
         "BaseColor": [
-            0.0,
-            0.0,
-            0.0,
+            0.9313725233078003,
+            0.9313725233078003,
+            0.9313725233078003,
             0.0
         ],
         "Color Max": [
@@ -31,14 +31,14 @@
             0.0,
             -1.0
         ],
-        "Gravity": 0.0,
+        "Gravity": 244.10000610351563,
         "IntervalTime": 0.0,
-        "LifeTime": 0.12999999523162842,
-        "Particle Count": 23,
+        "LifeTime": 0.1599999964237213,
+        "Particle Count": 28,
         "Position Base": [
             0.0,
-            0.800000011920929,
-            0.0
+            0.4000000059604645,
+            0.30000001192092896
         ],
         "Position Max": [
             0.10000000149011612,
@@ -48,7 +48,7 @@
         "Position Min": [
             -0.10000000149011612,
             -0.10000000149011612,
-            -3.4000000953674316
+            -7.699999809265137
         ],
         "Rotate Base": [
             0.0,
@@ -75,8 +75,8 @@
             0.0,
             0.0
         ],
-        "Scale Max": 0.10000000149011612,
-        "Scale Min": 0.10000000149011612,
+        "Scale Max": 0.20000000298023224,
+        "Scale Min": 0.20000000298023224,
         "ScaleV3 Max": [
             0.10000000149011612,
             0.10000000149011612,
@@ -87,8 +87,8 @@
             0.10000000149011612,
             0.10000000149011612
         ],
-        "Speed Max": 52.599998474121094,
-        "Speed Min": 52.599998474121094,
+        "Speed Max": 26.799999237060547,
+        "Speed Min": 30.600000381469727,
         "SpeedV3 Max": [
             0.0,
             0.0,
@@ -141,6 +141,6 @@
         ],
         "scaleEaseParm.isScaleEase": false,
         "scaleEaseParm.maxTime": 0.0,
-        "selectedTexturePath_": "resources/Texture/uvChecker.png"
+        "selectedTexturePath_": "Resources/texture/NoiseTex.png"
     }
 }
