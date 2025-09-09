@@ -25,6 +25,9 @@ public:
 
 	void Tick();
 
+	std::vector<const NpcBullet*> GetAliveBullets() const;
+	void CollectAliveBullets(std::vector<const NpcBullet*>& out) const;
+
 private:
 	// プール（弾種ごと）
 	NpcBulletPool<NpcStraightBullet> straightPool_;

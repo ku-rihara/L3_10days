@@ -1,15 +1,12 @@
-#include "3d/ViewProjection.h"
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Actor/NPC/NPC.h"
 #include "Actor/Station/Base/BaseStation.h"
 #include "Frame/Frame.h"
-
 #include "imgui.h"
 #include "Actor/Player/Bullet/BasePlayerBullet.h"
 #include "Actor/NPC/Bullet/NpcBullet.h"
 
-#include "3d/ViewProjection.h"
 #include "random.h"
 
 #include <algorithm>
@@ -206,6 +203,22 @@ std::vector<NPC*> BaseStation::GetLiveNpcs() const {
 	std::vector<NPC*> out; out.reserve(spawned_.size());
 	for (auto& h : spawned_) {
 		if (h && h->GetIsAlive()) out.push_back(h.get());
+	}
+	return out;
+}
+
+std::vector<const NpcBullet*> BaseStation::GetLiveNpcBullets() const{
+	std::vector<const NpcBullet*> out;
+	out.reserve(spawned_.size());
+
+	for (auto const& h : spawned_) {
+		if (!h) continue;
+		NPC* npc = h.get();
+		if (!npc->GetIsAlive()) continue;
+
+		if (auto* fc = npc->GetFireController()) {
+			fc->CollectAliveBullets(out);
+		}
 	}
 	return out;
 }
