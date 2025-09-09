@@ -16,8 +16,8 @@
 /// game
 #include "Option/GameOption.h"
 #include "TitleActor/FighterAircraft/FighterAircraft.h"
-#include <Actor/Station/Player/PlayerStation.h>
 #include <Actor/Station/Enemy/EnemyStation.h>
+#include <Actor/Station/Player/PlayerStation.h>
 #include <Pipeline/BoundaryEdgePipeline.h>
 #include <Pipeline/BoundaryPipeline.h>
 #include <Pipeline/BoundaryShardPipeline.h>
@@ -27,7 +27,8 @@
 /// effects
 #include "Actor/Effects/PlayerEngineEffect/PlayerEngineEffect.h"
 #include "Actor/Effects/PlayerLocus/PlayerLocusEffect.h"
-
+#include <TutorialActor/TutorialMission/MoveMission.h>
+#include <TutorialActor/TutorialMission/TutorialMissionManager.h>
 
 TutorialScene::TutorialScene() {}
 TutorialScene::~TutorialScene() {}
@@ -39,20 +40,25 @@ void TutorialScene::Init() {
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
     // 生成
-    skyDome_    = std::make_unique<SkyDome>();
-    fade_       = std::make_unique<Fade>();
-    player_     = std::make_unique<Player>();
-    gameCamera_ = std::make_unique<GameCamera>();
-    lockOn_     = std::make_unique<LockOn>();
+    skyDome_                      = std::make_unique<SkyDome>();
+    fade_                         = std::make_unique<Fade>();
+    player_                       = std::make_unique<Player>();
+    gameCamera_                   = std::make_unique<GameCamera>();
+    lockOn_                       = std::make_unique<LockOn>();
     stations_[FactionType::Ally]  = std::make_unique<PlayerStation>("PlayerStation");
     stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
+
     /// UI -----
     miniMap_ = std::make_unique<MiniMap>();
     uis_     = std::make_unique<GameUIs>();
+
     /// Effect -----
     outsideWarning_    = std::make_unique<GameScreenEffect>();
     engineEffect_      = std::make_unique<PlayerEngineEffect>();
     playerLocusEffect_ = std::make_unique<PlayerLocusEffect>();
+
+    /// Tutorial System -----
+    tutorialManager_ = std::make_unique<TutorialMissionManager>();
 
     // 初期化
     fade_->Init();
@@ -65,19 +71,21 @@ void TutorialScene::Init() {
     auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
     enemyStation->SetPlayerPtr(player_.get());
 
-    const Vector3 enemyStaitonPos = stations_[FactionType::Enemy]->GetWorldPosition();
-   
-   
+    const Vector3 enemyStationPos = stations_[FactionType::Enemy]->GetWorldPosition();
+
     /// UI -----
     miniMap_->RegisterPlayer(player_.get());
     uis_->Init();
     miniMap_->Init(stations_[FactionType::Ally].get(), stations_[FactionType::Enemy].get());
 
-
     /// Effect -----
     outsideWarning_->Init();
     engineEffect_->Init();
     playerLocusEffect_->Init(player_.get());
+
+    /// Tutorial System -----
+    InitializeTutorialMissions();
+    tutorialManager_->Init();
 
     boundary_ = Boundary::GetInstance();
     boundary_->Init();
@@ -93,8 +101,29 @@ void TutorialScene::Init() {
     ViewProjectionUpdate();
 }
 
-void TutorialScene::Update() {
+void TutorialScene::InitializeTutorialMissions() {
+    // プレイヤーをチュートリアルマネージャーに設定
+    tutorialManager_->SetPlayer(player_.get());
 
+    // ミッション完了コールバックを設定
+    tutorialManager_->SetMissionCompleteCallback([this](int missionIndex) {
+        // ミッション完了時の処理
+        switch (missionIndex) {
+        case 0: // 移動ミッション完了
+            // 移動ミッション完了時の特別な処理があればここに記述
+            break;
+        case 1: // 次のミッション完了
+            // 他のミッション完了時の処理
+            break;
+        default:
+            break;
+        }
+    });
+
+  
+}
+
+void TutorialScene::Update() {
     /// オプションの開閉
     GameOption* op = GameOption::GetInstance();
     /// Optionを開ける条件
@@ -114,16 +143,7 @@ void TutorialScene::Update() {
 
     /// Scene Change
     if (!op->GetIsOpen()) {
-        if (input_->TrrigerKey(DIK_SPACE) || input_->TrrigerKey(DIK_RETURN) || input_->IsTriggerPad(0, Gamepad::A)) {
-
-            /// 効果音の再生
-            /*	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
-                audio_->PlayWave(soundId, 0.2f);
-                audio_->StopBGM(bgmId_);*/
-
-            /// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
-            fade_->FadeOut(1.0f);
-        }
+        HandleSceneTransition();
     }
 
     /// フェードアウトが終わったらシーンチェンジ
@@ -133,8 +153,26 @@ void TutorialScene::Update() {
     }
 }
 
-void TutorialScene::TutorialUpdate() {
+void TutorialScene::HandleSceneTransition() {
+    // チュートリアルが完了した場合、スペースキーでゲームシーンへ
+    if (tutorialManager_->IsCompleted()) {
+        if (input_->TrrigerKey(DIK_SPACE) || input_->TrrigerKey(DIK_RETURN) || input_->IsTriggerPad(0, Gamepad::A)) {
+            /// 効果音の再生
+            /*	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
+                audio_->PlayWave(soundId, 0.2f);
+                audio_->StopBGM(bgmId_);*/
 
+            fade_->FadeOut(1.0f);
+        }
+    } else {
+        // チュートリアル進行中：自動的にチュートリアルを開始
+        if (!tutorialManager_->IsInProgress() && !tutorialManager_->IsTransitioning() && tutorialManager_->GetStatus() == TutorialMissionManager::TutorialStatus::NOT_STARTED) {
+            tutorialManager_->StartTutorial();
+        }
+    }
+}
+
+void TutorialScene::TutorialUpdate() {
     fade_->Update();
 
     // objUpdate
@@ -143,7 +181,10 @@ void TutorialScene::TutorialUpdate() {
     skyDome_->Update();
 
     // lockOn更新
-   /* lockOn_->Update(targets, player_.get(), viewProjection_, FactionType::Enemy);*/
+    /* lockOn_->Update(targets, player_.get(), viewProjection_, FactionType::Enemy);*/
+
+    /// tutorial system update
+    tutorialManager_->Update();
 
     /// ui update
     miniMap_->Update();
@@ -215,7 +256,20 @@ void TutorialScene::SpriteDraw() {
     GameOption* op = GameOption::GetInstance();
     op->Draw();
 
+    // チュートリアルUI描画（イージングとゲージを含む）
+    tutorialManager_->SpriteDraw();
+
+    // チュートリアル完了時のメッセージ表示
+    DrawTutorialCompletionMessage();
+
     fade_->Draw();
+}
+
+void TutorialScene::DrawTutorialCompletionMessage() {
+   
+    if (tutorialManager_->IsCompleted()) {
+    
+    }
 }
 
 /// ===================================================
@@ -228,6 +282,29 @@ void TutorialScene::Debug() {
     ImGui::Begin("Camera");
     ImGui::DragFloat3("pos", &viewProjection_.translation_.x, 0.1f);
     ImGui::DragFloat3("rotate", &viewProjection_.rotation_.x, 0.1f);
+    ImGui::End();
+
+    // チュートリアルシステムのデバッグ表示
+    if (tutorialManager_) {
+        tutorialManager_->AdjustParam();
+    }
+
+    // シーン固有のデバッグ情報
+    ImGui::Begin("Tutorial Scene Debug");
+    ImGui::Text("Tutorial Status: %s",
+        tutorialManager_->IsCompleted() ? "Completed" : tutorialManager_->IsInProgress()  ? "In Progress"
+                                                    : tutorialManager_->IsTransitioning() ? "Transitioning"
+                                                                                          : "Not Started");
+
+    ImGui::Text("Total Progress: %.1f%%", tutorialManager_->GetTotalProgress() * 100.0f);
+    ImGui::Text("Current Mission: %d / %d",
+        tutorialManager_->GetCurrentMissionIndex() + 1,
+        tutorialManager_->GetTotalMissions());
+
+    if (ImGui::Button("Force Complete Current Mission")) {
+        tutorialManager_->SkipCurrentMission();
+    }
+
     ImGui::End();
 #endif
 }

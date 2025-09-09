@@ -7,18 +7,22 @@
 
 /// engine
 #include "Actor/Boundary/Boundary.h"
+#include "Actor/Effects/GameScreenEffect/GameScreenEffect.h"
 #include "Actor/GameCamera/GameCamera.h"
+#include "Actor/MiniMap/MiniMap.h"
 #include "Actor/Player/LockOn/LockOn.h"
 #include "Actor/Player/Player.h"
 #include "Actor/SkyDome/SkyDome.h"
+#include "Actor/UI/GameUIs.h"
 #include "BaseScene.h"
 #include "Fade/Fade.h"
-#include "Actor/MiniMap/MiniMap.h"
-#include "Actor/UI/GameUIs.h"
-#include "Actor/Effects/GameScreenEffect/GameScreenEffect.h"
-#include <Details/Faction.h>
 #include <Actor/Station/Base/BaseStation.h>
+#include <Details/Faction.h>
 #include <map>
+
+/// tutorial system
+#include "TutorialActor/TutorialMission/MoveMission.h"
+#include "TutorialActor/TutorialMission/TutorialMissionManager.h"
 
 class TutorialScene : public BaseScene {
 private:
@@ -33,10 +37,13 @@ private:
     std::unique_ptr<GameUIs> uis_     = nullptr;
     std::map<FactionType, std::unique_ptr<BaseStation>> stations_;
 
-      /// ----- Effect ----- ///
+    /// ----- Effect ----- ///
     std::unique_ptr<GameScreenEffect> outsideWarning_ = nullptr;
     std::unique_ptr<class PlayerEngineEffect> engineEffect_;
     std::unique_ptr<class PlayerLocusEffect> playerLocusEffect_ = nullptr;
+
+    /// ----- Tutorial System ----- ///
+    std::unique_ptr<TutorialMissionManager> tutorialManager_ = nullptr;
 
     Boundary* boundary_ = nullptr;
 
@@ -60,6 +67,9 @@ public:
     void DrawShadow() override;
 
     void TutorialUpdate();
+    void InitializeTutorialMissions();
+    void HandleSceneTransition();
+    void DrawTutorialCompletionMessage();
 
     void Debug() override; /// debug
     void ViewProjectionUpdate() override;
