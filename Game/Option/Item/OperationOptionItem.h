@@ -31,9 +31,9 @@ private:
 	/// ==================================
 
 	/// コントローラーのtexture
-	using USprtie = std::unique_ptr<Sprite>;
+	using USprite = std::unique_ptr<Sprite>;
 
-	USprtie controllerSprite_ = nullptr;
-
+	USprite controllerSprite_ = nullptr;
+	USprite frame_;
 };
 
