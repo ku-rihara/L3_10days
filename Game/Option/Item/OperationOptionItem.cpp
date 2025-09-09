@@ -17,7 +17,7 @@ void OperationOptionItem::Init() {
 	);
 
 	controllerSprite_->anchorPoint_ = { 0.5f, 0.5f };
-	controllerSprite_->SetScale(Vector2(1, 1) / 2.25.f);
+	controllerSprite_->SetScale(Vector2(1, 1) / 2.25f);
 
 
 	/// Frame
@@ -25,7 +25,7 @@ void OperationOptionItem::Init() {
 		"./resources/Texture/Option/Check.png");
 	frame_.reset(Sprite::Create(texHandle, { 640.0f, 360.0f }, { 1, 1, 1, 1.0f }));
 	frame_->anchorPoint_ = { 0.5f, 0.5f };
-	frame_->SetPosition({ 806.f, 568.f });
+	frame_->SetPosition({ 802.f, 584.f });
 	frame_->SetScale(Vector2(1, 1) * 0.5f);
 }
 
