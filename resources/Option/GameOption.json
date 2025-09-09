@@ -1,3 +1,5 @@
 {
-    "inversePitch": false
+    "bgmVolume": 0.0,
+    "masterVolume": 0.0,
+    "seVolume": 0.0
 }
