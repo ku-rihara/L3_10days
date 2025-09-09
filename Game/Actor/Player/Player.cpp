@@ -510,7 +510,6 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "rollRotateLimitOffset", &rollRotateOffset_);
     globalParameter_->Bind(groupName_, "damageValueByBoundary", &damageValueByBoundary_);
 }
-
 void Player::AdjustParam() {
 #ifdef _DEBUG
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
@@ -553,6 +552,9 @@ void Player::AdjustParam() {
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
         ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_, 0.01f, -1.0f, 0.0f);
         ImGui::DragFloat("bankRate", &bankRate_, 0.01f);
+
+         ImGui::SeparatorText("Damage");
+        ImGui::DragFloat("damageValueForBoundary", &damageValueForBoundary_, 0.01f);
 
         // デバッグ
         ImGui::Separator();
