@@ -3,6 +3,7 @@
 /// engine
 #include "base/TextureManager.h"
 #include "input/Input.h"
+#include "audio/Audio.h"
 
 GameOverSprite::GameOverSprite() = default;
 GameOverSprite::~GameOverSprite() = default;
@@ -63,8 +64,14 @@ void GameOverSprite::Update() {
 
 	/// 更新
 	Input* input = Input::GetInstance();
+	Audio* audio = Audio::GetInstance();
+
 	if (input->TrrigerKey(DIK_W) ||
 		input->TrrigerKey(DIK_UP)) {
+
+		int soundId = audio->LoadWave("./resources/Sound/SE/SelectSE.wav");
+		audio->PlayWave(soundId, 0.1f);
+
 		if (selectIndex_ > 0) {
 			--selectIndex_;
 		}
@@ -72,6 +79,10 @@ void GameOverSprite::Update() {
 
 	if (input->TrrigerKey(DIK_S) ||
 		input->TrrigerKey(DIK_DOWN)) {
+
+		int soundId = audio->LoadWave("./resources/Sound/SE/SelectSE.wav");
+		audio->PlayWave(soundId, 0.1f);
+
 		if (selectIndex_ < kMaxIcons_ - 1) {
 			++selectIndex_;
 		}

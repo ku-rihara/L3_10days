@@ -109,7 +109,7 @@ void PlayerBulletShooter::HandleInput() {
     normalBulletInput_ = input->PushKey(DIK_J) || Input::IsPressPad(0, XINPUT_GAMEPAD_A) || input->IsPressMouse(0);
 
     // ミサイル発射
-    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B) || input->IsPressMouse(1);
+    missileInput_ = input->TrrigerKey(DIK_K) || Input::IsTriggerPad(0, XINPUT_GAMEPAD_B) || input->IsTriggerMouse(1);
 }
 
 void PlayerBulletShooter::UpdateNormalBulletShooting(const Player* player) {

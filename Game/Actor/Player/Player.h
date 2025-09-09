@@ -164,6 +164,7 @@ private:
     float rollRotateLimit_;
     float rollRotateOffset_;
     float currentMaxRoll_;
+    float rollInput_;
 
     // other class
     const ViewProjection* viewProjection_                   = nullptr;
@@ -186,6 +187,7 @@ public:
     const Vector3& GetAngleInput() const { return angleInput_; }
     float GetHP() const { return hp_; }
     const float& GetMaxHP() const { return maxHp_; }
+	float GetRollInput() const { return rollInput_; }
 
     void SetGameCamera(GameCamera* camera);
     void SetLockOn(LockOn* lockOn);
