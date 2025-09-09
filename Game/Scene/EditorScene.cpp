@@ -26,20 +26,11 @@ void EditorScene::Init() {
     easingEditor_.Init();
 
     // Particle初期化(ファイル名,形状,Particle数上限)
-    testEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("test3", PrimitiveType::Box, 500));
-    testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("EnemyDefeat", PrimitiveType::Box, 500));
-    testEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("test2", PrimitiveType::Box, 500));
-    testEmitter_[3].reset(ParticleEmitter::CreateParticlePrimitive("Sphere", PrimitiveType::Sphere, 500));
-    testEmitter_[4].reset(ParticleEmitter::CreateParticlePrimitive("Iocus", PrimitiveType::Box, 500));
-
-    playerShotEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot1", PrimitiveType::Plane, 500));
-    playerShotEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot2", PrimitiveType::Plane, 500));
-    playerShotEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot3", PrimitiveType::Plane, 500));
-    
-    playerMissileEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile1", PrimitiveType::Plane, 500));
-    playerMissileEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile2", PrimitiveType::Box, 500));
-    playerMissileEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("PlayerMissile3", PrimitiveType::Plane, 500));
-   
+    testEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("Explosion1", PrimitiveType::Box, 500));
+    testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("Explosion2", PrimitiveType::Box, 500));
+    testEmitter_[3].reset(ParticleEmitter::CreateParticlePrimitive("Explosion3", PrimitiveType::Box, 500));
+    testEmitter_[4].reset(ParticleEmitter::CreateParticlePrimitive("Explosion5", PrimitiveType::Box, 500));
+    testEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("Explosion4", PrimitiveType::Box, 500));
 
     easingEditor_.SetVector3Target(&easingTestObject_->GetEasingData());
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
@@ -48,11 +39,11 @@ void EditorScene::Init() {
 void EditorScene::Update() {
 
     //// Particle更新
-    //for (int i = 0; i < testEmitter_.size(); i++) {
-    //    testEmitter_[i]->Update(); // 更新
-    //    testEmitter_[i]->EditorUpdate(); // パラメータ編集
-    //    testEmitter_[i]->Emit(); // 発射
-    //}
+    for (int i = 0; i < testEmitter_.size(); i++) {
+        testEmitter_[i]->Update(); // 更新
+        testEmitter_[i]->EditorUpdate(); // パラメータ編集
+        testEmitter_[i]->Emit(); // 発射
+    }
 
     //for (int i = 0; i < playerShotEmitter_.size(); i++) {
     //    playerShotEmitter_[i]->Update(); // 更新
@@ -61,17 +52,6 @@ void EditorScene::Update() {
     //        playerShotEmitter_[i]->Emit(); // 発射
     //    }
     //}
-
-    for (int i = 0; i < playerMissileEmitter_.size(); i++) {
-        playerMissileEmitter_[i]->Update(); // 更新
-        playerMissileEmitter_[i]->EditorUpdate(); // パラメータ編集
-      
-            playerMissileEmitter_[i]->Emit(); // 発射
-        
-    }
-
-    easingEditor_.Edit();
-    easingTestObject_->Update();
 
     Object3DRegistry::GetInstance()->UpdateAll();
     ParticleManager::GetInstance()->Update();
