@@ -179,6 +179,7 @@ void GameOption::Update() {
 		}
 	}
 
+	prevIsDirtyThisFrame_ = isDirtyThisFrame_;
 	isDirtyThisFrame_ = false;
 }
 
@@ -239,4 +240,12 @@ void GameOption::Close() {
 
 bool GameOption::GetIsOpen() const {
 	return isOpen_;
+}
+
+bool GameOption::GetIsDirtyThisFrame() const {
+	return isDirtyThisFrame_;
+}
+
+bool GameOption::GetPrevIsDirtyThisFrame() const {
+	return prevIsDirtyThisFrame_;
 }

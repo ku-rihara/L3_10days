@@ -93,12 +93,17 @@ public:
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
     void UpdateSpeedBehavior();
 
+	/// ポーズを閉じたときに呼ばれる
+    void ClosedPaused();
+
 private:
     // Move
     void HandleInput();
     void RotateUpdate();
     void MoveUpdate();
     void ReboundByBoundary();
+
+	void ReadJsonInversePitch();
 
 private:
     // ブースト

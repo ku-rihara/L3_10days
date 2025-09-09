@@ -1,4 +1,8 @@
 #include "Player.h"
+
+/// externals
+#include <json.hpp>
+
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/GameCamera/GameCamera.h"
 #include "Actor/NPC/Navigation/RectXZWithGatesConstraint.h"
@@ -11,6 +15,7 @@
 #include <cmath>
 #include <imgui.h>
 #include <numbers>
+#include <fstream>
 
 const std::vector<Hole>& Player::BoundaryHoleSource::GetHoles() const {
     static const std::vector<Hole> kEmpty;
@@ -67,6 +72,7 @@ void Player::Init() {
     globalParameter_->CreateGroup(groupName_, false);
     BindParams();
     globalParameter_->SyncParamForGroup(groupName_);
+    ReadJsonInversePitch();
 
     // モデル作成
     obj3d_.reset(Object3d::CreateModel("Player.obj"));
@@ -418,6 +424,20 @@ void Player::ReboundByBoundary() {
     }
 }
 
+void Player::ReadJsonInversePitch() {
+    /// ----- json ----- ///
+	nlohmann::json json;
+	std::ifstream file("./resources/Option/Operation.json");
+    if (!file.is_open()) {
+        inversePitch_ = false;
+        return;
+	}
+
+	file >> json;
+	inversePitch_ = json.value("inversePitch", false);
+	file.close();
+}
+
 void Player::CheckIsUpsideDown() {
     // 機体の上方向ベクトルを取得
     Matrix4x4 targetMatrix = MakeRotateMatrixQuaternion(targetRotation_);
@@ -462,6 +482,11 @@ void Player::UpdateSpeedBehavior() {
 
         ChangeSpeedBehavior(std::move(newBehavior));
     }
+}
+
+void Player::ClosedPaused() {
+	/// ----- ポーズを閉じたときに呼ばれる ----- ///
+	ReadJsonInversePitch();
 }
 
 void Player::SpeedInit() {

@@ -41,9 +41,8 @@
 #include <imgui.h>
 #include <vector>
 
-GameScene::GameScene() {}
-GameScene::~GameScene() {
-}
+GameScene::GameScene() = default;
+GameScene::~GameScene() = default;
 
 void GameScene::Init() {
 	BaseScene::Init();
@@ -310,7 +309,13 @@ void GameScene::GameUpdate() {
 
 void GameScene::PauseUpdate() {
 	pause_->Update();
-	GameOption::GetInstance()->Update();
+	GameOption* option = GameOption::GetInstance();
+	option->Update();
+	if ((option->GetIsDirtyThisFrame()
+		|| option->GetPrevIsDirtyThisFrame())
+		&& !option->GetIsOpen()) {
+		player_->ClosedPaused();
+	}
 }
 
 void GameScene::GameModelDraw() {
