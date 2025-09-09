@@ -12,27 +12,20 @@
 #include <random>
 #include <optional>
 
-/* ========================================================================
-/*  enums
-/* ===================================================================== */
 enum class RouteType {
-    AllyDifence,   //< 味方側のnpcの防御移動ルート
-    AllyAttack,    //< 味方側のnpcの攻撃移動ルート
-    EnemyDirence,  //< 敵側の防御移動ルート
-    EnemyAttack    //< 敵側の攻撃移動ルート
+    AllyDifence,
+    AllyAttack,
+    EnemyDirence,
+    EnemyAttack
 };
 
 class Route {
 public:
-    /* ========================================================================
-    /*  struct: RouteUnit
-    /* ===================================================================== */
     struct RouteUnit {
         std::unique_ptr<Spline> spline;
         Vector3 basePosition{};
         Vector3 preBasePosition{};
-        Vector3 baseSize{1,1,1};
-        std::vector<Vector3> originalCps_;   //< オフセット再適用用に元のCPを保持
+        std::vector<Vector3> originalCps_;
 
         void Load(const std::string& filePath);
         void Update();
@@ -40,25 +33,32 @@ public:
     };
 
 public:
-    Route() = default;
+    Route(RouteType type);
+    Route();
     ~Route();
 
-    void Init(RouteType type, const std::string& dir);
+    void LoadFromDirectory(const std::string& baseDir);
+    void Init(RouteType type, const std::string& baseDir);
     void Update();
     void DrawDebug(const class ViewProjection& vp) const;
 
-    // ---- ランダム選択・切替API -----------------------------------------
-    void ChooseRandomVariant(std::optional<uint32_t> seed = std::nullopt);
-    void SwitchVariantKeepU(float u, std::optional<uint32_t> seed = std::nullopt);
+    void    ChooseRandomVariant(std::optional<uint32_t> seed = std::nullopt);
 
-    // ---- サンプリングAPI -----------------------------------------------
+    // ★Vector3 に統一（Spline::Sample 型依存を排除）
     Vector3 Sample(float u) const;
 
-    // ---- accessor -------------------------------------------------------
-    int  GetActiveIndex() const { return activeIndex_; }
-    void SetActiveIndex(int idx);
-    int  GetVariantCount() const { return static_cast<int>(variants_.size()); }
+    const RouteUnit* GetActiveUnit() const {
+        if (activeIndex_ < 0 || activeIndex_ >= static_cast<int>(variants_.size())) return nullptr;
+        return &variants_[activeIndex_];
+    }
+
+    int       GetActiveIndex() const { return activeIndex_; }
+    void      SetActiveIndex(int idx);
+    int       GetVariantCount() const { return static_cast<int>(variants_.size()); }
     RouteType GetType() const { return type_; }
+
+    void SetBaseOffset(const Vector3& p);
+       void SwitchVariantKeepU(float u);
 
     static std::string EnumName(RouteType t);
 
@@ -66,7 +66,7 @@ private:
     std::vector<std::filesystem::path> FindFilesForType_(RouteType t, const std::string& dir) const;
 
 private:
-    RouteType type_{RouteType::AllyDifence};
+    RouteType type_{ RouteType::AllyDifence };
     std::vector<RouteUnit> variants_;
     int activeIndex_ = -1;
 };

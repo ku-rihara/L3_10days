@@ -64,7 +64,9 @@ void EnemyStation::SpawnNPC(const Vector3& pos) {
 
 	npc->SetWorldPosition(pos);
 	npc->SetTarget(GetRivalStation());
-
+	if (const auto* rc = GetRouteCollection()) {
+		npc->AttachRoutes(rc);
+	}
 	spawned_.push_back(std::move(npc));
 	currentTime_ = 0.0f;
 }

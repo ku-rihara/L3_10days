@@ -17,7 +17,7 @@ RouteCollection::~RouteCollection() = default;
 void RouteCollection::Init(){
 	routes_.clear();
 
-	// 基底ディレクトリ（あなたの環境に合わせて）
+	// 基底ディレクトリ
 	const std::string kBaseDir = "resources/GlobalParameter/GameActor/NpcRoute";
 
 	const RouteType all[] = {

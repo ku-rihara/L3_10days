@@ -90,9 +90,16 @@ void GameScene::Init() {
 	lockOn_->Init();
 	routesCollection_->Init();
 
+		//ルートを渡す
+	for (auto& station : stations_) {
+		station.second->SetRouteCollection(routesCollection_.get());
+	}
+
+
 	Installer::InstallStations(stations_[FactionType::Ally].get(),
 		stations_[FactionType::Enemy].get(),
 		director_.get());
+
 
 	//プレイヤーを攻撃対象に追加
 	auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
@@ -364,6 +371,9 @@ void GameScene::GameModelDraw() {
 	MiniMapPipeline* miniMapPipeline = MiniMapPipeline::GetInstance();
 	miniMapPipeline->PreDraw(commandList);
 	miniMapPipeline->Draw(commandList, miniMap_.get());
+
+	//旋回ルートの描画
+	routesCollection_->DebugDraw(viewProjection_);
 }
 
 void GameScene::GameSpriteDraw() {
@@ -405,4 +415,6 @@ void GameScene::PauseSpriteDraw() {
 	pause_->Draw();
 
 	GameOption::GetInstance()->Draw();
+
+
 }
