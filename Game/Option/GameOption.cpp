@@ -100,7 +100,7 @@ void GameOption::Init() {
 
 	/// 一回更新
 	for (size_t i = 0; i < menuItems_.size(); i++) {
-		menuItems_[i]->Update(currentIndex_);
+		menuItems_[i]->Update(currentIndex_, true);
 	}
 }
 
@@ -123,9 +123,10 @@ void GameOption::Update() {
 		return;
 	}
 
+	bool isAnyItemSelected = false;
+
 	/// Itemを選択していないなら
 	if (!isSelectedItem_) {
-
 		if (input->TrrigerKey(DIK_UP) ||
 			input->TrrigerKey(DIK_W) ||
 			input->IsTriggerPad(0, Gamepad::DPadUp)) {
@@ -155,6 +156,7 @@ void GameOption::Update() {
 			if (input->TrrigerKey(DIK_SPACE) ||
 				input->IsTriggerPad(0, Gamepad::A)) {
 				isSelectedItem_ = true;
+				isAnyItemSelected = true;
 				/// SEの再生
 				int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/DecideSE.wav");
 				Audio::GetInstance()->PlayWave(seSoundId, 0.1f);
@@ -173,7 +175,7 @@ void GameOption::Update() {
 
 	if (isSelectedItem_) {
 		for (size_t i = 0; i < menuItems_.size(); i++) {
-			menuItems_[i]->Update(currentIndex_);
+			menuItems_[i]->Update(currentIndex_, isAnyItemSelected);
 		}
 	}
 

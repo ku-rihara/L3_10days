@@ -114,7 +114,7 @@ void SoundOption::Init() {
 	isSelected_ = false;
 }
 
-void SoundOption::Update(size_t _currentIndex) {
+void SoundOption::Update(size_t _currentIndex, bool) {
 
 	if (thisIndex_ != _currentIndex) {
 		return;
@@ -231,32 +231,6 @@ void SoundOption::Update(size_t _currentIndex) {
 			upInterval = 0.3f;
 		}
 	}
-
-
-	/// 
-
-	///// Mouseの左クリックが押されているか
-	//if (input->IsPressMouse(0)) {
-	//	/// 音量を設定
-	//	Vector2 min = soundItems_[selectedIndex_].pos - soundItems_[selectedIndex_].size * 0.5f;
-	//	Vector2 max = soundItems_[selectedIndex_].pos + soundItems_[selectedIndex_].size * 0.5f;
-	//	float volume = (mousePos.x - min.x) / (max.x - min.x);
-	//	volume = std::clamp(volume, 0.0f, 1.0f);
-	//	soundItems_[selectedIndex_].volume = volume;
-	//} else {
-
-	//	/// 選択しているSoundItemの範囲内にMouseがあるか
-	//	for (size_t i = 0; i < soundItems_.size(); i++) {
-	//		auto& item = soundItems_[i];
-	//		Vector2 min = item.pos - item.size * Vector2(0.5f, 0);
-	//		Vector2 max = item.pos + item.size * Vector2(0.5f, 0);
-	//		if (mousePos.x >= min.x && mousePos.x <= max.x &&
-	//			mousePos.y >= min.y && mousePos.y <= max.y) {
-	//			selectedIndex_ = i;
-	//			break;
-	//		}
-	//	}
-	//}
 
 
 	/// indexの位置にFrameを表示
