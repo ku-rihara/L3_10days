@@ -256,6 +256,8 @@
     <ClCompile Include="Game\Actor\Player\UI\MissileIconUI.cpp" />
     <ClCompile Include="Game\Actor\Player\UI\DMGTextUI.cpp" />
     <ClCompile Include="Game\Actor\Player\UI\PlayerDamageParUI.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Navigation\Route\Route.cpp" />
+    <ClCompile Include="Game\Actor\NPC\Navigation\Route\RouteCollection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -510,6 +512,9 @@
     <ClInclude Include="Game\Actor\Player\UI\MissileIconUI.h" />
     <ClInclude Include="Game\Actor\Player\UI\DMGTextUI.h" />
     <ClInclude Include="Game\Actor\Player\UI\PlayerDamageParUI.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\Route\Route.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\Route\RouteBinder.h" />
+    <ClInclude Include="Game\Actor\NPC\Navigation\Route\RouteCollection.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
