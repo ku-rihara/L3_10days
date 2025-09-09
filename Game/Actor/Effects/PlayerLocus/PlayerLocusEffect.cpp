@@ -41,6 +41,8 @@ void PlayerLocusEffect::Update() {
 		/// Playerの入力があったときのみ発生
 		if (pPlayer_->GetAngleInput().Length() > 0.001f) {
 			emitter->Emit(); // 発射
+		} else if(pPlayer_->GetRollInput() != 0.0f) {
+			emitter->Emit(); // 発射
 		}
 	}
 }

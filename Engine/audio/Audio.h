@@ -17,6 +17,7 @@ private:
 
 	std::unordered_map<int, std::chrono::steady_clock::time_point> lastPlayTimes_;
 
+	std::vector<IXAudio2SourceVoice*> playingAudios_;
 	std::unordered_map<int, IXAudio2SourceVoice*> bgmVoices_;
 
 public:
@@ -26,12 +27,14 @@ public:
     ~Audio() = default;
 
 	void Init();
+	void Update();
+	void Finalize();
+
 	int LoadWave(const std::string& filename);
 	void Unload(const int& soundId);
 	void PlayWave(const int& soundId, const float& volume, float _pitch = 1.0f);
 	int PlayBGM(const int& soundId, const float& volume);
 	void StopBGM(const int& soundId);
-	void Finalize();
 
 	IXAudio2* GetXAudio2()const { return xAudio2_.Get(); }
 };

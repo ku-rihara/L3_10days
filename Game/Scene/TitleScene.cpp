@@ -78,7 +78,7 @@ void TitleScene::Update() {
 	if (input_->TrrigerKey(DIK_SPACE) ||
 		input_->IsTriggerPad(0, Gamepad::A)) {
 		/// 効果音の再生
-		int soundId = audio_->LoadWave("./resources/Sound/DecideSE.wav");
+		int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
 		audio_->PlayWave(soundId, 0.2f);
 		audio_->StopBGM(bgmId_);
 

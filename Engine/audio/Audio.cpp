@@ -24,6 +24,39 @@ void Audio::Init() {
 	hr = xAudio2_->CreateMasteringVoice(&masterVoice_);
 }
 
+void Audio::Update() {
+	// 再生が終了した音声を解放
+	auto it = playingAudios_.begin();
+	while (it != playingAudios_.end()) {
+		XAUDIO2_VOICE_STATE state;
+		(*it)->GetState(&state);
+		if (state.BuffersQueued == 0) {
+			(*it)->Stop();
+			(*it)->DestroyVoice();
+			it = playingAudios_.erase(it);
+		} else {
+			++it;
+		}
+	}
+}
+
+void Audio::Finalize() {
+	for (auto& soundData : soundDatas_) {
+		delete[] soundData.pBuffer;
+		soundData.pBuffer = nullptr;
+	}
+
+	/// すべて停止
+	for(auto& sound : playingAudios_) {
+		sound->Stop();
+		sound->DestroyVoice();
+	}
+
+	soundDatas_.clear();
+	xAudio2_.Reset();
+}
+
+
 int Audio::LoadWave(const std::string& filename) {
 	// ファイルがすでに読み込まれている場合
 	auto it = soundIndexMap_.find(filename);
@@ -204,6 +237,8 @@ void Audio::PlayWave(const int& soundId, const float& volume, float _pitch) {
 
 	result = pSourceVoice->Start();
 	assert(SUCCEEDED(result));
+
+	playingAudios_.push_back(pSourceVoice);
 }
 
 int Audio::PlayBGM(const int& soundId, const float& volume) {
@@ -257,16 +292,26 @@ int Audio::PlayBGM(const int& soundId, const float& volume) {
 	assert(SUCCEEDED(result));
 
 	bgmVoices_[soundId] = pSourceVoice; // BGMのボイスを保存
+	playingAudios_.push_back(pSourceVoice);
+
+
 	return soundId;
 }
 
 void Audio::StopBGM(const int& soundId) {
 	auto it = bgmVoices_.find(soundId);
+	auto audioIt = std::find(playingAudios_.begin(), playingAudios_.end(), it->second);
+	if (audioIt != playingAudios_.end()) {
+		playingAudios_.erase(audioIt);
+	}
+
 	if (it != bgmVoices_.end()) {
 		it->second->Stop();
 		it->second->DestroyVoice();
 		bgmVoices_.erase(it);
 	}
+
+
 }
 
 void Audio::Unload(const int& soundId) {
@@ -279,14 +324,7 @@ void Audio::Unload(const int& soundId) {
 	}
 }
 
-void Audio::Finalize() {
-	for (auto& soundData : soundDatas_) {
-		delete[] soundData.pBuffer;
-		soundData.pBuffer = nullptr;
-	}
-	soundDatas_.clear();
-	xAudio2_.Reset();
-}
+
 //
 //Audio* Audio::GetInstance() {
 //	static Audio instance;

@@ -274,11 +274,11 @@ void Player::HandleInput() {
     angleInput_.y = pawInputValue * (speedParam_.yawSpeed * deltaTime);
 
     // ロール
-    float rollInput = -stickL.x;
-    targetRoll_ += rollInput * speedParam_.rollSpeed * deltaTime;
+    rollInput_ = -stickL.x;
+    targetRoll_ += rollInput_ * speedParam_.rollSpeed * deltaTime;
 
     // 制限
-    if (fabs(rollInput) < 0.001f) {
+    if (fabs(rollInput_) < 0.001f) {
         currentMaxRoll_ = 0.0f;
     } else {
         angleInput_.y   = 0.0f;
