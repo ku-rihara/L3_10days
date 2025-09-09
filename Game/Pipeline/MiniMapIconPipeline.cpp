@@ -244,7 +244,7 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandles[ICON_TYPE_MAX] = {
 		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/Icon.png")),
 		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/RadarIconEnemy.png")),
-		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/uvChecker.png")),
+		textureManager->GetTextureHandle(textureManager->LoadTexture("Resources/Texture/PlayerUI/MissileUI.png")),
 	};
 
 	UINT indexCount = static_cast<UINT>(indexBuffer_.GetIndices().size());
