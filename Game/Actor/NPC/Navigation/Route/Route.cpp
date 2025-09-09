@@ -13,8 +13,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 void Route::RouteUnit::Load(const std::string& filePath){
 	spline = std::make_unique<Spline>();
-	spline->Load(filePath);
-
+	/*spline->Load(filePath);*/
+    filePath;
 	// 元CPを保持（オフセット適用の基準）
 	originalCps_.clear();
 	const auto& cpsConst = spline->GetControlPoints();

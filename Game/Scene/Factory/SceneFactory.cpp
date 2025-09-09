@@ -4,6 +4,7 @@
 #include"Scene/EditorScene.h"
 #include"Scene/GameClearScene.h"
 #include"Scene/GameOverScene.h"
+#include"Scene/TutorialScene.h"
 
 BaseScene* SceneFactory::CreateScene(const std::string& sceneName) {
 	// 次のシーンを生成
@@ -19,7 +20,9 @@ BaseScene* SceneFactory::CreateScene(const std::string& sceneName) {
 		newScene = new GameClearScene();
 	} else if (sceneName == "GAMEOVER") {
 		newScene = new GameOverScene();
-	}
+	} else if (sceneName == "TUTORIAL") {
+        newScene = new TutorialScene();
+    }
 
 	return newScene;
 }
