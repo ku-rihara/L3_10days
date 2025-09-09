@@ -18,6 +18,7 @@
 #include "Actor/NPC/EnemyNPC.h"
 #include "Actor/GameController/GameController.h"
 #include "Actor/GameController/GameScore.h"
+#include "Actor/ExpEmitter/ExpEmitter.h"
 
 #include "Animation/AnimationRegistry.h"
 #include "ShadowMap/ShadowMap.h"
@@ -53,6 +54,9 @@ void GameScene::Init() {
 
 	gameController_ = std::make_unique<GameController>();
 	GameScore::GetInstance()->ScoreReset();
+
+	// 爆発エミッター
+	ExpEmitter::GetInstance()->Init();
 
 	// 生成
 	//====================================生成===================================================
@@ -170,6 +174,8 @@ void GameScene::Update() {
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
+
+	ExpEmitter::GetInstance()->Update();
 
 #ifdef _DEBUG /// Scene Change (Debug)
 	// Scene Change
