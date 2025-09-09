@@ -8,6 +8,7 @@
 #include "Actor/Player/Player.h"
 #include "Actor/Station/Base/BaseStation.h"
 #include "GameTimer.h"
+#include "GameScore.h"
 
 GameController::GameController() {
 	/// NumDraw
@@ -46,7 +47,11 @@ GameController::GameController() {
 
 	gameTimer_ = std::make_unique<GameTimer>();
 	gameTimer_->Init();
+
+	/// スコアリセット
+	GameScore::GetInstance()->ScoreReset();
 }
+
 GameController::~GameController() = default;
 
 void GameController::Update() {
@@ -56,6 +61,11 @@ void GameController::Update() {
 
 	if (isPlayerOutOfField_) {
 		outOfFieldTime_ += Frame::DeltaTime() * 0.5f;
+	}
+
+	if (isGameClear_) {
+		/// クリアした時間を記録
+		GameScore::GetInstance()->SetClearTime(gameTimer_->GetTime());
 	}
 
 
@@ -70,7 +80,7 @@ void GameController::Update() {
 	outOfFieldWarningTimeIntNumDraw_->Update();
 	outOfFieldWarningTimeFracNumDraw_->Update();
 
-	gameTimer_->Update();
+	gameTimer_->Update(isGameClear_);
 }
 
 void GameController::DrawOutOfFieldWarningTime() {

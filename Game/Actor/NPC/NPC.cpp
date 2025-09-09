@@ -11,6 +11,7 @@
 #include "imgui.h"
 #include "Actor/Player/Bullet/BasePlayerBullet.h"
 #include "Actor/NPC/Bullet/NpcBullet.h"
+#include "Actor/GameController/GameScore.h"
 
 #include <limits>
 #include <cmath>
@@ -418,6 +419,7 @@ void NPC::OnCollisionEnter(BaseCollider* other) {
 				hp_ = 0.0f;
 				// 死亡処理
 				Deactivate();
+				GameScore::GetInstance()->AddBreakEnemyCount(); // スコア加算
 				/// エフェクトの生成
 			}
 		}

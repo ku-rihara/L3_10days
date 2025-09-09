@@ -44,8 +44,13 @@ void GameTimer::Init() {
 	time_ = 0.0f;
 }
 
-void GameTimer::Update() {
-	time_ += Frame::DeltaTime();
+void GameTimer::Update(bool _isGameClear) {
+
+	/// ゲームクリアしていなければ時間を進める
+	if (!_isGameClear) {
+		time_ += Frame::DeltaTime();
+	}
+
 	int intTime = static_cast<int>(time_);
 	if (intTime < 0) {
 		intTime = 0;
@@ -72,4 +77,8 @@ void GameTimer::Draw() {
 	for (auto& sp : colons_) {
 		sp->Draw();
 	}
+}
+
+float GameTimer::GetTime() const {
+	return time_;
 }
