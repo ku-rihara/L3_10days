@@ -24,6 +24,7 @@
 
 #include "Actor/Spline/Spline.h"
 #include <map>
+#include <array>
 
 class GameScene : public BaseScene {
 private:

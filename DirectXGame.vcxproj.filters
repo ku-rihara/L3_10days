@@ -256,6 +256,7 @@
     <ClCompile Include="Game\Actor\Player\UI\MissileIconUI.cpp" />
     <ClCompile Include="Game\Actor\Player\UI\DMGTextUI.cpp" />
     <ClCompile Include="Game\Actor\Player\UI\PlayerDamageParUI.cpp" />
+    <ClCompile Include="Game\Actor\ExpEmitter\ExpEmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -510,6 +511,7 @@
     <ClInclude Include="Game\Actor\Player\UI\MissileIconUI.h" />
     <ClInclude Include="Game\Actor\Player\UI\DMGTextUI.h" />
     <ClInclude Include="Game\Actor\Player\UI\PlayerDamageParUI.h" />
+    <ClInclude Include="Game\Actor\ExpEmitter\ExpEmitter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

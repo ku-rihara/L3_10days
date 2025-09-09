@@ -45,6 +45,8 @@ void EditorScene::Update() {
         testEmitter_[i]->Emit(); // 発射
     }
 
+    easingEditor_.Edit();
+
     //for (int i = 0; i < playerShotEmitter_.size(); i++) {
     //    playerShotEmitter_[i]->Update(); // 更新
     //    playerShotEmitter_[i]->EditorUpdate(); // パラメータ編集
