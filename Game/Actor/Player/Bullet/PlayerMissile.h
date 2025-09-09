@@ -21,7 +21,7 @@ public:
     void Fire(const Player& player, const LockOn::LockOnVariant* target) override;
     void Deactivate() override;
     Vector3 GetPosition() const override;
-
+    void UpdateMissileOrientationEuler(float deltaTime);
     // ターゲット
     void SetTarget(const Vector3& targetPosition);
     void ClearTarget();
