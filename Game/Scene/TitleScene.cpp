@@ -104,7 +104,7 @@ void TitleScene::Update() {
 
 	/// フェードアウトが終わったらシーンチェンジ
 	if (fade_->IsFadeEnd()) {
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		SceneManager::GetInstance()->ChangeScene("TUTORIAL");
 		return;
 	}
 }
