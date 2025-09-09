@@ -94,6 +94,9 @@ void PlayerMissile::UpdateMissileMovement(float deltaTime) {
     if (velocity_.Length() > 0.0f) {
         velocity_ = velocity_.Normalize() * currentSpeed_;
     }
+
+    // 進行方向に基づいて姿勢を更新
+    UpdateMissileOrientationFromVelocity();
 }
 
 void PlayerMissile::UpdateTargetTracking(float deltaTime) {
@@ -134,49 +137,35 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
         Vector3 finalDirection = Lerp(currentDirection, desiredDirection, uniqueParam_.trackingStrength * deltaTime);
         velocity_              = finalDirection.Normalize() * currentSpeed_;
     }
-
-    UpdateMissileOrientationEuler(deltaTime);
 }
 
-void PlayerMissile::UpdateMissileOrientationEuler(float deltaTime) {
-    Vector3 direction = velocity_.Normalize();
+void PlayerMissile::UpdateMissileOrientationFromVelocity() {
+    if (velocity_.Length() > 0.0f) {
+        // 進行方向を基にクォータニオンを計算
+        Vector3 forward = velocity_.Normalize();
+        Vector3 up      = Vector3(0.0f, 1.0f, 0.0f); // 上方向（Y軸）
 
-    // Yaw (Y軸回転) を計算
-    float yaw = std::atan2(direction.x, direction.z);
+        // 進行方向と上方向から右方向を計算
+        Vector3 right = Vector3::Cross(up, forward).Normalize();
+        up            = Vector3::Cross(forward, right).Normalize();
 
-    // Pitch (X軸回転) を計算
-    float horizontalDistance = std::sqrt(direction.x * direction.x + direction.z * direction.z);
-    float pitch              = -std::atan2(direction.y, horizontalDistance);
+        // 回転行列を作成
+        Matrix4x4 rotationMatrix;
+        rotationMatrix.m[0][0] = right.x;
+        rotationMatrix.m[1][0] = right.y;
+        rotationMatrix.m[2][0] = right.z;
 
-    // 目標回転を設定
-    Vector3 targetRotation = Vector3(pitch, yaw, 0.0f);
+        rotationMatrix.m[0][1] = up.x;
+        rotationMatrix.m[1][1] = up.y;
+        rotationMatrix.m[2][1] = up.z;
 
-    // 現在の回転を取得
-    Vector3 currentRotation = baseTransform_.quaternion_.ToEuler();
+        rotationMatrix.m[0][2] = forward.x;
+        rotationMatrix.m[1][2] = forward.y;
+        rotationMatrix.m[2][2] = forward.z;
 
-    // 角度差を正規化
-    auto normalizeAngle = [](float angle) {
-        while (angle > std::numbers::pi_v<float>)
-            angle -= 2.0f * std::numbers::pi_v<float>;
-        while (angle < -std::numbers::pi_v<float>)
-            angle += 2.0f * std::numbers::pi_v<float>;
-        return angle;
-    };
-
-    targetRotation.x  = normalizeAngle(targetRotation.x);
-    targetRotation.y  = normalizeAngle(targetRotation.y);
-    currentRotation.x = normalizeAngle(currentRotation.x);
-    currentRotation.y = normalizeAngle(currentRotation.y);
-
-    // 滑らかな回転補間
-    float rotationSpeed = 3.0f;
-    Vector3 newRotation;
-    newRotation.x = Lerp(currentRotation.x, targetRotation.x, rotationSpeed * deltaTime);
-    newRotation.y = Lerp(currentRotation.y, targetRotation.y, rotationSpeed * deltaTime);
-    newRotation.z = 0.0f; // Rollは0に固定
-
-    // オイラー角からクォータニオンに変換
-    baseTransform_.quaternion_ = Quaternion::EulerToQuaternion(newRotation);
+        // 回転行列をクォータニオンに変換
+        baseTransform_.quaternion_ = Quaternion::FromMatrix(rotationMatrix);
+    }
 }
 
 bool PlayerMissile::IsTargetValid() const {
