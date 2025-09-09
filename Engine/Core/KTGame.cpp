@@ -3,6 +3,7 @@
 #include "PostEffect/PostEffectRenderer.h"
 #include "Scene/Factory/SceneFactory.h"
 #include"Pipeline/Object3DPiprline.h"
+#include "2d/Sprite.h"
 // renderer
 #include "base/SkyBoxRenderer.h"
 // utility

@@ -258,6 +258,7 @@
     <ClCompile Include="Game\Actor\Player\UI\PlayerDamageParUI.cpp" />
     <ClCompile Include="Game\Actor\NPC\Navigation\Route\Route.cpp" />
     <ClCompile Include="Game\Actor\NPC\Navigation\Route\RouteCollection.cpp" />
+    <ClCompile Include="Game\Actor\ExpEmitter\ExpEmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -515,6 +516,7 @@
     <ClInclude Include="Game\Actor\NPC\Navigation\Route\Route.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\Route\RouteBinder.h" />
     <ClInclude Include="Game\Actor\NPC\Navigation\Route\RouteCollection.h" />
+    <ClInclude Include="Game\Actor\ExpEmitter\ExpEmitter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

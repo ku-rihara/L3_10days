@@ -27,6 +27,7 @@ public:
     static Quaternion EulerToQuaternion(const Vector3& Euler);
     static Quaternion LookAt(const Vector3& eye, const Vector3& target, const Vector3& up);
     static float Angle(const Quaternion& a, const Quaternion& b);
+    static Quaternion FromMatrix(const Matrix4x4& m);
     // 共役Quaternionを返す
     Quaternion Conjugate() const;
 

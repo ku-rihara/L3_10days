@@ -61,8 +61,8 @@ void GameScene::Init() {
 	stations_[FactionType::Ally] = std::make_unique<PlayerStation>("PlayerStation");
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
 	gameCamera_ = std::make_unique<GameCamera>();
-
 	lockOn_ = std::make_unique<LockOn>();
+    std::array<std::unique_ptr<ParticleEmitter>, 5> expEmitter_;
 
 	UnitDirectorConfig cfg;
 	cfg.squadSize = 4; // 攻撃小隊の目安

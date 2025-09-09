@@ -11,12 +11,19 @@
 #include <optional>
 #include <variant>
 #include <vector>
+#include <cstdint>
 
 // 前方宣言
 class EnemyNPC;
 class BoundaryBreaker;
 class EnemyStation;
 class Player;
+
+ struct TargetMarker {
+    std::unique_ptr<Sprite> sprite;
+    Vector2 screenPosition;
+    bool isCurrentTarget = false;
+};
 
 class LockOn {
 public:
@@ -64,9 +71,11 @@ private:
     void SortTargetsByDistance(std::vector<std::pair<float, LockOnVariant>>& validTargets) const;
     void SortTargetsByAngle(std::vector<std::pair<float, LockOnVariant>>& validTargets) const;
 
-    // UI更新（ViewProjectionが必要）
-    void UpdateUI(const ViewProjection& viewProjection);
+    // UI更新
+    void ResizeTargetMarkers(const size_t& targetCount); 
+    void UpdateCurrentReticleUI(const ViewProjection& viewProjection);
     void LerpTimeIncrement(float incrementTime);
+    void UpdateTargetMarkers(const std::vector<LockOnVariant>& validTargets, const ViewProjection& viewProjection);
 
 private:
     // global parameter
@@ -75,6 +84,10 @@ private:
 
     // Sprite
     std::unique_ptr<Sprite> lockOnMark_;
+    std::vector<TargetMarker> ableLockOnMarkers_;
+    uint32_t reticleHandle_;
+    Vector2 currentTargetScale_;
+    Vector2 ableTargetScale_;
 
     // ターゲット
     std::optional<LockOnVariant> currentTarget_;
@@ -114,7 +127,7 @@ private:
         Angle // 角度順
     };
 
-    SwitchMode switchMode_ = SwitchMode::Distance;
+    SwitchMode switchMode_ = SwitchMode::Angle;
 
 public:
     bool ExistTarget() const { return currentTarget_.has_value(); }

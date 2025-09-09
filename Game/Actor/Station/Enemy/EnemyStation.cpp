@@ -3,8 +3,8 @@
 #include "Actor/NPC/EnemyNPC.h"
 #include "Actor/NPC/Pool/NpcPool.h"
 #include "Frame/Frame.h"
-#include "Actor/Boundary/Boundary.h"
 #include "Actor/Player/Player.h"
+#include "utility/ParameterEditor/GlobalParameter.h"
 
 #include "imgui.h"
 

@@ -43,7 +43,7 @@ private:
 	bool isFade_ = false; /// フェード中か
 	bool isFadeIn_ = false; /// フェードイン中か
 	bool isFadeOut_ = false; /// フェードアウト中か
-	bool isFadeEnd_ = true; /// フェード完了か
+	bool isFadeEnd_ = false; /// フェード完了か
 
 };
 
