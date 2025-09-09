@@ -7,6 +7,7 @@
 /// game
 #include "Actor/Player/Player.h"
 #include "Actor/Station/Base/BaseStation.h"
+#include "GameTimer.h"
 
 GameController::GameController() {
 	/// NumDraw
@@ -43,6 +44,8 @@ GameController::GameController() {
 	Vector2 size    = Vector2{ 32.0f, 32.0f };
 	commaSprite_->SetScale(size / texSize);
 
+	gameTimer_ = std::make_unique<GameTimer>();
+	gameTimer_->Init();
 }
 GameController::~GameController() = default;
 
@@ -66,6 +69,8 @@ void GameController::Update() {
 
 	outOfFieldWarningTimeIntNumDraw_->Update();
 	outOfFieldWarningTimeFracNumDraw_->Update();
+
+	gameTimer_->Update();
 }
 
 void GameController::DrawOutOfFieldWarningTime() {
@@ -78,6 +83,10 @@ void GameController::DrawOutOfFieldWarningTime() {
 	outOfFieldWarningTimeIntNumDraw_->Draw();
 	outOfFieldWarningTimeFracNumDraw_->Draw();
 	commaSprite_->Draw();
+}
+
+void GameController::DrawGameTimer() {
+	gameTimer_->Draw();
 }
 
 bool GameController::CheckIsGameOver() {

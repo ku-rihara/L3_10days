@@ -388,6 +388,7 @@ void GameScene::GameSpriteDraw() {
 
 	Sprite::PreDraw(commandList);
 	gameController_->DrawOutOfFieldWarningTime();
+	gameController_->DrawGameTimer();
 	uis_->Draw();
 	player_->ReticleDraw();
 	lockOn_->Draw();
