@@ -198,7 +198,7 @@ void Player::UIUpdate() {
     // =========================DMGテキストUI=========================
     dmgTextUI_->Update();
     // =========================DMGParUI=========================
- 
+
     dmgParUI_->Update();
 }
 
@@ -387,6 +387,9 @@ void Player::ReboundByBoundary() {
 
         float reboundVelocityY = reboundVelocity_.y;
 
+        // ダメージ
+        TakeDamageForBoundary();
+
         // 自動入力を開始
         if (reboundVelocityY > 0.0f) { // 上向き
             reboundCorrectionParam_.isAutoRotate         = true;
@@ -479,6 +482,10 @@ void Player::ReticleDraw() {
     reticle_->Draw();
 }
 
+void Player::TakeDamageForBoundary() {
+    hp_ -= damageValueByBoundary_;
+}
+
 void Player::BindParams() {
     globalParameter_->Bind(groupName_, "hp", &maxHp_);
     globalParameter_->Bind(groupName_, "forwardSpeed", &speedParam_.startForwardSpeed);
@@ -501,6 +508,7 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "autoRotateSpeed", &reboundCorrectionParam_.autoRotateSpeed_);
     globalParameter_->Bind(groupName_, "autoRecoverSpeed", &invCorrectionParam_.autoRotateSpeed_);
     globalParameter_->Bind(groupName_, "rollRotateLimitOffset", &rollRotateOffset_);
+    globalParameter_->Bind(groupName_, "damageValueByBoundary", &damageValueByBoundary_);
 }
 
 void Player::AdjustParam() {
@@ -535,6 +543,9 @@ void Player::AdjustParam() {
         ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
         ImGui::DragFloat("rollRotateOffset", &rollRotateOffset_, 0.01f);
+
+        ImGui::SeparatorText("Damage");
+        ImGui::DragFloat("damageValueByBoundary",&damageValueByBoundary_, 0.01f);
 
         ImGui::SeparatorText("etc");
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);

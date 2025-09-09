@@ -48,7 +48,7 @@ public:
     struct BoundaryHoleSource : IHoleSource {
         const Boundary* boundary = nullptr;
         const std::vector<Hole>& GetHoles() const override;
-    };
+    }; 
 
 public:
     Player()  = default;
@@ -93,6 +93,8 @@ public:
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
     void UpdateSpeedBehavior();
 
+    void TakeDamageForBoundary();
+
 private:
     // Move
     void HandleInput();
@@ -123,6 +125,7 @@ private:
     // Parameter
     float hp_;
     float maxHp_;
+    float damageValueByBoundary_;
 
     // speed
     SpeedParam speedParam_;
