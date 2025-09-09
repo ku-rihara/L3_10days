@@ -57,8 +57,6 @@ static inline bool IsPassableAt(const Vector3& Q,
 	return false;
 }
 
-// ====== NpcNavigator 本体 ======
-
 void NpcNavigator::Reset(const Vector3& orbitCenter) noexcept{
 	state_ = State::ToTarget;
 	holeIndex_ = -1; holePos_ = {}; holeRadius_ = 0.0f;
@@ -137,6 +135,8 @@ void NpcNavigator::SteerTowards(const Vector3& desiredDir, float dt, bool /*isBo
 void NpcNavigator::StartOrbit(const Vector3& center) noexcept{
 	state_ = State::Orbit;
 	orbitCenter_ = center;
+
+	// ルート追従は Orbit のみで使用
 	follower_.ResetAt(center);
 }
 
@@ -161,7 +161,7 @@ NpcNavigator::BuildTacticalGoal_(const Vector3& npcPos,
 			const bool hasAlt = lennz(sensedTgt - npcPos) && (sensedTgt - npcPos).Length() <= useAltDist;
 			g.target = hasAlt ? sensedTgt : primary;
 			g.needCross = hasPlane ? ShouldCrossBoundary(npcPos, g.target) : false;
-			g.holeBias = tac_.holeBiasAttack; // 穴を積極活用
+			g.holeBias = tac_.holeBiasAttack;
 			break;
 		}
 		case Role::DefendBase:
@@ -171,18 +171,18 @@ NpcNavigator::BuildTacticalGoal_(const Vector3& npcPos,
 			bool intercept = false;
 			if (lennz(sensedTgt - npcPos) && hasPlane){
 				const float dPlane = std::fabs(Dot3(N, sensedTgt - P));
-				const float nearPlane = 30.0f; // 定数：必要なら cfg へ
+				const float nearPlane = 30.0f; // 定数
 				const bool tgtSameSide = (Dot3(N, anchor - P) * Dot3(N, sensedTgt - P)) >= 0.0f;
 				intercept = (tgtSameSide || dPlane < nearPlane) &&
 					((sensedTgt - anchor).Length() <= tac_.interceptRange);
 			}
 			if (intercept){
-				g.target = sensedTgt;      // 迎撃
+				g.target = sensedTgt;
 			} else{
 				// 離れすぎたらアンカーへ回帰、近ければその周辺でロイター
 				g.target = ((npcPos - anchor).Length() > tac_.regroupDist) ? anchor : anchor;
 			}
-			g.needCross = false;            // 原則、越境しない
+			g.needCross = false;
 			g.holeBias = tac_.holeBiasDefend;
 			break;
 		}
@@ -203,81 +203,79 @@ NpcNavigator::BuildTacticalGoal_(const Vector3& npcPos,
 // ---------------------------
 // Tick（役割駆動版）
 // ---------------------------
+/////////////////////////////////////////////////////////////////////////////////////////
+//      Tick（役割駆動版）※スプラインは Orbit 時のみ使用
+/////////////////////////////////////////////////////////////////////////////////////////
 Vector3 NpcNavigator::Tick(float dt,
 						   const Vector3& npcPos,
 						   const Vector3& tgtPos,
 						   const std::vector<Hole>& holes){
-	// 1) 役割に基づく戦術ゴールを決定
 	const TacticalGoal goal = BuildTacticalGoal_(npcPos, tgtPos, holes);
 
+	// ==== 穴が無いケース：基本は Orbit ====
 	if (holes.empty()){
-		// Orbitに入る際の中心を役割で選ぶ
 		const Vector3 orbitCenterByRole =
 			(role_ == Role::DefendBase || role_ == Role::Patrol) ? side_.allyBase : npcPos;
 
 		if (state_ != State::Orbit){
-			// 役割別に半径を反映したい場合は cfg_.orbitRadius を一時的に変える
-			if (role_ == Role::DefendBase){
-				cfg_.orbitRadius = tac_.defendOrbitRadius;
-			} else if (role_ == Role::Patrol){
-				cfg_.orbitRadius = tac_.patrolOrbitRadius;
-			}
+			if (role_ == Role::DefendBase){      cfg_.orbitRadius = tac_.defendOrbitRadius; }
+			else if (role_ == Role::Patrol){     cfg_.orbitRadius = tac_.patrolOrbitRadius; }
 			StartOrbit(orbitCenterByRole);
-		} else{
+		} else {
 			orbitAngle_ += cfg_.orbitAngularSpd * dt;
 		}
 
 		Vector3 desired;
-		if (follower_.HasUsableRoute()){
+		if (state_ == State::Orbit && follower_.HasUsableRoute()){
 			const auto out = follower_.Tick(npcPos, Normalize3(heading_), speed_, dt);
 			desired = out.desiredDir;
-		} else{
+		} else {
 			desired = DesiredDirLoiter(npcPos, orbitAngle_);
 		}
+
 		SteerTowards(desired, dt, false);
 		UpdateSpeed(false, false, dt);
 
 		Vector3 delta = heading_ * speed_ * dt;
 
-		// 境界クリップ（穴が無いので絶対越えない）
+		// 境界クリップ（穴が無いので越えない）
 		Vector3 P, N;
 		if (GetBoundaryPlane(P, N)){
 			float tHit; Vector3 Q;
 			const Vector3 nextPos = npcPos + delta;
 			if (SegmentPlaneHit(npcPos, nextPos, P, N, tHit, Q)){
 				const float backEps = 0.01f;
-				const float tStop = ( std::max ) (0.0f, tHit - backEps);
+				const float tStop = (std::max)(0.0f, tHit - backEps);
 				delta = (nextPos - npcPos) * tStop;
 				Vector3 tangent = Normalize3(heading_ - N * Dot3(heading_, N), heading_);
 				heading_ = tangent;
 			}
 		}
+
+		//  Advance は Orbit 時のみ
 		if (state_ == State::Orbit && follower_.HasUsableRoute()){
 			follower_.Advance(Len3(delta));
 		}
 		return delta;
 	}
 
-	// 3) 穴がある場合：越境が必要なら穴へ、不要なら役割に応じて行動
+	// ==== 穴があるケース ====
 	const int  pick = SelectBestHole(holes, npcPos, goal.target);
 	const bool hasHole = (pick >= 0);
-	const bool useHole = hasHole && goal.needCross; // 役割が越境を要請する場合のみ
+	const bool useHole = hasHole && goal.needCross;
 
 	if (useHole){
 		if (state_ != State::ToHole || pick != holeIndex_){
-			holeIndex_ = pick;
-			holePos_ = holes[pick].position;
+			holeIndex_  = pick;
+			holePos_    = holes[pick].position;
 			holeRadius_ = holes[pick].radius;
 			state_ = State::ToHole;
 		}
-		//Vector3 des = DesiredDirToHole(npcPos);
-		/*SteerTowards(des, dt, false);
-		UpdateSpeed(false, false, dt);*/
 
 		heading_ = Vector3::Normalize(holePos_ - npcPos);
 
 		const float d = Len3(holePos_ - npcPos);
-		const float passDist = ( std::max ) (1.0f, holeRadius_ * cfg_.passFrac);
+		const float passDist = (std::max)(1.0f, holeRadius_ * cfg_.passFrac);
 		if (d <= passDist){
 			state_ = State::ToTarget;
 			holeIndex_ = -1; holePos_ = {}; holeRadius_ = 0.0f;
@@ -286,18 +284,15 @@ Vector3 NpcNavigator::Tick(float dt,
 		if (role_ == Role::DefendBase || role_ == Role::Patrol){
 			const Vector3 orbitCenterByRole = side_.allyBase;
 			if (state_ != State::Orbit){
-				if (role_ == Role::DefendBase){
-					cfg_.orbitRadius = tac_.defendOrbitRadius;
-				} else{
-					cfg_.orbitRadius = tac_.patrolOrbitRadius;
-				}
+				if (role_ == Role::DefendBase){ cfg_.orbitRadius = tac_.defendOrbitRadius; }
+				else{                           cfg_.orbitRadius = tac_.patrolOrbitRadius;  }
 				StartOrbit(orbitCenterByRole);
 			} else{
 				orbitAngle_ += cfg_.orbitAngularSpd * dt;
 			}
 
 			Vector3 des;
-			if (follower_.HasUsableRoute()){
+			if (state_ == State::Orbit && follower_.HasUsableRoute()){
 				const auto out = follower_.Tick(npcPos, Normalize3(heading_), speed_, dt);
 				des = out.desiredDir;
 			} else{
