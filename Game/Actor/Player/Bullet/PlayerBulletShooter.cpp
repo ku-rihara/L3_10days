@@ -40,7 +40,7 @@ void PlayerBulletShooter::Init(WorldTransform* parent) {
         playerShotEmitter_[i]->SetParentTransform(parent);
     }
 
- /* playerMissileEmitter_[0]->SetParentTransform(parent);*/
+    /* playerMissileEmitter_[0]->SetParentTransform(parent);*/
 
     // 初期弾数設定
     InitializeAmmo();
@@ -330,10 +330,11 @@ void PlayerBulletShooter::UpdateHomingMissileStatus() {
 }
 
 // ミサイルから呼び出されるパーティクル発射メソッド
-void PlayerBulletShooter::EmitMissileParticle(const Vector3& position) {
-  
-  /*  playerMissileEmitter_[0]->Emit();*/
+void PlayerBulletShooter::EmitMissileParticle(const Vector3& position, const Vector3& rotate) {
+
     for (int32_t i = 0; i < playerMissileEmitter_.size(); ++i) {
+        playerMissileEmitter_[i]->SetEmitterRotate(rotate);
+        playerMissileEmitter_[i]->SetTargetRotate(rotate);
         playerMissileEmitter_[i]->SetTargetPosition(position);
         playerMissileEmitter_[i]->Emit();
     }

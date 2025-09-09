@@ -13,7 +13,7 @@
 
 void PlayerMissile::Init() {
     // モデル作成
-    obj3d_.reset(Object3d::CreateModel("sss.obj"));
+    obj3d_.reset(Object3d::CreateModel("Missile.obj"));
 
     // transformの初期化
     baseTransform_.Init();
@@ -31,7 +31,6 @@ void PlayerMissile::Init() {
     targetId_        = INVALID_TARGET_ID;
     targetManager_   = TargetManager::GetInstance();
 
-    // パーティクルシューターのポインタは外部から設定される
     particleShooter_ = nullptr;
 }
 
@@ -49,7 +48,7 @@ void PlayerMissile::Update() {
         return;
     }
 
-    // 速度更新（加速度処理）
+    // 速度更新
     UpdateSpeed(deltaTime);
 
     // ミサイルの移動処理
@@ -67,7 +66,14 @@ void PlayerMissile::Update() {
 
     // パーティクル発射
     if (particleShooter_) {
-        particleShooter_->EmitMissileParticle(GetWorldPosition());
+        Quaternion qRot = baseTransform_.quaternion_.Normalize();
+        Vector3 eRot    = qRot.ToEuler();
+        Matrix4x4 matRot = MakeRotateMatrixQuaternion(qRot);
+        Vector3 offsets  = {-0.0f, -0.0f, -1.0f};
+      
+        Vector3 EmitPos = (baseTransform_.GetWorldPos()) + TransformMatrix(offsets, matRot);
+
+        particleShooter_->EmitMissileParticle(EmitPos,eRot);
     }
 }
 
@@ -92,7 +98,6 @@ void PlayerMissile::UpdateMissileMovement(float deltaTime) {
 
 void PlayerMissile::UpdateTargetTracking(float deltaTime) {
     if (!IsTargetValid()) {
-        // ターゲットが無効になった場合、直進に切り替え
         return;
     }
 
@@ -101,7 +106,6 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
 
     Vector3 toTarget = targetPos - currentPos;
     if (toTarget.Length() < 0.1f) {
-        // ターゲットに到達
         isActive_ = false;
         return;
     }
@@ -114,11 +118,13 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
     float angle = std::acos(dot);
 
     float maxAngleChange = uniqueParam_.maxTurnRate * deltaTime;
+
     if (angle > maxAngleChange) {
         Vector3 axis = Vector3::Cross(currentDirection, desiredDirection).Normalize();
         if (axis.Length() < 0.001f) {
-            axis = Vector3::ToUp();
+            axis = Vector3(0.0f, 1.0f, 0.0f);
         }
+
         Quaternion rotation  = Quaternion::MakeRotateAxisAngle(axis, maxAngleChange);
         Vector3 newDirection = rotation.RotateVector(currentDirection);
 
@@ -129,9 +135,48 @@ void PlayerMissile::UpdateTargetTracking(float deltaTime) {
         velocity_              = finalDirection.Normalize() * currentSpeed_;
     }
 
-    // ミサイルの向きを移動方向に合わせる
-    Matrix4x4 lookMatrix       = MakeRootAtMatrix(Vector3::ZeroVector(), velocity_.Normalize(), Vector3::ToUp());
-    baseTransform_.quaternion_ = QuaternionFromMatrix(lookMatrix);
+    UpdateMissileOrientationEuler(deltaTime);
+}
+
+void PlayerMissile::UpdateMissileOrientationEuler(float deltaTime) {
+    Vector3 direction = velocity_.Normalize();
+
+    // Yaw (Y軸回転) を計算
+    float yaw = std::atan2(direction.x, direction.z);
+
+    // Pitch (X軸回転) を計算
+    float horizontalDistance = std::sqrt(direction.x * direction.x + direction.z * direction.z);
+    float pitch              = -std::atan2(direction.y, horizontalDistance);
+
+    // 目標回転を設定
+    Vector3 targetRotation = Vector3(pitch, yaw, 0.0f);
+
+    // 現在の回転を取得
+    Vector3 currentRotation = baseTransform_.quaternion_.ToEuler();
+
+    // 角度差を正規化
+    auto normalizeAngle = [](float angle) {
+        while (angle > std::numbers::pi_v<float>)
+            angle -= 2.0f * std::numbers::pi_v<float>;
+        while (angle < -std::numbers::pi_v<float>)
+            angle += 2.0f * std::numbers::pi_v<float>;
+        return angle;
+    };
+
+    targetRotation.x  = normalizeAngle(targetRotation.x);
+    targetRotation.y  = normalizeAngle(targetRotation.y);
+    currentRotation.x = normalizeAngle(currentRotation.x);
+    currentRotation.y = normalizeAngle(currentRotation.y);
+
+    // 滑らかな回転補間
+    float rotationSpeed = 3.0f;
+    Vector3 newRotation;
+    newRotation.x = Lerp(currentRotation.x, targetRotation.x, rotationSpeed * deltaTime);
+    newRotation.y = Lerp(currentRotation.y, targetRotation.y, rotationSpeed * deltaTime);
+    newRotation.z = 0.0f; // Rollは0に固定
+
+    // オイラー角からクォータニオンに変換
+    baseTransform_.quaternion_ = Quaternion::EulerToQuaternion(newRotation);
 }
 
 bool PlayerMissile::IsTargetValid() const {
