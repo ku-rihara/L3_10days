@@ -12,6 +12,9 @@
 #include "Actor/Player/Bullet/BasePlayerBullet.h"
 #include "Actor/NPC/Bullet/NpcBullet.h"
 
+#include "Navigation/Route/RouteCollection.h"
+#include "Navigation/Route/Route.h"
+
 #include <limits>
 #include <cmath>
 #include <numbers>
@@ -230,45 +233,52 @@ void NPC::ClearDefendAnchor() {
 void NPC::StartOrbit(const Vector3& center) {
 	navigator_.StartOrbit(center);
 }
-void NPC::Move(){
+void NPC::Move() {
 	if (!isActive_) return;
 
 	const float dt = Frame::DeltaTime();
 	const Vector3 npcPos = GetWorldPosition();
 
-	NpcNavigator::StationSide side {};
-	side.allyBase = hasDefendAnchor_ ? defendAnchor_ : npcPos;                 // 防衛アンカー（無ければ現在地）
-	side.enemyBase = target_ ? target_->GetWorldPosition() : npcPos;            // 敵拠点（無ければダミー）
+	NpcNavigator::StationSide side{};
+	side.allyBase = hasDefendAnchor_ ? defendAnchor_ : npcPos;   // 防衛アンカー or 現在地
+	side.enemyBase = target_ ? target_->GetWorldPosition() : npcPos;
 	navigator_.SetStationSide(side);
 
 	Vector3 sensedTgt = npcPos;
-	if (const BaseObject* ft = PickFrustumTarget()){
+	if (const BaseObject* ft = PickFrustumTarget()) {
 		sensedTgt = ft->GetWorldPosition();
-	} else if (target_){
+	} else if (target_) {
 		sensedTgt = side.enemyBase;
 	}
 
-	// ---- 穴収集 ----
 	const Boundary* boundary = Boundary::GetInstance();
 	const std::vector<Hole>& holes = boundary->GetHoles();
 
-	// ---- 速度同期（GUI等からの変更をNavigatorへ反映）----
-	if (speed_ != navConfig_.speed){ navConfig_.speed = speed_; }
+	if (speed_ != navConfig_.speed) { navConfig_.speed = speed_; }
 
-	// ---- 役割駆動ナビゲーション ----
+	// ★追加：状態遷移の検知
+	auto prevState = navigator_.GetState();
+
+	// 役割駆動ナビゲーション
 	const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, sensedTgt, holes);
+
+	// ★Orbit へ入った瞬間にスプラインを中心へ合わせてバインド
+	if (prevState != NpcNavigator::State::Orbit &&
+		navigator_.GetState() == NpcNavigator::State::Orbit) {
+		const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
+		BindOrbitRouteAtEntry_(center);
+	}
 
 	// ---- 目的地へ移動（制約を通す）----
 	Vector3 from = baseTransform_.translation_;
 	Vector3 to = from + desiredDelta;
 
-	// 境界にぶつかったら押し戻す
-	if (moveConstraint_){ to = moveConstraint_->FilterMove(from, to); }
+	if (moveConstraint_) { to = moveConstraint_->FilterMove(from, to); }
 
-	// === 進行方向へ機体を向ける ===
+	// === 進行方向へ機体を向ける（元の実装のまま） ===
 	const Vector3 v = to - from;
 	const float vLen = v.Length();
-	if (vLen > 1e-6f){
+	if (vLen > 1e-6f) {
 		const Vector3 dir = v * (1.0f / vLen);
 
 		const float targetYaw = std::atan2(dir.x, dir.z);
@@ -279,11 +289,10 @@ void NPC::Move(){
 
 		baseTransform_.rotateOder_ = RotateOder::XYZ;
 
-		Vector3& rot = baseTransform_.rotation_; // (x=pitch, y=yaw, z=roll)
+		Vector3& rot = baseTransform_.rotation_;
 		rot.y = MoveTowardsAngle(rot.y, targetYaw, maxStep);
 		rot.x = MoveTowardsAngle(rot.x, targetPitch, maxStep);
 
-		// バンク（ヨー誤差に比例）
 		const float bankGain = 0.6f;
 		const float bankMax = std::numbers::pi_v<float> *0.35f;
 		float yawErr = WrapPi(targetYaw - rot.y);
@@ -292,8 +301,28 @@ void NPC::Move(){
 		rot.z = MoveTowardsAngle(rot.z, targetBank, bankRate * dt);
 	}
 
-	// 位置反映
 	baseTransform_.translation_ = to;
+}
+
+// Orbit突入時にスプラインを中心へ平行移動してバインド
+void NPC::BindOrbitRouteAtEntry_(const Vector3& center) {
+	if (!routes_) return;
+
+	// 陣営×ロール → RouteType
+	RouteType rt;
+	if (faction_ == FactionType::Ally) {
+		rt = (role_ == NpcNavigator::Role::DefendBase) ? RouteType::AllyDifence : RouteType::AllyAttack;
+	} else {
+		rt = (role_ == NpcNavigator::Role::DefendBase) ? RouteType::EnemyDirence : RouteType::EnemyAttack;
+	}
+
+	// routes_ は const で保持しているので使用時だけ外す（最小差分）
+	auto* rc = const_cast<RouteCollection*>(routes_);
+	if (auto* route = rc->GetRoute(rt)) {
+		route->SetBaseOffset(center);
+		navigator_.BindOrbitRoute(route);
+		navigator_.SelectInitialOrbitRoute();
+	}
 }
 
 /// ===================================================
@@ -440,6 +469,14 @@ void NPC::OnCollisionEnter(BaseCollider* other) {
 
 }
 
+void NPC::AttachRoutes(const RouteCollection* rc) noexcept {
+	routes_ = rc;
+	// 既にOrbit中なら即バインドしてスプライン移動を始める
+	if (navigator_.GetState() == NpcNavigator::State::Orbit) {
+		const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : GetWorldPosition();
+		BindOrbitRouteAtEntry_(center);
+	}
+}
 
 /// ===================================================
 /// Param I/O

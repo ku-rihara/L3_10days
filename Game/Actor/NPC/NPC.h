@@ -19,6 +19,7 @@ class BaseStation;
 class Line3D;
 class Boundary;
 class NpcFireController;
+class RouteCollection;         // ★追加
 struct Hole;
 
 class NPC : public BaseObject, public AABBCollider {
@@ -54,6 +55,9 @@ public:
 	// ターゲット供給元の差し込み（Station/Director 等で実装して渡す）
 	void SetTargetProvider(const ITargetProvider* p) noexcept { targetProvider_ = p; }
 
+	// ★ルートコレクション注入
+	void AttachRoutes(const RouteCollection* rc) noexcept;
+
 	// ---- 調整項目 ----
 	virtual void BindParms();
 	virtual void LoadData();
@@ -65,7 +69,8 @@ public:
 	void OnCollisionEnter(BaseCollider* other) override;
 
 public:
-	void SetRole(NpcNavigator::Role r){ navigator_.SetRole(r); }
+	// ★ロールはNPC側でも保持（Navigatorに反映しつつ保存）
+	void SetRole(NpcNavigator::Role r) { role_ = r; navigator_.SetRole(r); }
 
 private:
 	/// ===================================================
@@ -74,6 +79,9 @@ private:
 	void TryFire();                          // 発砲判定と弾生成
 	void Move();                             // 航法（Navigator を使って移動）
 	void StartOrbit(const Vector3& center);  // ロイター開始
+
+	// ★Orbit突入時にスプラインを中心へ平行移動してバインド
+	void BindOrbitRouteAtEntry_(const Vector3& center);
 
 	// 視錐台チェック & 視錐台から最適ターゲットを選ぶ
 	bool IsInFiringFrustum(const Vector3& worldPt) const;
@@ -132,6 +140,9 @@ protected:
 	};
 	NpcNavigator navigator_{ navConfig_ };
 
+	// ★現在のロール（NavigatorにGetterが無い前提で保持）
+	NpcNavigator::Role role_ = NpcNavigator::Role::Patrol;
+
 	// ---- 制約 ----
 	struct BoundaryHoleSource : IHoleSource {
 		const Boundary* boundary = nullptr;
@@ -139,6 +150,7 @@ protected:
 	} holeSource_;
 
 	std::unique_ptr<IMoveConstraint> moveConstraint_;// 移動制御（任意）
-
 	std::unique_ptr<Line3D> lineDrawer_;
+
+	const RouteCollection* routes_ = nullptr;
 };

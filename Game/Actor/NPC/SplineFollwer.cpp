@@ -204,23 +204,50 @@ Vector3 SplineFollower::TangentAt_(float u) const{
 /////////////////////////////////////////////////////////////////////////////////////////
 //      候補切替
 /////////////////////////////////////////////////////////////////////////////////////////
-bool SplineFollower::MaybeSwitch_(float dt, const Vector3& /*pos*/, bool /*atEnd*/){
+bool SplineFollower::MaybeSwitch_(float dt, const Vector3& /*pos*/, bool atEnd) {
 	if (!HasUsableRoute() || route_->GetVariantCount() <= 1) return false;
 
+	// スイッチのタイマー更新
 	switchTimer_ += dt;
 	const bool timeTrigger = (switchTimer_ >= switchPeriod_);
-
 	if (!timeTrigger) return false;
 
-	std::uniform_real_distribution<float> U01(0.f,1.f);
-	if (U01(rng_) <= switchProb_){
-		route_->SwitchVariantKeepU(u_);
-		RebuildLengthEstimate_();
-		switchTimer_ = 0.0f;
-		return true;
-	}
+	// 次周期へ
 	switchTimer_ = 0.0f;
-	return false;
+
+	// 確率判定
+	std::uniform_real_distribution<float> U01(0.f, 1.f);
+	if (U01(rng_) > switchProb_) return false;
+
+	// ---- 切替前の情報を保持 ----
+	const float oldLen = curveLen_;   // 旧バリアントの推定全長
+	const float uBefore = u_;         // 旧u（正規化）
+
+	// 端まで来ているなら、わずかに手前に戻してから切替（端スナップを避ける）
+	float uForSwitch = uBefore;
+	if (atEnd) {
+		// 端から少しだけ戻す
+		uForSwitch = (std::min)(uBefore, 0.995f);
+	}
+
+	// ---- バリアントを切替（uは維持前提）----
+	route_->SwitchVariantKeepU(uForSwitch);
+
+	// ---- 新バリアントの長さに合わせて u を再スケール（弧長だいたい維持）----
+	RebuildLengthEstimate_();
+
+	if (curveLen_ > 1e-6f && oldLen > 1e-6f) {
+		// 旧：弧長 s = uBefore * oldLen
+		const float s = uBefore * oldLen;
+		// 新：uAfter ~ s / newLen
+		const float uAfter = s / curveLen_;
+		u_ = Wrap01_(uAfter);
+	} else {
+		// 長さが不明/極端に短い場合は単純にu維持
+		u_ = Wrap01_(uBefore);
+	}
+
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

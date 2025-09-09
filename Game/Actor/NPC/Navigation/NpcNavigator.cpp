@@ -209,41 +209,53 @@ NpcNavigator::BuildTacticalGoal_(const Vector3& npcPos,
 Vector3 NpcNavigator::Tick(float dt,
 						   const Vector3& npcPos,
 						   const Vector3& tgtPos,
-						   const std::vector<Hole>& holes){
+						   const std::vector<Hole>& holes) {
 	const TacticalGoal goal = BuildTacticalGoal_(npcPos, tgtPos, holes);
 
-	// ==== 穴が無いケース：基本は Orbit ====
-	if (holes.empty()){
-		const Vector3 orbitCenterByRole =
-			(role_ == Role::DefendBase || role_ == Role::Patrol) ? side_.allyBase : npcPos;
+	// ============================================================
+	// 1) ToHole 以外は「常にスプライン追従のみ」で動かす
+	// ============================================================
+	if (state_ != State::ToHole) {
+		// Orbit を維持（未開始なら開始するだけ。中心は allyBase を既定に）
+		if (state_ != State::Orbit) {
+			const Vector3 orbitCenter =
+				(role_ == Role::DefendBase || role_ == Role::Patrol) ? side_.allyBase : side_.allyBase;
+			// 半径はロールで切替（任意）
+			if (role_ == Role::DefendBase)      cfg_.orbitRadius = tac_.defendOrbitRadius;
+			else if (role_ == Role::Patrol)     cfg_.orbitRadius = tac_.patrolOrbitRadius;
+			else /*AttackBase*/                  cfg_.orbitRadius = tac_.patrolOrbitRadius;
 
-		if (state_ != State::Orbit){
-			if (role_ == Role::DefendBase){      cfg_.orbitRadius = tac_.defendOrbitRadius; }
-			else if (role_ == Role::Patrol){     cfg_.orbitRadius = tac_.patrolOrbitRadius; }
-			StartOrbit(orbitCenterByRole);
+			StartOrbit(orbitCenter);
+			// ★注意：実際の「現在位置へのスナップ」は NPC 側で
+			// navigator_.ResetFollowerAt(npcPos) を呼んでください
 		} else {
 			orbitAngle_ += cfg_.orbitAngularSpd * dt;
 		}
 
-		Vector3 desired;
-		if (state_ == State::Orbit && follower_.HasUsableRoute()){
-			const auto out = follower_.Tick(npcPos, Normalize3(heading_), speed_, dt);
-			desired = out.desiredDir;
-		} else {
-			desired = DesiredDirLoiter(npcPos, orbitAngle_);
+		// スプライン未バインドなら動かない（線以外では動かさない）
+		if (!follower_.HasUsableRoute()) {
+			return Vector3{ 0,0,0 };
 		}
 
+		// スプライン追従：フォロワの計画方向と距離を採用
+		const auto out = follower_.Tick(npcPos, Normalize3(heading_), speed_, dt);
+		Vector3 desired = out.desiredDir;
+		float   planned = out.plannedDist;
+
+		// 回頭は必ず SteerTowards を通す（直書き禁止）
 		SteerTowards(desired, dt, false);
 		UpdateSpeed(false, false, dt);
 
-		Vector3 delta = heading_ * speed_ * dt;
+		// 実移動距離は計画と自機最高速の小さい方
+		const float moveLen = std::min(planned, speed_ * dt);
+		Vector3 delta = heading_ * moveLen;
 
-		// 境界クリップ（穴が無いので越えない）
+		// 境界クリップ（越境はしない。ToHoleのみ越境可）
 		Vector3 P, N;
-		if (GetBoundaryPlane(P, N)){
+		if (GetBoundaryPlane(P, N)) {
 			float tHit; Vector3 Q;
 			const Vector3 nextPos = npcPos + delta;
-			if (SegmentPlaneHit(npcPos, nextPos, P, N, tHit, Q)){
+			if (SegmentPlaneHit(npcPos, nextPos, P, N, tHit, Q)) {
 				const float backEps = 0.01f;
 				const float tStop = (std::max)(0.0f, tHit - backEps);
 				delta = (nextPos - npcPos) * tStop;
@@ -252,66 +264,45 @@ Vector3 NpcNavigator::Tick(float dt,
 			}
 		}
 
-		//  Advance は Orbit 時のみ
-		if (state_ == State::Orbit && follower_.HasUsableRoute()){
-			follower_.Advance(Len3(delta));
-		}
+		// 実移動距離で u を前進
+		follower_.Advance(delta.Length());
 		return delta;
 	}
 
-	// ==== 穴があるケース ====
+	// ============================================================
+	// 2) ToHole：ゲート通過のために「穴へ向かう」誘導のみ許可
+	//    ここだけはスプライン以外の移動を許す
+	// ============================================================
+	// 最適な穴を選ぶ（既存ロジック）
 	const int  pick = SelectBestHole(holes, npcPos, goal.target);
 	const bool hasHole = (pick >= 0);
-	const bool useHole = hasHole && goal.needCross;
-
-	if (useHole){
-		if (state_ != State::ToHole || pick != holeIndex_){
-			holeIndex_  = pick;
-			holePos_    = holes[pick].position;
-			holeRadius_ = holes[pick].radius;
-			state_ = State::ToHole;
-		}
-
-		heading_ = Vector3::Normalize(holePos_ - npcPos);
-
-		const float d = Len3(holePos_ - npcPos);
-		const float passDist = (std::max)(1.0f, holeRadius_ * cfg_.passFrac);
-		if (d <= passDist){
-			state_ = State::ToTarget;
-			holeIndex_ = -1; holePos_ = {}; holeRadius_ = 0.0f;
-		}
-	} else{
-		if (role_ == Role::DefendBase || role_ == Role::Patrol){
-			const Vector3 orbitCenterByRole = side_.allyBase;
-			if (state_ != State::Orbit){
-				if (role_ == Role::DefendBase){ cfg_.orbitRadius = tac_.defendOrbitRadius; }
-				else{                           cfg_.orbitRadius = tac_.patrolOrbitRadius;  }
-				StartOrbit(orbitCenterByRole);
-			} else{
-				orbitAngle_ += cfg_.orbitAngularSpd * dt;
-			}
-
-			Vector3 des;
-			if (state_ == State::Orbit && follower_.HasUsableRoute()){
-				const auto out = follower_.Tick(npcPos, Normalize3(heading_), speed_, dt);
-				des = out.desiredDir;
-			} else{
-				des = DesiredDirLoiter(npcPos, orbitAngle_);
-			}
-			SteerTowards(des, dt, false);
-			UpdateSpeed(false, false, dt);
-		} else{
-			state_ = State::ToTarget;
-			Vector3 des = DesiredDirToTarget(npcPos, goal.target);
-			SteerTowards(des, dt, false);
-			UpdateSpeed(false, false, dt);
-		}
+	if (!hasHole) {
+		// 穴が無いのに ToHole になっていたら、スプラインに戻す（無移動でも可）
+		state_ = State::Orbit;
+		return Vector3{ 0,0,0 };
 	}
 
-	Vector3 delta = heading_ * speed_ * dt;
+	if (state_ != State::ToHole || pick != holeIndex_) {
+		holeIndex_ = pick;
+		holePos_ = holes[pick].position;
+		holeRadius_ = holes[pick].radius;
+		state_ = State::ToHole;
+	}
 
-	if (state_ == State::Orbit && follower_.HasUsableRoute()){
-		follower_.Advance(Len3(delta));
+	// 目標は穴の中心（または少し手前にオフセットしても良い）
+	Vector3 des = Normalize3(holePos_ - npcPos, Vector3(0, 0, -1));
+	SteerTowards(des, dt, false);
+	UpdateSpeed(false, false, dt);
+
+	Vector3 delta = heading_ * (speed_ * dt);
+
+	// 到達判定
+	const float d = (holePos_ - npcPos).Length();
+	const float passDist = (std::max)(1.0f, holeRadius_ * cfg_.passFrac);
+	if (d <= passDist) {
+		state_ = State::Orbit;           // 通過後はスプラインへ復帰
+		holeIndex_ = -1; holePos_ = {}; holeRadius_ = 0.0f;
+		// ★NPC 側で navigator_.ResetFollowerAt(現在位置) を呼んで、線へ確実に復帰
 	}
 	return delta;
 }
