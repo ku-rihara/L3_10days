@@ -22,7 +22,7 @@ public:
 	/* ========================================================================
 	/*	public : methods
 	/* ===================================================================== */
-	SplineFollower() = default;
+	SplineFollower();
 	~SplineFollower() = default;
 
 	/// Route をバインドする（Route::Init済みのものを渡す）
@@ -76,12 +76,12 @@ private:
 
 	// 速度→u 換算
 	float curveLen_ = 1.0f;       ///< 近似全長
-	float speedToDu_ = 1.0f;      ///< du = dist * speedToDu_
+	float speedToDu_ = 20.0f;      ///< du = dist * speedToDu_
 
 	// 個体差・切替
 	float indivSpeedScale_ = 1.0f;
 	float lateralOffset_   = 0.0f;
-	float switchPeriod_    = 2.0f;
+	float switchPeriod_    = 10.0f;// 5秒ごと
 	float switchProb_      = 0.25f;
 	float switchTimer_     = 0.0f;
 
