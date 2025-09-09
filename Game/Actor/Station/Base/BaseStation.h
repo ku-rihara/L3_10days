@@ -22,6 +22,7 @@
 #include <algorithm>
 
 class NPC;
+class RouteCollection;
 
 class BaseStation :
 	public BaseObject,
@@ -48,6 +49,8 @@ public:
 	BaseStation* GetRivalStation() const;
 	void SetFaction(FactionType type);
 	FactionType GetFactionType() const;
+	void SetRouteCollection(const RouteCollection* routeCollection);
+	const RouteCollection* GetRouteCollection() const;
 
 	// AI用アクセサ
 	void    SetUnitDirector(IUnitDirector* d) { unitDirector_ = d; }
@@ -98,6 +101,7 @@ protected:
 	float   hp_ = 100.0f;
 	float   currentTime_ = 0.0f;
 
+	const RouteCollection* pRouteCollection_ = nullptr;
 	std::vector<NpcHandle> spawned_;
 	BaseStation* pRivalStation_ = nullptr; //< ライバル拠点
 
