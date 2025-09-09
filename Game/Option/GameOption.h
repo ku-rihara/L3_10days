@@ -47,6 +47,7 @@ private:
 	/// ==================================
 
 	bool isInitialized_ = false;
+	bool isDirtyThisFrame_;
 
 	using Item = std::unique_ptr<IGameOptionItem>;
 	std::vector<Item> menuItems_;
