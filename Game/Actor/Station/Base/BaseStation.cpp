@@ -6,7 +6,8 @@
 #include "imgui.h"
 #include "Actor/Player/Bullet/BasePlayerBullet.h"
 #include "Actor/NPC/Bullet/NpcBullet.h"
-
+#include "Actor/NPC/Navigation/Route/RouteCollection.h"
+#include "3d/ViewProjection.h"
 #include "random.h"
 
 #include <algorithm>
@@ -197,6 +198,8 @@ void BaseStation::SetRivalStation(BaseStation* rival) { pRivalStation_ = rival; 
 BaseStation* BaseStation::GetRivalStation() const { return pRivalStation_; }
 void BaseStation::SetFaction(FactionType type) { faction_ = type; }
 FactionType BaseStation::GetFactionType() const { return faction_; }
+void BaseStation::SetRouteCollection(const RouteCollection* routeCollection){pRouteCollection_ = routeCollection;}
+const RouteCollection* BaseStation::GetRouteCollection() const{return pRouteCollection_;}
 
 // NPC 管理
 std::vector<NPC*> BaseStation::GetLiveNpcs() const {
