@@ -46,7 +46,7 @@ void Pause::Update() {
 		if (input->TrrigerKey(DIK_ESCAPE) ||
 			input->IsTriggerPad(0, Gamepad::Start)) {
 			/// SEの再生
-			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/the_tmp.wav");
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/DecideSE.wav");
 			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
 
 			isPause_ = !isPause_;
@@ -61,7 +61,7 @@ void Pause::Update() {
 			input->TrrigerKey(DIK_W) ||
 			input->IsTriggerPad(0, Gamepad::DPadUp)) {
 			/// SEの再生
-			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/the_tmp.wav");
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/SelectSE.wav");
 			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
 
 			if (currentIndex_ == 0) {
@@ -75,7 +75,7 @@ void Pause::Update() {
 			input->TrrigerKey(DIK_S) ||
 			input->IsTriggerPad(0, Gamepad::DPadDown)) {
 			/// SEの再生
-			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/the_tmp.wav");
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/SelectSE.wav");
 			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
 
 
@@ -90,7 +90,7 @@ void Pause::Update() {
 		if (input->TrrigerKey(DIK_SPACE) ||
 			input->IsTriggerPad(0, Gamepad::A)) {
 			/// SEの再生
-			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/the_tmp.wav");
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/DecideSE.wav");
 			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
 
 			switch (currentIndex_) {

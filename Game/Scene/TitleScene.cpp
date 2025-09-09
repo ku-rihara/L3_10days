@@ -57,16 +57,27 @@ void TitleScene::Init() {
 }
 
 void TitleScene::Update() {
+
+	/// オプションの開閉
+	GameOption* op = GameOption::GetInstance();
+	/// Optionを開ける条件
+	if (!fade_->IsFade()) {
+		/// 入力でoptionを開く
+		if (input_->TrrigerKey(DIK_ESCAPE) ||
+			input_->IsTriggerPad(0, Gamepad::Start)) {
+			if (!op->GetIsOpen()) {
+				op->Open();
+			}
+		}
+	}
+
+	op->Update();
 	for (auto& obj : object3ds_) {
 		obj->Update();
 	}
 
 	titleSprite_->Update();
 	fade_->Update();
-
-	if (input_->TrrigerKey(DIK_F)) {
-		fade_->FadeOut(0.02f);
-	}
 
 	Object3DRegistry::GetInstance()->UpdateAll();
 	ParticleManager::GetInstance()->Update();
@@ -75,22 +86,26 @@ void TitleScene::Update() {
 	ViewProjectionUpdate();
 
 	/// Scene Change
-	if (input_->TrrigerKey(DIK_SPACE) ||
-		input_->IsTriggerPad(0, Gamepad::A)) {
-		/// 効果音の再生
-		int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
-		audio_->PlayWave(soundId, 0.2f);
-		audio_->StopBGM(bgmId_);
+	if (!op->GetIsOpen()) {
+		if (input_->TrrigerKey(DIK_SPACE) ||
+			input_->TrrigerKey(DIK_RETURN) ||
+			input_->IsTriggerPad(0, Gamepad::A)) {
 
-		/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-		return;
+			/// 効果音の再生
+			int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
+			audio_->PlayWave(soundId, 0.2f);
+			audio_->StopBGM(bgmId_);
+
+			/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
+			fade_->FadeOut(1.0f);
+		}
 	}
 
 
-	/// Debug用なのであとで消す
-	if (input_->TrrigerKey(DIK_RETURN)) {
+	/// フェードアウトが終わったらシーンチェンジ
+	if (fade_->IsFadeEnd()) {
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		return;
 	}
 }
 
@@ -115,6 +130,9 @@ void TitleScene::SkyBoxDraw() {}
 /// ===================================================
 void TitleScene::SpriteDraw() {
 	titleSprite_->Draw();
+
+	GameOption* op = GameOption::GetInstance();
+	op->Draw();
 
 	fade_->Draw();
 }
