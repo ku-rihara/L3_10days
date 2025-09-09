@@ -89,13 +89,13 @@ void PlayerBulletShooter::Update(const Player* player) {
     // ホーミングミサイルの状態をLockOn
     UpdateHomingMissileStatus();
 
-    // 通常弾particle
+    // 通常弾Particle
     for (int32_t i = 0; i < playerShotEmitter_.size(); ++i) {
         playerShotEmitter_[i]->Update();
         playerShotEmitter_[i]->EditorUpdate();
     }
 
-    // ミサイル用particle
+    // ミサイル用Particle
     for (int32_t i = 0; i < playerMissileEmitter_.size(); ++i) {
         playerMissileEmitter_[i]->Update();
         playerMissileEmitter_[i]->EditorUpdate();

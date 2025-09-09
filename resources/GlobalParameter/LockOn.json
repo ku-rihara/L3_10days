@@ -1,8 +1,12 @@
 {
     "LockOn": {
-        "angleRange": 40.0,
+        "angleRange": 53.099998474121094,
+        "availableTargetScale": [
+            0.10000000149011612,
+            0.10000000149011612
+        ],
         "maxDistance": 640.7000122070313,
-        "minDistance": 300.0,
+        "minDistance": 80.5999984741211,
         "spriteScale": [
             0.20000000298023224,
             0.20000000298023224
