@@ -44,7 +44,7 @@ void TitleScene::Init() {
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
 	/// このシーンのBGMを再生
-	bgmId_ = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	bgmId_ = audio_->LoadWave("./resources/Sound/BGM/TitleBGM.wav");
 	audio_->PlayBGM(bgmId_, 0.1f);
 
 
@@ -57,12 +57,6 @@ void TitleScene::Init() {
 }
 
 void TitleScene::Update() {
-
-	if (input_->PushKey(DIK_ESCAPE)) {
-		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
-		audio_->StopBGM(soundId);
-	}
-
 	for (auto& obj : object3ds_) {
 		obj->Update();
 	}
@@ -80,12 +74,11 @@ void TitleScene::Update() {
 	Debug();
 	ViewProjectionUpdate();
 
-
 	/// Scene Change
 	if (input_->TrrigerKey(DIK_SPACE) ||
 		input_->IsTriggerPad(0, Gamepad::A)) {
 		/// 効果音の再生
-		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+		int soundId = audio_->LoadWave("./resources/Sound/DecideSE.wav");
 		audio_->PlayWave(soundId, 0.2f);
 		audio_->StopBGM(bgmId_);
 
