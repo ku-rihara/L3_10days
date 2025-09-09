@@ -13,7 +13,7 @@
 
 void PlayerMissile::Init() {
     // モデル作成
-    obj3d_.reset(Object3d::CreateModel("Missile.obj"));
+    obj3d_.reset(Object3d::CreateModel("sss.obj"));
 
     // transformの初期化
     baseTransform_.Init();
