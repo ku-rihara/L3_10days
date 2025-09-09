@@ -92,9 +92,9 @@ protected:
 	Vector3 initialPosition_{};
 	float   maxLife_ = 100.0f;
 	float   spawnInterbal_ = 5.0f;
-	int     maxConcurrentUnits_ = 20;
+	int     maxConcurrentUnits_ = 20;	
 	int     initialSpawnCount_ = 20;
-	float   initialSpawnDistanceFromThis_ = 1500.0f;
+	float   initialSpawnDistanceFromThis_ = 4000.0f;
 
 	// ---- game ----
 	FactionType faction_{};
