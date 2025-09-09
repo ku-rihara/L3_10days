@@ -136,11 +136,25 @@ void MiniMap::Update() {
 			Vector3 localPos = TransformMatrix(relativePos, matPlayerRotY_);
 			localPos *= mapScale;
 			Vector2 mapPos = { miniMapPos_.x + localPos.x, miniMapPos_.y - localPos.z };
+
+
+			// --- ミサイルの向きベクトルを求める ---
+			// ワールドの forward ベクトル (0,0,1) を回転させる
+			Vector3 forward = TransformNormal(Vector3(0, 0, -1), MakeRotateMatrixQuaternion(missile->GetTransform().quaternion_));
+
+			// プレイヤー座標系へ変換（位置と同じく Y 回転を合わせる）
+			Vector3 localForward = TransformMatrix(forward, matPlayerRotY_);
+
+			// XY平面(ミニマップ平面)上での角度を計算
+			float missileAngle = std::atan2(localForward.x, localForward.z);
+
+			// --- ミニマップ用の行列 ---
 			Matrix4x4 matIcon = MakeAffineMatrix(
 				Vector3(scale, scale, 1.0f),
-				Vector3(0.0f, 0.0f, missile->GetTransform().rotation_.y),
+				Vector3(0.0f, 0.0f, missileAngle),
 				Vector3(mapPos.x, mapPos.y, 0.0f)
 			);
+
 			playerMissile_.SetMappedData(index++, { matIcon });
 		}
 
