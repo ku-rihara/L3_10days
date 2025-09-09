@@ -57,7 +57,7 @@ static inline bool IsPassableAt(const Vector3& Q,
 	return false;
 }
 
-// ====== NpcNavigator 本体 ======
+
 
 void NpcNavigator::Reset(const Vector3& orbitCenter) noexcept{
 	state_ = State::ToTarget;
@@ -171,7 +171,7 @@ NpcNavigator::BuildTacticalGoal_(const Vector3& npcPos,
 			bool intercept = false;
 			if (lennz(sensedTgt - npcPos) && hasPlane){
 				const float dPlane = std::fabs(Dot3(N, sensedTgt - P));
-				const float nearPlane = 30.0f; // 定数：必要なら cfg へ
+				const float nearPlane = 30.0f; // 定数
 				const bool tgtSameSide = (Dot3(N, anchor - P) * Dot3(N, sensedTgt - P)) >= 0.0f;
 				intercept = (tgtSameSide || dPlane < nearPlane) &&
 					((sensedTgt - anchor).Length() <= tac_.interceptRange);
@@ -182,7 +182,7 @@ NpcNavigator::BuildTacticalGoal_(const Vector3& npcPos,
 				// 離れすぎたらアンカーへ回帰、近ければその周辺でロイター
 				g.target = ((npcPos - anchor).Length() > tac_.regroupDist) ? anchor : anchor;
 			}
-			g.needCross = false;            // 原則、越境しない
+			g.needCross = false;
 			g.holeBias = tac_.holeBiasDefend;
 			break;
 		}
@@ -207,7 +207,6 @@ Vector3 NpcNavigator::Tick(float dt,
 						   const Vector3& npcPos,
 						   const Vector3& tgtPos,
 						   const std::vector<Hole>& holes){
-	// 1) 役割に基づく戦術ゴールを決定
 	const TacticalGoal goal = BuildTacticalGoal_(npcPos, tgtPos, holes);
 
 	if (holes.empty()){
@@ -258,7 +257,6 @@ Vector3 NpcNavigator::Tick(float dt,
 		return delta;
 	}
 
-	// 3) 穴がある場合：越境が必要なら穴へ、不要なら役割に応じて行動
 	const int  pick = SelectBestHole(holes, npcPos, goal.target);
 	const bool hasHole = (pick >= 0);
 	const bool useHole = hasHole && goal.needCross; // 役割が越境を要請する場合のみ

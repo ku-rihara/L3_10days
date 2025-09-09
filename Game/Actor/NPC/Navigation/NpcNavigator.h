@@ -95,9 +95,9 @@ public:
 private:
     // 戦術ゴール（役割により目標/越境/穴選好を決める）
     struct TacticalGoal{
-        Vector3 target {};     // 実際に向かう最終目標（敵拠点/自陣アンカー/迎撃対象）
-        bool    needCross = false; // 境界を越すべきか
-        float   holeBias = 1.0f;  // 穴選好強度
+        Vector3 target {};          // 実際に向かう最終目標（敵拠点/自陣アンカー/迎撃対象）
+        bool    needCross = false;  // 境界を越すべきか
+        float   holeBias = 1.0f;    // 穴選好強度
     };
     TacticalGoal BuildTacticalGoal_(const Vector3& npcPos,
                                     const Vector3& sensedTgt,

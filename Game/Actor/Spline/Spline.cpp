@@ -42,7 +42,7 @@ void Spline::Load(const std::string& _filepath) {
 		float by = v[1].get<float>();
 		float bz = v[2].get<float>();
 
-		// 右手系→左手系に変換（必要ならZ反転）
+		// 右手系→左手系に変換
 		controlPoints_.push_back({ -bx, -bz, by });
 	}
 
@@ -69,5 +69,9 @@ size_t Spline::GetControlPointCount() const {
 }
 
 const std::vector<Vector3>& Spline::GetControlPoints() const {
+	return controlPoints_;
+}
+
+std::vector<Vector3>& Spline::GetControlPointsMutable(){
 	return controlPoints_;
 }

@@ -16,11 +16,11 @@ int SplineFollower::AddRoute(const RouteParam& rp) {
     r.lateralOffset = rp.lateralOffset;
     routes_.push_back(std::move(r));
     int idx = (int)routes_.size() - 1;
-    RebuildRoutePolyline_(idx);
+    RebuildRoutePolyline(idx);
     return idx;
 }
 
-void SplineFollower::RebuildRoutePolyline_(int i) {
+void SplineFollower::RebuildRoutePolyline(int i) {
     if (i < 0 || i >= (int)routes_.size()) return;
     auto& r = routes_[i];
     r.pts.clear();
@@ -35,14 +35,14 @@ void SplineFollower::SelectInitialRouteWeighted() {
     if (routes_.empty()) { currentRoute_ = -1; return; }
     float total = 0.f;
     for (auto& r : routes_) total += (r.weight > 0.f ? r.weight : 0.f);
-    currentRoute_ = DrawWeighted_((total > 0.f) ? total : (float)routes_.size());
+    currentRoute_ = DrawWeighted((total > 0.f) ? total : (float)routes_.size());
 }
 
 void SplineFollower::SelectRouteByIndex(int idx) {
     if (idx >= 0 && idx < (int)routes_.size() && routes_[idx].usable()) currentRoute_ = idx;
 }
 
-int SplineFollower::DrawWeighted_(float totalW) {
+int SplineFollower::DrawWeighted(float totalW) {
     if (routes_.empty()) return -1;
     if (totalW <= 0.f) return 0;
     std::uniform_real_distribution<float> uni(0.f, totalW);
@@ -82,7 +82,7 @@ bool SplineFollower::HasUsableRoute() const noexcept {
     return (currentRoute_ >= 0 && currentRoute_ < (int)routes_.size() && routes_[currentRoute_].usable());
 }
 
-void SplineFollower::SnapCursorToNearest_(int i, const Vector3& pos) {
+void SplineFollower::SnapCursorToNearest(int i, const Vector3& pos) {
     auto& r = routes_[i];
     if (!r.usable()) { r.segIdx = 0; r.segRemain = 0.0f; return; }
 
@@ -113,13 +113,13 @@ void SplineFollower::SnapCursorToNearest_(int i, const Vector3& pos) {
     r.segRemain = bestRemain;
 }
 
-Vector3 SplineFollower::AddLateralOffset_(const Vector3& base, const Vector3& dir, float offset) {
+Vector3 SplineFollower::AddLateralOffset(const Vector3& base, const Vector3& dir, float offset) {
     const Vector3 up = Vector3::ToUp(); // (0,1,0)
     Vector3 right = Vector3::Cross(up, Vector3::NormalizeOr(dir, Vector3::ToRight()));
     return base + right * offset;
 }
 
-Vector3 SplineFollower::RouteDesiredDir_(int i, const Vector3& pos, float lookAheadDist, const Vector3& fallback) const {
+Vector3 SplineFollower::RouteDesiredDir(int i, const Vector3& pos, float lookAheadDist, const Vector3& fallback) const {
     const auto& r = routes_[i];
     if (!r.usable()) return fallback;
 
@@ -161,12 +161,12 @@ Vector3 SplineFollower::RouteDesiredDir_(int i, const Vector3& pos, float lookAh
     }
 
     // 平行レーンの横ずれ
-    p = AddLateralOffset_(p, abDir, r.lateralOffset);
+    p = AddLateralOffset(p, abDir, r.lateralOffset);
 
     return Vector3::NormalizeOr(p - pos, abDir);
 }
 
-Vector3 SplineFollower::RotateToward_(const Vector3& cur, const Vector3& des, float maxAngleRad) {
+Vector3 SplineFollower::RotateToward(const Vector3& cur, const Vector3& des, float maxAngleRad) {
     Vector3 a = Vector3::NormalizeOr(cur, Vector3::ToForward());
     Vector3 b = Vector3::NormalizeOr(des, Vector3::ToForward());
     float dot = std::clamp(Vector3::Dot(a, b), -1.0f, 1.0f);
@@ -182,7 +182,7 @@ void SplineFollower::ResetAt(const Vector3& currentPos) {
     if (currentRoute_ < 0 || !routes_[currentRoute_].usable()) {
         SelectInitialRouteWeighted();
     }
-    if (currentRoute_ >= 0) SnapCursorToNearest_(currentRoute_, currentPos);
+    if (currentRoute_ >= 0) SnapCursorToNearest(currentRoute_, currentPos);
     switchTimer_ = 0.0f;
     lastDesired_ = Vector3::ToForward();
 }
@@ -204,11 +204,11 @@ SplineFollower::Output SplineFollower::Tick(const Vector3& currentPos,
 
     // 少し先を見越す
     const float lookAhead = planned;
-    Vector3 desired = RouteDesiredDir_(currentRoute_, currentPos, lookAhead, currentHeading);
+    Vector3 desired = RouteDesiredDir(currentRoute_, currentPos, lookAhead, currentHeading);
 
     // 回頭制限
     const float maxTurn = Rad(maxTurnRateDeg_) * dt;
-    Vector3 turned = RotateToward_(currentHeading, desired, maxTurn);
+    Vector3 turned = RotateToward(currentHeading, desired, maxTurn);
 
     o.desiredDir = turned;
     o.plannedDist = planned;
@@ -216,7 +216,7 @@ SplineFollower::Output SplineFollower::Tick(const Vector3& currentPos,
 
     // 端トリガ（簡易）
     bool atEnd = (routes_[currentRoute_].segRemain <= 1e-6f);
-    MaybeSwitch_(dt, currentPos, atEnd);
+    MaybeSwitch(dt, currentPos, atEnd);
 
     lastDesired_ = turned;
     return o;
@@ -224,10 +224,10 @@ SplineFollower::Output SplineFollower::Tick(const Vector3& currentPos,
 
 void SplineFollower::Advance(float actualMovedDist) {
     if (!HasUsableRoute() || actualMovedDist <= 0.0f) return;
-    AdvanceOnRoute_(currentRoute_, actualMovedDist);
+    AdvanceOnRoute(currentRoute_, actualMovedDist);
 }
 
-void SplineFollower::AdvanceOnRoute_(int i, float dist) {
+void SplineFollower::AdvanceOnRoute(int i, float dist) {
     auto& r = routes_[i];
     if (!r.usable()) return;
     const size_t n = r.pts.size();
@@ -247,7 +247,7 @@ void SplineFollower::AdvanceOnRoute_(int i, float dist) {
     r.segRemain = rem;
 }
 
-void SplineFollower::MaybeSwitch_(float dt, const Vector3& pos, bool atSegmentEnd) {
+void SplineFollower::MaybeSwitch(float dt, const Vector3& pos, bool atSegmentEnd) {
     if (routes_.size() <= 1) return;
 
     switchTimer_ += dt;
@@ -263,11 +263,11 @@ void SplineFollower::MaybeSwitch_(float dt, const Vector3& pos, bool atSegmentEn
 
         int pick;
         do {
-            pick = DrawWeighted_((total > 0.f) ? total : (float)routes_.size());
+            pick = DrawWeighted((total > 0.f) ? total : (float)routes_.size());
         } while (pick == currentRoute_ && routes_.size() > 1);
 
         currentRoute_ = pick;
-        SnapCursorToNearest_(currentRoute_, pos);
+        SnapCursorToNearest(currentRoute_, pos);
         switchTimer_ = 0.0f;
     } else {
         if (timeTrigger) switchTimer_ = 0.0f;

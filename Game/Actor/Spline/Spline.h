@@ -29,6 +29,7 @@ public:
 
 	size_t GetControlPointCount() const;
 	const std::vector<Vector3>& GetControlPoints() const;
+	std::vector<Vector3>& GetControlPointsMutable();
 
 private:
 	/// ==================================
@@ -42,4 +43,3 @@ private:
 	std::unique_ptr<Line3D> line3D_ = nullptr;
 
 };
-
