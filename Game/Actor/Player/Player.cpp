@@ -1,6 +1,8 @@
 #include "Player.h"
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/GameCamera/GameCamera.h"
+#include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include "Actor/NPC/EnemyNPC.h"
 #include "Actor/NPC/Navigation/RectXZWithGatesConstraint.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
@@ -94,6 +96,9 @@ void Player::Init() {
     // hpをSet
     hp_ = maxHp_;
 
+    // startPos
+    baseTransform_.translation_ = startPos_;
+
     // moveConstraint
     Boundary* boundary   = Boundary::GetInstance();
     holeSource_.boundary = boundary;
@@ -105,6 +110,10 @@ void Player::Init() {
 }
 
 void Player::Update() {
+
+    // AABB
+    AABBCollider::SetCollisionScale(collisionParamInfo_.collisionSize);
+
     // 入力処理
     HandleInput();
 
@@ -126,6 +135,9 @@ void Player::Update() {
 
     // UI更新
     UIUpdate();
+
+    // コリジョンクールタイム更新
+    CollisionCollingUpdate();
 
     // レティクル
     reticle_->Update(this, viewProjection_);
@@ -161,7 +173,7 @@ void Player::PartsUpdate() {
 
     // =========================後ろのWing=========================
     // 上下入力をX回転に変換
-    backWingInputRotation.x = -angleInput_.x * 0.2f;
+    backWingInputRotation.x = -angleInput_.x * 0.3f;
 
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
         backWing->SetInputRotation(backWingInputRotation);
@@ -171,7 +183,7 @@ void Player::PartsUpdate() {
 
     // =========================手前のWing=========================
     // 上下入力をX回転に変換
-    frontWingInputRotation.x = -angleInput_.x * 0.2f;
+    frontWingInputRotation.x = -angleInput_.x * 0.3f;
 
     for (std::unique_ptr<PlayerFrontWing>& frontWing : frontWings_) {
         frontWing->SetInputRotation(frontWingInputRotation);
@@ -181,7 +193,7 @@ void Player::PartsUpdate() {
 
     // =========================後ろのWing=========================
     // 上下入力をX回転に変換
-    backCenterWingInputRotation.y = -angleInput_.y * 0.2f;
+    backCenterWingInputRotation.y = -angleInput_.y * 0.3f;
     backWingCenter_->SetInputRotation(backCenterWingInputRotation);
     backWingCenter_->Update();
     backWingCenter_->SetBaseRotate(obj3d_->transform_.quaternion_.ToEuler());
@@ -486,6 +498,30 @@ void Player::TakeDamageForBoundary() {
     hp_ -= damageValueByBoundary_;
 }
 
+void Player::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
+    if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
+        if (collisionParamInfo_.isColliding) {
+            return;
+        }
+
+        collisionParamInfo_.currentCollTime = collisionParamInfo_.coolTime;
+        collisionParamInfo_.isColliding     = true;
+        pGameCamera_->PlayShake("PlayerHitEnemey");
+    }
+}
+
+void Player::CollisionCollingUpdate() {
+
+    if (!collisionParamInfo_.isColliding) {
+        return;
+    }
+
+    collisionParamInfo_.currentCollTime -= Frame::DeltaTime();
+    if (collisionParamInfo_.currentCollTime <= 0.0f) {
+        collisionParamInfo_.isColliding = false;
+    }
+}
+
 void Player::BindParams() {
     globalParameter_->Bind(groupName_, "hp", &maxHp_);
     globalParameter_->Bind(groupName_, "forwardSpeed", &speedParam_.startForwardSpeed);
@@ -509,6 +545,10 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "autoRecoverSpeed", &invCorrectionParam_.autoRotateSpeed_);
     globalParameter_->Bind(groupName_, "rollRotateLimitOffset", &rollRotateOffset_);
     globalParameter_->Bind(groupName_, "damageValueByBoundary", &damageValueByBoundary_);
+    globalParameter_->Bind(groupName_, "startPos", &startPos_);
+    globalParameter_->Bind(groupName_, "collisionSize", &collisionParamInfo_.collisionSize);
+    globalParameter_->Bind(groupName_, "CollisionCoolTime", &collisionParamInfo_.coolTime);
+    globalParameter_->Bind(groupName_, "CollisionDamageValue", &collisionParamInfo_.damageValue);
 }
 void Player::AdjustParam() {
 #ifdef _DEBUG
@@ -517,6 +557,7 @@ void Player::AdjustParam() {
 
         ImGui::DragFloat("MaxHp", &maxHp_);
         ImGui::DragFloat("CurrentHP", &hp_);
+        ImGui::DragFloat3("startPos", &startPos_.x, 0.01f);
         // EditParameter
         ImGui::Separator();
         ImGui::Text("Fighter Controls");
@@ -544,7 +585,12 @@ void Player::AdjustParam() {
         ImGui::DragFloat("rollRotateOffset", &rollRotateOffset_, 0.01f);
 
         ImGui::SeparatorText("Damage");
-        ImGui::DragFloat("damageValueByBoundary",&damageValueByBoundary_, 0.01f);
+        ImGui::DragFloat("damageValueByBoundary", &damageValueByBoundary_, 0.01f);
+        ImGui::DragFloat("damageValueByCollisionEnemy", &collisionParamInfo_.damageValue, 0.01f);
+
+        ImGui::SeparatorText("Collision");
+        ImGui::DragFloat("CollisionCoolTime", &collisionParamInfo_.coolTime, 0.01f);
+        ImGui::DragFloat3("collisionSize", &collisionParamInfo_.collisionSize.x, 0.01f);
 
         ImGui::SeparatorText("etc");
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
@@ -552,9 +598,6 @@ void Player::AdjustParam() {
         ImGui::DragFloat("pitchReturnThreshold", &pitchReturnThreshold_, 1.0f, 0.0f, 90.0f);
         ImGui::DragFloat("reverseDecisionValue", &reverseDecisionValue_, 0.01f, -1.0f, 0.0f);
         ImGui::DragFloat("bankRate", &bankRate_, 0.01f);
-
-         ImGui::SeparatorText("Damage");
-        ImGui::DragFloat("damageValueForBoundary", &damageValueForBoundary_, 0.01f);
 
         // デバッグ
         ImGui::Separator();
@@ -651,4 +694,8 @@ void Player::SetViewProjection(const ViewProjection* viewProjection) {
 
 void Player::SetLockOn(LockOn* lockOn) {
     bulletShooter_->SetLockOn(lockOn);
+}
+
+Vector3 Player::GetCollisionPos() const {
+    return GetWorldPosition();
 }

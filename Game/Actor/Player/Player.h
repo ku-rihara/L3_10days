@@ -25,7 +25,7 @@ class LockOn;
 class GameCamera;
 class Boundary;
 struct Hole;
-class Player : public BaseObject {
+class Player : public BaseObject,public AABBCollider {
 public:
     struct SpeedParam {
         float startForwardSpeed;
@@ -36,6 +36,14 @@ public:
         float pitchSpeed;
         float yawSpeed;
         float rollSpeed;
+    };
+
+    struct CollisionParamInfo {
+        Vector3 collisionSize;
+        float currentCollTime;
+        float coolTime;
+        bool isColliding;
+        float damageValue;
     };
 
     struct AutoCorrectionParam {
@@ -64,7 +72,6 @@ public:
     void UIUpdate();
 
     void UIDraw();
-
     void ReticleDraw();
 
     // speed
@@ -95,6 +102,11 @@ public:
 
     void TakeDamageForBoundary();
 
+    // collision
+    void OnCollisionStay([[maybe_unused]] BaseCollider* other);
+    Vector3 GetCollisionPos() const override;
+    void CollisionCollingUpdate();
+
 private:
     // Move
     void HandleInput();
@@ -117,10 +129,14 @@ private:
     std::unique_ptr<DMGTextUI> dmgTextUI_ = nullptr;
     std::unique_ptr<PlayerDamageParUI> dmgParUI_ = nullptr;
     std::array<std::unique_ptr<MissileIconUI>, 2> missileUIs_;
+
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Player";
     GameCamera* pGameCamera_     = nullptr;
+
+    // collisionInfo
+    CollisionParamInfo collisionParamInfo_;
 
     // Parameter
     float hp_;
@@ -135,6 +151,8 @@ private:
     Vector3 angularVelocity_   = Vector3::ZeroVector();
     Vector3 angleInput_        = Vector3::ZeroVector();
     Quaternion targetRotation_ = Quaternion::Identity();
+
+    Vector3 startPos_;
 
     // ピッチ
     float pitchBackTime_;
