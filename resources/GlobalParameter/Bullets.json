@@ -10,7 +10,7 @@
         "lifeTime2": 4.760000228881836,
         "maxBulletNum1": 21,
         "maxBulletNum2": 2,
-        "missileAcceleration": 35.61000061035156,
+        "missileAcceleration": 71.8499984741211,
         "missileBurstInterval": 0.0,
         "missileCooldownTime": 3.0,
         "missileMaxBurstCount": 0,
@@ -24,6 +24,6 @@
         "shotNum1": 1,
         "shotNum2": 1,
         "speed1": 666.0,
-        "speed2": 150.0
+        "speed2": 197.36000061035156
     }
 }
