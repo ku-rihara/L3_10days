@@ -211,6 +211,7 @@ void NPC::SetTarget(const BaseStation* target) {
 	if (target_) { hasDefendAnchor_ = false; defendAnchor_ = {}; }
 }
 
+NpcFireController* NPC::GetFireController() const{return fireController_.get();}
 void NPC::Activate() { isActive_ = true; }
 void NPC::Deactivate() { isActive_ = false; }
 
