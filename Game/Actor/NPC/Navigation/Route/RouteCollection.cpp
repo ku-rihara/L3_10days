@@ -1,25 +1,66 @@
 #include "RouteCollection.h"
 #include "Route.h"
+#include "3d/ViewProjection.h"
+
+#include <filesystem>
+#include <utility>
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //		コンストラクタ/デストラクタ
 /////////////////////////////////////////////////////////////////////////////////////////
 RouteCollection::RouteCollection() = default;
-RouteCollection::~RouteCollection()=default;
+RouteCollection::~RouteCollection() = default;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //		初期化
 /////////////////////////////////////////////////////////////////////////////////////////
 void RouteCollection::Init(){
-	// 各ルートの読み込み
+	// 既定ディレクトリ（Route::Init(type, dir) に渡す）
+	const std::string kDir = "resources/GlobalParameter/GameActor/NpcRoute";
+
+	// 既存クリア
+	routes_.clear();
+
+	// 対象となる RouteType 一覧
+	const RouteType all[] = {
+		RouteType::AllyDifence,
+		RouteType::AllyAttack,
+		RouteType::EnemyDirence,
+		RouteType::EnemyAttack
+	};
+
+	// 各 RouteType ごとに Route を生成・初期化して登録
+	for (auto t : all){
+		auto r = std::make_unique<Route>();
+		r->Init(t, kDir);
+		routes_.emplace(t, std::move(r));
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //		更新
 /////////////////////////////////////////////////////////////////////////////////////////
-void RouteCollection::Update(){}
+void RouteCollection::Update(){
+	for (auto& kv : routes_){
+		if (kv.second){ kv.second->Update(); }
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//		デバッグ描画
+/////////////////////////////////////////////////////////////////////////////////////////
+void RouteCollection::DebugDraw(const ViewProjection& vp) const{
+	for (auto& kv : routes_){
+		if (kv.second){ kv.second->DrawDebug(vp); }
+	}
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //		accessor
 /////////////////////////////////////////////////////////////////////////////////////////
-Route* RouteCollection::GetRoute(RouteType type) const{return routes_.find(type)->second.get();}
+Route* RouteCollection::GetRoute(RouteType type) const{
+	auto it = routes_.find(type);
+	if (it == routes_.end()) return nullptr;
+	return it->second.get();
+}
