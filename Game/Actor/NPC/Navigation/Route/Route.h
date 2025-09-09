@@ -2,11 +2,15 @@
 
 // engine
 #include "Actor/Spline/Spline.h"
+#include "Vector3.h"
 
 // c++
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <memory>
+#include <random>
+#include <optional>
 
 /* ========================================================================
 /*  enums
@@ -19,42 +23,50 @@ enum class RouteType {
 };
 
 class Route {
-private:
+public:
     /* ========================================================================
-    /*  private structs
+    /*  struct: RouteUnit
     /* ===================================================================== */
     struct RouteUnit {
-        std::unique_ptr<Spline> spline = nullptr;
+        std::unique_ptr<Spline> spline;
         Vector3 basePosition{};
         Vector3 preBasePosition{};
-        Vector3 baseSize{};
+        Vector3 baseSize{1,1,1};
+        std::vector<Vector3> originalCps_;   //< オフセット再適用用に元のCPを保持
 
-        void Init(const std::string& filePath);
+        void Load(const std::string& filePath);
         void Update();
         void DrawDebug(const class ViewProjection& vp) const;
     };
 
 public:
-    /* ========================================================================
-    /*  public funcs
-    /* ===================================================================== */
-    ~Route();                      // 生成した Spline の破棄
-    void Init();                   // 各ルートの初期化
+    Route() = default;
+    ~Route();
+
+    void Init(RouteType type, const std::string& dir);
     void Update();
     void DrawDebug(const class ViewProjection& vp) const;
 
-private:
-    /* ========================================================================
-    /*  private helpers
-    /* ===================================================================== */
-    // RouteType → "Route_<EnumName>.json" というファイル名を作る
-    std::string MakeRouteFileName(RouteType t) const;
-    std::string MakeRouteFilePath(RouteType t) const;
+    // ---- ランダム選択・切替API -----------------------------------------
+    void ChooseRandomVariant(std::optional<uint32_t> seed = std::nullopt);
+    void SwitchVariantKeepU(float u, std::optional<uint32_t> seed = std::nullopt);
+
+    // ---- サンプリングAPI -----------------------------------------------
+    Vector3 Sample(float u) const;
+
+    // ---- accessor -------------------------------------------------------
+    int  GetActiveIndex() const { return activeIndex_; }
+    void SetActiveIndex(int idx);
+    int  GetVariantCount() const { return static_cast<int>(variants_.size()); }
+    RouteType GetType() const { return type_; }
+
+    static std::string EnumName(RouteType t);
 
 private:
-    /* ========================================================================
-    /*  private variable
-    /* ===================================================================== */
-    std::vector<RouteUnit> units_;
-    const std::string fileDirectory_ = "resources/GlobalParameter/GameActor/NpcRoute";
+    std::vector<std::filesystem::path> FindFilesForType_(RouteType t, const std::string& dir) const;
+
+private:
+    RouteType type_{RouteType::AllyDifence};
+    std::vector<RouteUnit> variants_;
+    int activeIndex_ = -1;
 };

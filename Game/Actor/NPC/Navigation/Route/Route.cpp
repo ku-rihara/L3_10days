@@ -1,19 +1,25 @@
 #include "Route.h"
 #include "3d/ViewProjection.h"
-#include "Actor/Spline/Spline.h"
 
 #include <cassert>
 #include <cmath>
-#include "../externals/magic_enum/magic_enum.hpp"
+#include <random>
+#include <algorithm>
 
 //============================= Unit ===================================//
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//      初期化
+//      ファイルロード
 /////////////////////////////////////////////////////////////////////////////////////////
-void Route::RouteUnit::Init(const std::string& filePath) {
-    assert(spline && "RouteUnit::Init: spline is null. allocate it before Init().");
+void Route::RouteUnit::Load(const std::string& filePath) {
+    spline = std::make_unique<Spline>();
     spline->Load(filePath);
+
+    // 元CPを保持（オフセット適用の基準）
+    originalCps_.clear();
+    const auto& cpsConst = spline->GetControlPoints();
+    originalCps_.assign(cpsConst.begin(), cpsConst.end());
+    preBasePosition = basePosition;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -22,24 +28,18 @@ void Route::RouteUnit::Init(const std::string& filePath) {
 void Route::RouteUnit::Update() {
     if (!spline) return;
 
-    // 直前との差分（ほぼゼロなら何もしない）
-    const Vector3 delta = basePosition - preBasePosition;
-    if (std::fabs(delta.x) < 1e-6f &&
-        std::fabs(delta.y) < 1e-6f &&
-        std::fabs(delta.z) < 1e-6f) {
-        return;
+    if (preBasePosition != basePosition) {
+        auto& cps = spline->GetControlPointsMutable();
+        cps.resize(originalCps_.size());
+        for (size_t i = 0; i < originalCps_.size(); ++i) {
+            cps[i] = originalCps_[i] + basePosition;
+        }
+        preBasePosition = basePosition;
     }
-
-    // 既存の全CPに差分だけ加算してオフセット
-    auto& cps = spline->GetControlPointsMutable();
-    for (auto& p : cps) {
-        p += delta;
-    }
-    preBasePosition = basePosition;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//      軌道描画
+//      デバッグ描画
 /////////////////////////////////////////////////////////////////////////////////////////
 void Route::RouteUnit::DrawDebug(const ViewProjection& vp) const {
     if (spline) spline->DebugDraw(vp);
@@ -47,61 +47,124 @@ void Route::RouteUnit::DrawDebug(const ViewProjection& vp) const {
 
 //============================= Route 本体 ===============================//
 
-Route::~Route() =default;
+Route::~Route() = default;
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//      private: ファイル名作成（例：Route_AllyDifence.json）
+//      enum名を文字列化
 /////////////////////////////////////////////////////////////////////////////////////////
-std::string Route::MakeRouteFileName(RouteType t) const {
-    // enum_name は識別子文字列（AllyDifence 等）を返す
-    const std::string enumStr = std::string(magic_enum::enum_name(t));
-    // 必要ならここでスネークケース化や独自名に変換してもOK
-    return std::string("Route_") + enumStr + ".json";
+std::string Route::EnumName(RouteType t) {
+    switch (t) {
+    case RouteType::AllyDifence: return "AllyDifence";
+    case RouteType::AllyAttack:  return "AllyAttack";
+    case RouteType::EnemyDirence:return "EnemyDirence";
+    case RouteType::EnemyAttack: return "EnemyAttack";
+    default: return "Unknown";
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//      private: ディレクトリ + ファイル名 → フルパス
+//      ディレクトリから対象ファイルを探す
 /////////////////////////////////////////////////////////////////////////////////////////
-std::string Route::MakeRouteFilePath(RouteType t) const {
-    std::filesystem::path p(fileDirectory_);
-    p /= MakeRouteFileName(t);
-    return p.string();
+std::vector<std::filesystem::path>
+Route::FindFilesForType_(RouteType t, const std::string& dir) const {
+    std::vector<std::filesystem::path> out;
+    const std::string prefix = "Route_" + EnumName(t) + "_";
+    const std::string ext    = ".json";
+
+    std::filesystem::path p(dir);
+    if (!std::filesystem::exists(p)) return out;
+
+    for (auto& entry : std::filesystem::directory_iterator(p)) {
+        if (!entry.is_regular_file()) continue;
+        const auto& path = entry.path();
+        const auto fname = path.filename().string();
+        if (fname.rfind(prefix, 0) == 0 && path.extension() == ext) {
+            out.push_back(path);
+        }
+    }
+    std::sort(out.begin(), out.end());
+    return out;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //      初期化
 /////////////////////////////////////////////////////////////////////////////////////////
-void Route::Init() {
-    // すべての RouteType を列挙してロード（必要なものだけにしたければ適宜絞る）
-    units_.reserve(magic_enum::enum_count<RouteType>());
-    for (auto t : magic_enum::enum_values<RouteType>()) {
-        RouteUnit unit{};
-        unit.spline = std::make_unique<Spline>();
-        unit.basePosition = {0, 0, 0};
-        unit.preBasePosition = {0, 0, 0};
-        unit.baseSize = {1, 1, 1};
+void Route::Init(RouteType type, const std::string& dir) {
+    type_ = type;
+    variants_.clear();
+    activeIndex_ = -1;
 
-        const std::string path = MakeRouteFilePath(t);
-        unit.Init(path);
-
-        units_.push_back(std::move(unit));
+    const auto files = FindFilesForType_(type, dir);
+    if (files.empty()) {
+        const auto single = std::filesystem::path(dir) / ("Route_" + EnumName(type) + ".json");
+        if (std::filesystem::exists(single)) {
+            RouteUnit u{};
+            u.Load(single.string());
+            variants_.push_back(std::move(u));
+        }
+    } else {
+        for (const auto& f : files) {
+            RouteUnit u{};
+            u.Load(f.string());
+            variants_.push_back(std::move(u));
+        }
     }
+
+    if (!variants_.empty()) activeIndex_ = 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //      更新
 /////////////////////////////////////////////////////////////////////////////////////////
 void Route::Update() {
-    for (auto& u : units_) {
-        u.Update();
-    }
+    for (auto& v : variants_) v.Update();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//      描画
+//      デバッグ描画
 /////////////////////////////////////////////////////////////////////////////////////////
 void Route::DrawDebug(const ViewProjection& vp) const {
-    for (const auto& u : units_) {
-        u.DrawDebug(vp);
-    }
+    for (const auto& v : variants_) v.DrawDebug(vp);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//      ランダム選択
+/////////////////////////////////////////////////////////////////////////////////////////
+void Route::ChooseRandomVariant(std::optional<uint32_t> seed) {
+    if (variants_.empty()) { activeIndex_ = -1; return; }
+    std::mt19937 rng(seed.value_or(std::random_device{}()));
+    std::uniform_int_distribution<int> dist(0, static_cast<int>(variants_.size()) - 1);
+    activeIndex_ = dist(rng);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//      ランダム切替（同じuを維持）
+/////////////////////////////////////////////////////////////////////////////////////////
+void Route::SwitchVariantKeepU(float u, std::optional<uint32_t> seed) {
+    if (variants_.size() <= 1) return;
+    std::mt19937 rng(seed.value_or(std::random_device{}()));
+    std::uniform_int_distribution<int> dist(0, static_cast<int>(variants_.size()) - 2);
+    int idx = dist(rng);
+    if (activeIndex_ >= 0 && idx >= activeIndex_) idx += 1;
+    activeIndex_ = idx;
+    (void)u; // uは呼び出し側が保持
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//      サンプリング
+/////////////////////////////////////////////////////////////////////////////////////////
+Vector3 Route::Sample(float u) const {
+    if (activeIndex_ < 0 || activeIndex_ >= static_cast<int>(variants_.size())) return {};
+    const auto& unit = variants_[activeIndex_];
+    if (!unit.spline) return {};
+    return unit.spline->Evaluate(u); //< ★Spline側のAPIに合わせて修正
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//      インデックス設定
+/////////////////////////////////////////////////////////////////////////////////////////
+void Route::SetActiveIndex(int idx) {
+    if (variants_.empty()) { activeIndex_ = -1; return; }
+    idx = std::clamp(idx, 0, static_cast<int>(variants_.size()) - 1);
+    activeIndex_ = idx;
 }
