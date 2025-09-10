@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
+    <ClCompile Include="Game\GameClearActor\GameClearEffect.cpp" />
     <ClCompile Include="Game\Actor\GameController\GameTimer.cpp" />
     <ClCompile Include="Game\Actor\ExpEmitter\ExpEmitter.cpp" />
     <ClCompile Include="Game\Actor\GameController\GameScore.cpp" />
@@ -249,6 +250,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
+    <ClInclude Include="Game\GameClearActor\GameClearEffect.h" />
     <ClInclude Include="Game\Actor\GameController\GameTimer.h" />
     <ClInclude Include="Game\Actor\ExpEmitter\ExpEmitter.h" />
     <ClInclude Include="Game\Actor\GameController\GameScore.h" />
