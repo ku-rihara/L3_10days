@@ -27,6 +27,8 @@ class RouteCollection;
 class Route;
 class Spline;
 enum class RouteType;
+class FireController_;
+
 class NpcBullet;
 
 class BaseStation :
@@ -92,7 +94,7 @@ protected:
     void CleanupSpawnedList();                     // 死亡/無効NPCの掃除
 
 private:
-    // ステーション移動（ルートがあれば周回、なければ据え置き）
+    // ステーション移動
     void MoveAlongRoute_(float dt) noexcept;
 
     // AIの希望人数に応じてNPCを防衛/攻撃に再割当て

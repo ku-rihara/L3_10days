@@ -23,5 +23,5 @@ private:
 	///  private variable
 	/// ===================================================
 	NpcPool<PlayerNPC>pool_;
-};
 
+};
