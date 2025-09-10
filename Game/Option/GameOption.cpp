@@ -111,7 +111,8 @@ void GameOption::Update() {
 	if (!isDirtyThisFrame_ && !isSelectedItem_) {
 		/// Closeする処理
 		if (input->TrrigerKey(DIK_ESCAPE) ||
-			input->IsTriggerPad(0, Gamepad::Start)) {
+			input->IsTriggerPad(0, Gamepad::Start) ||
+			input->IsTriggerPad(0, Gamepad::B)) {
 			if (GetIsOpen()) {
 				Close();
 			}

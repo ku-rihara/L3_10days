@@ -103,7 +103,8 @@ void SoundOption::Init() {
 
 	/// selected frame
 	selectedFrame_.reset(Sprite::Create(
-		TextureManager::GetInstance()->LoadTexture("./resources/Texture/Option/SelectedFrame.png"),
+		TextureManager::GetInstance()->LoadTexture(
+			"./resources/Texture/Option/VolumeSliderSelectedFrame.png"),
 		{ 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }
 	));
 
@@ -119,6 +120,7 @@ void SoundOption::Update(size_t _currentIndex, bool) {
 	if (thisIndex_ != _currentIndex) {
 		return;
 	}
+
 
 	/// 音量調整
 	/// Mouseの座標を取得
@@ -194,7 +196,7 @@ void SoundOption::Update(size_t _currentIndex, bool) {
 		if (isDownInput && input->TrrigerKey(DIK_A) || input->TrrigerKey(DIK_LEFT) ||
 			input->IsPressPad(0, Gamepad::DPadLeft)) {
 			downInterval -= Frame::DeltaTime();
-			if(downInterval < 0.0f) {
+			if (downInterval < 0.0f) {
 				float volume = soundItems_[selectedIndex_].volume;
 				volume = std::clamp(volume - 0.005f, 0.0f, 1.0f);
 				soundItems_[selectedIndex_].volume = volume;
@@ -257,7 +259,7 @@ void SoundOption::Draw() {
 		item.slider->Draw();
 	}
 
-	selectedFrame_->Draw();
+		selectedFrame_->Draw();
 }
 
 void SoundOption::SetVolume(ItemName _name, float _volume) {
