@@ -59,6 +59,7 @@ void GameClearEffectScene::Init() {
 
 	/// フェード開始
 	fade_->FadeOut(0.1f);
+	Frame::ResetDeltaTime();
 }
 
 void GameClearEffectScene::Update() {

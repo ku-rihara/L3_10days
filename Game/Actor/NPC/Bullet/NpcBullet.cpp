@@ -56,6 +56,8 @@ void NpcBullet::Update() {
 	}
 
 	BaseObject::Update();
+	cTransform_.translation_ = GetWorldPosition();
+	cTransform_.UpdateMatrix();
 }
 
 /// ===================================================

@@ -82,6 +82,10 @@ void BaseStation::Init(){
 	StartupSpawn();
 
 	hp_ = maxLife_;
+	if(faction_ == FactionType::Enemy){
+		maxLife_ = 1500.0f;
+		hp_ = maxLife_;
+	}
 
 	// 再計画タイマ（起動直後に走らせる）
 	planTimer_ = 0.0f;
@@ -330,7 +334,7 @@ void BaseStation::CollectTargets(std::vector<const BaseObject*>& out) const{
 	}
 }
 
-void BaseStation::OnCollisionEnter(BaseCollider* other){
+void BaseStation::OnCollisionStay(BaseCollider* other){
 	// 敵の基地にプレイヤー弾が当たったらダメージ
 	if (faction_ == FactionType::Enemy){
 		if (auto* bullet = dynamic_cast<BasePlayerBullet*>(other)){

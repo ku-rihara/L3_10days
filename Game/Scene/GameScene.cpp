@@ -168,11 +168,11 @@ void GameScene::Update() {
     /// TODO: 各演出が終了してから遷移する
     if (gameController_->GetIsGameClear()) {
         audio_->StopBGM(bgmId_);
-        SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+        SceneManager::GetInstance()->ChangeScene("GAMECLEAREFFECT");
         return;
     } else if (gameController_->GetIsGameOver()) {
         audio_->StopBGM(bgmId_);
-        SceneManager::GetInstance()->ChangeScene("GAMEOVER");
+        SceneManager::GetInstance()->ChangeScene("GAMEOVEREFFECT");
         return;
     }
 

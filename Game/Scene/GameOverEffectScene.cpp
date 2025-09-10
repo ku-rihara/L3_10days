@@ -60,6 +60,7 @@ void GameOverEffectScene::Init() {
 
 	/// フェード開始
 	fade_->FadeOut(0.1f);
+	Frame::ResetDeltaTime();
 }
 
 void GameOverEffectScene::Update() {

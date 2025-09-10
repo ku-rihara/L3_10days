@@ -87,7 +87,7 @@ public:
     void CollectTargets(std::vector<const BaseObject*>& out) const override;
 
     // ===== Collider =====
-    void OnCollisionEnter(BaseCollider* other) override;
+    void OnCollisionStay(BaseCollider* other) override;
 
 protected:
     virtual void SpawnNPC(const Vector3& pos) = 0; // 派生でNPC生成
