@@ -15,6 +15,7 @@
 
 /// game
 #include "TitleActor/FighterAircraft/FighterAircraft.h"
+#include "TitleActor/FighterAircraft/Hunger.h"
 #include "Option/GameOption.h"
 
 TitleScene::TitleScene() {}
@@ -26,7 +27,7 @@ void TitleScene::Init() {
 
 	// 生成
 	object3ds_.push_back(std::make_unique<FighterAircraft>(Vector3{}));
-
+	object3ds_.push_back(std::make_unique<Hunger>());
 	// 初期化
 	for (auto& obj : object3ds_) {
 		obj->Init();
