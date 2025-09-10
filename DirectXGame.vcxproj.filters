@@ -272,6 +272,8 @@
     <ClCompile Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.cpp" />
     <ClCompile Include="Game\TitleActor\FighterAircraft\Hunger.cpp" />
     <ClCompile Include="Game\GameClearActor\GameClearEffect.cpp" />
+    <ClCompile Include="Game\Scene\GameClearEffectScene.cpp" />
+    <ClCompile Include="Game\Scene\GameOverEffectScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -543,6 +545,8 @@
     <ClInclude Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.h" />
     <ClInclude Include="Game\TitleActor\FighterAircraft\Hunger.h" />
     <ClInclude Include="Game\GameClearActor\GameClearEffect.h" />
+    <ClInclude Include="Game\Scene\GameClearEffectScene.h" />
+    <ClInclude Include="Game\Scene\GameOverEffectScene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
