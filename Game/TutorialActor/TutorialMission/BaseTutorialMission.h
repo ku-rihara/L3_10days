@@ -101,12 +101,11 @@ protected:
     bool showGauge_;
 
     std::unique_ptr<Sprite> okSprite_ = nullptr;
-    std::unique_ptr<Sprite> gaugeBackSprite_ = nullptr;
-    std::unique_ptr<Sprite> gaugeFillSprite_ = nullptr;
-
+    std::unique_ptr<Sprite> gaugeSprite_ = nullptr;
+   
     TutorialEase appearEase_;
     TutorialEase closeEase_;
-   
+    float gaugeScaleX_;
    Vector2 tempScale_;
     ScaleAnimationState scaleAnimState_ = ScaleAnimationState::NONE;
 

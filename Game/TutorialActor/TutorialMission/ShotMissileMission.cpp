@@ -1,7 +1,7 @@
 #include "ShotMissileMission.h"
+#include "Actor/Player/Player.h"
 #include "Actor/player/Player.h"
 #include "Frame/Frame.h"
-#include"Actor/Player/Player.h"
 #include <algorithm>
 #include <cmath>
 #include <imgui.h>
@@ -28,60 +28,41 @@ void ShotMissileMission::OnMissionStart() {
 }
 
 void ShotMissileMission::OnMissionUpdate() {
-    float deltaTime = Frame::DeltaTime();
-
     switch (currentStep_) {
     case MovementStep::EXPLAIN:
         if (ProcessStep(maxWaitTime_)) {
             currentStep_ = MovementStep::WAIT_INPUT;
             showGauge_   = true; // 入力待ち段階でゲージを表示
-            SetProgress(0.2f); // 説明段階完了で20%
+            SetProgress(0.0f);
+            currentInputTime_ = 0.0f; // カウント初期化
+            isInputActive_    = false;
         }
         break;
 
     case MovementStep::WAIT_INPUT:
         if (pPlayer_) {
-            // 入力チェック
-        
-            bool inputConditionMet =pPlayer_->GetBulletShooter()->GetIsMissileInput() ;
+            bool inputConditionMet = pPlayer_->GetBulletShooter()->GetIsMissileInput();
 
             if (inputConditionMet) {
-                // 入力条件を満たしている場合
                 if (!isInputActive_) {
                     isInputActive_ = true;
-                    // 入力開始時の処理
-                }
 
-                // 入力時間を蓄積
-                currentInputTime_ += deltaTime;
+                    // ---- ここで1回押しをカウント ----
+                    currentInputTime_ += 1.0f;
 
-                // プログレスを線形補間で更新（0.2f から 0.9f まで）
-                float inputProgress   = std::clamp(currentInputTime_ / requiredInputTime_, 0.0f, 1.0f);
-                float currentProgress = 0.2f + (inputProgress * 0.7f); // 0.2f～0.9f
-                SetProgress(currentProgress);
+                    // プログレス更新（2回押しで100%）
+                    float inputProgress = std::clamp(currentInputTime_ / 2.0f, 0.0f, 1.0f);
+                    SetProgress(inputProgress);
 
-                // 必要時間に達したらコンプリート
-                if (currentInputTime_ >= requiredInputTime_) {
-                    hasPlayerMoved_ = true;
-                    currentStep_    = MovementStep::SUCCESS;
+                    // 2回押したら成功
+                    if (currentInputTime_ >= 2.0f) {
+                        hasPlayerMoved_ = true;
+                        currentStep_    = MovementStep::SUCCESS;
+                    }
                 }
             } else {
-                // 入力条件を満たしていない場合
-                if (isInputActive_) {
-                    isInputActive_ = false;
-                    // 入力停止時の処理
-                }
-
-                // 入力時間を徐々に減少（
-                if (currentInputTime_ > 0.0f) {
-                    currentInputTime_ -= deltaTime * 0.5f; // 減少速度は入力蓄積の半分
-                    currentInputTime_ = (std::max)(currentInputTime_, 0.0f);
-
-                    // プログレスも更新
-                    float inputProgress   = std::clamp(currentInputTime_ / requiredInputTime_, 0.0f, 1.0f);
-                    float currentProgress = 0.2f + (inputProgress * 0.7f);
-                    SetProgress(currentProgress);
-                }
+                // ボタンを離したら次の押下を受け付ける
+                isInputActive_ = false;
             }
         }
         break;

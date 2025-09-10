@@ -25,9 +25,8 @@ void MoveMission::OnMissionStart() {
     // ゲージは説明段階では表示しない
     showGauge_ = false;
 }
-
 void MoveMission::OnMissionUpdate() {
-   
+
     float deltaTime = Frame::DeltaTime();
 
     switch (currentStep_) {
@@ -35,33 +34,33 @@ void MoveMission::OnMissionUpdate() {
         if (ProcessStep(maxWaitTime_)) {
             currentStep_ = MovementStep::WAIT_INPUT;
             showGauge_   = true; // 入力待ち段階でゲージを表示
-            SetProgress(0.2f); // 説明段階完了で20%
+            SetProgress(0.0f);
         }
         break;
 
     case MovementStep::WAIT_INPUT:
         if (pPlayer_) {
-            // 入力チェック（angleInput.xの絶対値で判定）
-            float inputValue       = pPlayer_->GetAngleInput().Length();
-            bool inputConditionMet = inputValue >= inputThreshold_;
+            // 入力チェック
+            float inputValue       = fabsf(pPlayer_->GetAngleInput().x);
+            float inputValueRoll   = fabsf(pPlayer_->GetRollInput());
+            bool inputConditionMet = inputValue >= inputThreshold_ || inputValueRoll >= inputThreshold_;
 
             if (inputConditionMet) {
                 // 入力条件を満たしている場合
                 if (!isInputActive_) {
                     isInputActive_ = true;
-                    // 入力開始時の処理
                 }
 
                 // 入力時間を蓄積
                 currentInputTime_ += deltaTime;
 
-                // プログレスを線形補間で更新（0.2f から 0.9f まで）
+                // プログレスを更新（0.0f ～ 1.0f）
                 float inputProgress   = std::clamp(currentInputTime_ / requiredInputTime_, 0.0f, 1.0f);
-                float currentProgress = 0.2f + (inputProgress * 0.7f); // 0.2f～0.9f
+                float currentProgress = (inputProgress * 1.0f); // 0.0f～1.0f
                 SetProgress(currentProgress);
 
                 // 必要時間に達したらコンプリート
-                if (currentInputTime_ >= requiredInputTime_) {
+                if (currentProgress >= 0.95f) {
                     hasPlayerMoved_ = true;
                     currentStep_    = MovementStep::SUCCESS;
                 }
@@ -69,17 +68,16 @@ void MoveMission::OnMissionUpdate() {
                 // 入力条件を満たしていない場合
                 if (isInputActive_) {
                     isInputActive_ = false;
-                    // 入力停止時の処理
                 }
 
-                // 入力時間を徐々に減少（
+                // 入力時間を徐々に減少
                 if (currentInputTime_ > 0.0f) {
                     currentInputTime_ -= deltaTime * 0.5f; // 減少速度は入力蓄積の半分
                     currentInputTime_ = (std::max)(currentInputTime_, 0.0f);
 
-                    // プログレスも更新
+                    // プログレスも更新（0.2f ～ 1.0f）
                     float inputProgress   = std::clamp(currentInputTime_ / requiredInputTime_, 0.0f, 1.0f);
-                    float currentProgress = 0.2f + (inputProgress * 0.7f);
+                    float currentProgress = (inputProgress * 1.0f); // 0.0f～1.0f
                     SetProgress(currentProgress);
                 }
             }

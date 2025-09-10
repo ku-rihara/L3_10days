@@ -1,6 +1,8 @@
 #include "BaseTutorialMission.h"
 #include "Actor/player/Player.h"
 #include "base/TextureManager.h"
+#include "Easing/EasingFunction.h"
+#include"MathFunction.h"
 #include "Frame/Frame.h"
 #include <algorithm>
 #include <imgui.h>
@@ -46,9 +48,6 @@ void BaseTutorialMission::Update() {
     okSprite_->SetPosition(spritePos_);
     okSprite_->SetScale(tempScale_);
 
-    gaugeFillSprite_->SetScale(Vector2(1.0f, tempScale_.y));
-    gaugeBackSprite_->SetScale(Vector2(1.0f, tempScale_.y));
-
     // スケール演出の更新
     UpdateScaleAnimation();
 
@@ -68,6 +67,9 @@ void BaseTutorialMission::EndUpdate() {
 
 void BaseTutorialMission::SpriteDraw() {
 
+    // ゲージの描画
+    DrawGauge();
+
     if (status_ == MissionStatus::COMPLETED || scaleAnimState_ == ScaleAnimationState::CLOSING) {
         okSprite_->Draw();
     } else {
@@ -76,9 +78,6 @@ void BaseTutorialMission::SpriteDraw() {
             sprite_->Draw();
         }
     }
-
-    // ゲージの描画
-    DrawGauge();
 }
 
 void BaseTutorialMission::StartMission() {
@@ -209,13 +208,8 @@ bool BaseTutorialMission::IsScaleAnimationFinished() const {
 void BaseTutorialMission::InitializeGauge() {
     // ゲージ背景スプライトの作成
     int backHandle = TextureManager::GetInstance()->LoadTexture(filePath_ + "MissionGauge.png");
-    gaugeBackSprite_.reset(Sprite::Create(backHandle, Vector2::ZeroVector(), Vector4::kWHITE()));
-    gaugeBackSprite_->anchorPoint_ = Vector2(0.0f, 0.5f);
-
-    // ゲージ前景スプライトの作成
-    int fillHandle = TextureManager::GetInstance()->LoadTexture(filePath_ + "MissionGauge.png");
-    gaugeFillSprite_.reset(Sprite::Create(fillHandle, Vector2::ZeroVector(), Vector4::kWHITE()));
-    gaugeFillSprite_->anchorPoint_ = Vector2(0.0f, 0.5f);
+    gaugeSprite_.reset(Sprite::Create(backHandle, Vector2::ZeroVector(), Vector4::kWHITE()));
+    gaugeSprite_->anchorPoint_ = Vector2(0.0f, 0.5f);
 
     int okHandle = TextureManager::GetInstance()->LoadTexture(filePath_ + "OK.png");
     okSprite_.reset(Sprite::Create(okHandle, Vector2::ZeroVector(), Vector4::kWHITE()));
@@ -228,21 +222,17 @@ void BaseTutorialMission::InitializeGauge() {
 void BaseTutorialMission::UpdateGauge() {
 
     // ゲージ位置の更新
-    gaugeBackSprite_->SetPosition(gaugePos_);
-
-    Vector2 fillPos = gaugePos_;
-    fillPos.x -= gaugeSize_.x * 0.5f; // 左端から開始
-    gaugeFillSprite_->SetPosition(fillPos);
+    gaugeSprite_->SetPosition(gaugePos_);
 
     // ゲージのスケールを進行度に応じて設定
-    Vector2 fillScale = Vector2(progress_, 1.0f);
-    gaugeFillSprite_->SetScale(fillScale);
+    float fillScaleX = Lerp(0.0f, 1.0f, progress_);
+    gaugeScaleX_     = Lerp(gaugeScaleX_, fillScaleX,2.0f*Frame::DeltaTime());
+    gaugeSprite_->SetScale(Vector2(gaugeScaleX_, tempScale_.y));
 }
 
 void BaseTutorialMission::DrawGauge() {
 
-    gaugeBackSprite_->Draw();
-    gaugeFillSprite_->Draw();
+    gaugeSprite_->Draw();
 }
 
 void BaseTutorialMission::BindParams() {

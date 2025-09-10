@@ -1,16 +1,16 @@
 {
-    "TutorialMissionMoveY": {
+    "TutorialMissionBrake": {
         "gaugePos": [
-            362.19000244140625,
-            113.95999908447266
+            366.1400146484375,
+            117.77999877929688
         ],
         "gaugeSize": [
-            1.7999999523162842,
+            0.0,
             0.0
         ],
         "inputThreshold": 0.10000000149011612,
         "maxWaitTime": 0.30000001192092896,
-        "requiredInputTime": 2.0,
+        "requiredInputTime": 1.0,
         "showGauge": true,
         "spritePos": [
             640.0,

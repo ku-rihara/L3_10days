@@ -28,7 +28,7 @@ void TutorialMissionManager::Init() {
     //
     // Pitch,Roll
     missions_[0] = std::make_unique<MoveMission>();
-    missions_[0]->Init("TutorialMissionMoveX", "MoveXMission");
+    missions_[0]->Init("TutorialMissionMoveX", "MoveXMIssion");
 
     // Yaw
     missions_[1] = std::make_unique<MoveMissionY>();
