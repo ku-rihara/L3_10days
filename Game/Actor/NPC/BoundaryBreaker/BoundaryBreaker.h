@@ -1,72 +1,72 @@
 #pragma once
 #include "BaseObject/BaseObject.h"
 #include "Vector3.h"
+#include "Collider/AABBCollider.h"
 
 class GlobalParameter;
 class BaseStation;
 class NpcFireController;
 
-class BoundaryBreaker : public BaseObject {
+class BoundaryBreaker : public BaseObject, public AABBCollider {
 public:
-    BoundaryBreaker();
-    ~BoundaryBreaker() override;
+	BoundaryBreaker();
+	~BoundaryBreaker() override;
 
-    // 既存の初期化・更新
-    void Init() override;
-    void Update() override;
+	void Init() override;
+	void Update() override;
 
-    // 既存の Move() はロジック変更禁止：既存定義をそのまま利用
-    void Move();
+	// 挙動
+	void Move();
+	void Shoot();
 
-    // 射撃（状態/回数/クールダウンのガードを内部に追加）
-    void Shoot();
+	// 参照注入
+	void SetRivalStation(const BaseStation* s) noexcept { pRivalStation_ = s; }
 
-    // 参照注入（const 許容に変更）
-    void SetRivalStation(const BaseStation* s) noexcept { pRivalStation_ = s; }
+	// インストーラ互換 API
+	void SetAnchorPoint(const Vector3& p) noexcept { anchorPosition_ = p; }
+	void SetPhase(float ph) noexcept { phase_ = ph; }
 
-    // インストーラ互換 API
-    void SetAnchorPoint(const Vector3& p) noexcept { anchorPosition_ = p; }
-    void SetPhase(float ph) noexcept { phase_ = ph; }
-    void SetRadius(float r) noexcept { turningRadius_ = r; }
+	float GetTurningRadius() const noexcept { return turningRadius_; }
 
-    // 参考：外部から読みたい時用
-    float GetTurningRadius() const noexcept { return turningRadius_; }
+	void OnCollisionEnter(BaseCollider* other) override;
 
 protected:
-    // パラメータバインド（既存と統合OK）
-    virtual void BindParms();
+	virtual void BindParms();
 
 private:
-    // ===== サイクル制御 =====
-    enum class State { Move, Attack };
+	// ===== 参照 =====
+	GlobalParameter* globalParam_ = nullptr;
+	const BaseStation* pRivalStation_ = nullptr;
+	std::unique_ptr<NpcFireController> fireController_ = nullptr;
 
-    void BeginMoveCycle();         // 攻撃→移動へ
-    void BeginAttackCycle();       // 移動→攻撃へ
-    void RecomputeShotsPerCycle(); // shotsPerCycle_ = round(100 - breakerDamage_)
+	// ===== パラメータ（GlobalParameterで編集可） =====
+	std::string groupName_ = "BoundaryBreaker";
 
-private:
-    // ===== 参照 =====
-    GlobalParameter* globalParam_ = nullptr;
-    const BaseStation* pRivalStation_ = nullptr; // ★ const 許容
-    std::unique_ptr<NpcFireController> fireController_ = nullptr;
+	// 速度まわり
+	float speed_ = 40.0f;               // 線速度[m/s]
+	float maxAngularSpeedDeg_ = 120.0f; // 角速度上限[deg/s]
+	bool  useBaseRadiusForSpeed_ = true;// 角速度計算にベース半径を使う
 
-    // ===== パラメータ（GlobalParameterで編集可） =====
-    std::string groupName_ = "BoundaryBreaker";
-    float       speed_ = 20.0f;     // m/s（Move() が参照していればそのまま）
-    float       shootInterval_ = 2.0f;     // s：連射間隔
-    float       moveDuration_ = 3.0f;      // s：移動フェーズの長さ
-    float       breakerDamage_ = 50.0f;     // 1発のダメージ（BoundaryBreakerBullet と合わせる）
-    float       turningRadius_ = 15.0f;     // ← SetRadius() で設定
+	// 射撃
+	float shootInterval_ = 5.0f;        // 連射間隔[s]
 
-    // ===== ランタイム：サイクル =====
-    State state_ = State::Move;
-    float shootCooldown_ = 0.0f;  // 射撃クールダウン
-    float moveTimer_ = 0.0f;  // 残り移動時間
-    int   shotsPerCycle_ = 1;     // round(100 - breakerDamage_) をクランプ
-    int   shotsFired_ = 0;     // 攻撃フェーズで撃った数
+	// 周回ジオメトリ
+	float turningRadius_ = 1000.0f;       // ベース半径
+	float phase_ = 0.0f;                // 初期位相
 
-    // ===== ランタイム：移動（既存 Move() が参照するメンバ）=====
-    float  angle_ = 0.0f;               // 現在角度（例：angle_ += speed_*dt で増加）
-    float  phase_ = 0.0f;               // 初期位相（スポーンごとにずらす等）
-    Vector3 anchorPosition_{ 0,0,0 };     // 周回の中心（例：拠点位置など）
+	// ふわふわ（上下）＆呼吸（半径）
+	float floatAmplitude_ = 30.0f;     // Y 振幅
+	float floatFreq_ = 1.5f;     // Y 周波数
+	float radiusWobbleAmp_ = 500.0f;    // 半径振幅
+	float radiusWobbleFreq_ = 0.7f;     // 半径周波数
+
+	// ===== ランタイム =====
+	Vector3 anchorPosition_{ 0, 0, 0 };
+	float angle_ = 0.0f;                // 現在角度[rad]
+	float floatTime_ = 0.0f;           // ふわふわ用時間
+	float radiusTime_ = 0.0f;           // 呼吸半径用時間
+	float shootCooldown_ = 0.0f;        // 射撃CD[s]
+
+	float maxHP_ = 100.0f;               // 体力
+	float hp_ = 100.0f;                  // 現在体力
 };

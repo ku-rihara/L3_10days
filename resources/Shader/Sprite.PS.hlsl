@@ -31,7 +31,9 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     if (output.color.a == 0.0)
     {
-        discard;
-    }
+		//output.color.r = 1.0f;
+		//output.color.a = 1.0f;
+		discard;
+	}
     return output;
 }

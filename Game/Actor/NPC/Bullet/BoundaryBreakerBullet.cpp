@@ -15,7 +15,9 @@ void BoundaryBreakerBullet::Init() {
 	NpcBullet::Init();	// 基底のセットアップ（モデル・親子付け等）
 	BindParms();		// 速度などをバインド
 	if (globalParam_) globalParam_->SyncParamForGroup(groupName_);
-	speed_ = 50.f;
+
+	speed_ = 100.0f;
+	damage_ = 100.0f;
 }
 
 // ===================================================

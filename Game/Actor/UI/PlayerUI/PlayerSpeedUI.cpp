@@ -21,7 +21,7 @@ void PlayerSpeedUI::Init() {
 	speedNumDraw_->Init(4);
 	speedNumDraw_->SetBasePosition({ position.x, position.y + 2.0f });
 	speedNumDraw_->SetDigitSpacing(10.0f);
-	speedNumDraw_->SetNumber(1964);
+	speedNumDraw_->SetAlignment(NumDraw::Alignment::Right);
 
 }
 

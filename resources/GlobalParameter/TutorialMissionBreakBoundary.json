@@ -1,0 +1,20 @@
+{
+    "TutorialMissionBreakBoundary": {
+        "gaugePos": [
+            371.5400085449219,
+            117.0
+        ],
+        "gaugeSize": [
+            0.0,
+            0.0
+        ],
+        "inputThreshold": 0.10000000149011612,
+        "maxWaitTime": 0.30000001192092896,
+        "requiredInputTime": 2.0,
+        "showGauge": true,
+        "spritePos": [
+            640.0,
+            120.0
+        ]
+    }
+}

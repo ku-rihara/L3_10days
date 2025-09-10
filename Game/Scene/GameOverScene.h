@@ -5,7 +5,7 @@
 
 /// base
 #include "BaseScene.h"
-
+#include "Fade/Fade.h"
 
 /// //////////////////////////////////////////////////////////
 /// ゲームオーバーシーン
@@ -16,7 +16,10 @@ private:
 	/// private objects
 	/// ========================================================
 
+	std::unique_ptr<Fade> fade_;                   ///< フェード
 	std::unique_ptr<class GameOverSprite> gameOverSprite_; ///< ゲームオーバースプライト
+
+	int bgmId_;
 
 public:
 	GameOverScene();

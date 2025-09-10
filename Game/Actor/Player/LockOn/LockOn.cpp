@@ -1,9 +1,9 @@
 #include "LockOn.h"
 // target
+#include "actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include "Actor/NPC/EnemyNPC.h"
 #include "Actor/Player/Player.h"
-#include"Actor/NPC/EnemyNPC.h"
-#include"actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
-#include"Actor/Station/Enemy/EnemyStation.h"
+#include "Actor/Station/Enemy/EnemyStation.h"
 //
 #include "Actor/NPC/Navigation/RectXZWithGatesConstraint.h"
 #include "base/TextureManager.h"
@@ -29,8 +29,10 @@ void LockOn::Init() {
     globalParameter_->SyncParamForGroup(groupName_);
 
     // スプライトの読み込みと作成
-    int TextureHandle = TextureManager::GetInstance()->LoadTexture("Resources/Texture/UI/Reticle.png");
-    lockOnMark_.reset(Sprite::Create(TextureHandle, Vector2{0, 0}, Vector4(1, 1, 1, 1)));
+    reticleHandle_ = TextureManager::GetInstance()->LoadTexture("Resources/Texture/UI/MissileReticle.png");
+
+    // メインターゲット用スプライト
+    lockOnMark_.reset(Sprite::Create(reticleHandle_, Vector2{0, 0}, Vector4(1, 0, 0, 1)));
     lockOnMark_->SetAnchorPoint(Vector2(0.5f, 0.5f));
 
     // moveConstraint
@@ -55,7 +57,7 @@ void LockOn::Update(const std::vector<LockOnVariant>& targets, const Player* pla
             currentTarget_.reset();
             currentTargetIndex_ = 0;
         } else {
-            // 範囲外チェック（プレイヤー基準）
+            // 範囲外チェック
             Vector3 relativePosition;
             if (!IsTargetRange(currentTarget_.value(), player, relativePosition)) {
                 currentTarget_.reset();
@@ -73,8 +75,64 @@ void LockOn::Update(const std::vector<LockOnVariant>& targets, const Player* pla
         autoSearchTimer_ = 0.0f;
     }
 
-    // UI更新
-    UpdateUI(viewProjection);
+     ableLockOnMarkers_.clear();
+
+    // 有効なターゲットを取得
+    validTargets_ = GetValidTargets(targets, player, playerFaction);
+
+    // UIとマーカーの更新
+    UpdateCurrentReticleUI(viewProjection);
+    UpdateTargetMarkers(validTargets_, viewProjection);
+}
+
+void LockOn::UpdateTargetMarkers(const std::vector<LockOnVariant>& validTargets, const ViewProjection& viewProjection) {
+    // 必要な数のマーカーを確保
+    ResizeTargetMarkers(validTargets.size());
+
+    // 各ターゲットのマーカーを更新
+    for (size_t i = 0; i < validTargets.size(); ++i) {
+        if (i >= ableLockOnMarkers_.size())
+            break;
+
+        // ターゲットの3D座標を取得
+        Vector3 targetWorldPos = GetPosition(validTargets[i]);
+
+        // スクリーン座標に変換
+        Vector3 screenPos                    = ScreenTransform(targetWorldPos, viewProjection);
+        ableLockOnMarkers_[i].screenPosition = Vector2(screenPos.x, screenPos.y);
+
+        // 現在のターゲットかどうかをチェック
+        bool isCurrentTarget                  = (currentTarget_.has_value() && validTargets[i] == currentTarget_.value());
+        ableLockOnMarkers_[i].isCurrentTarget = isCurrentTarget;
+
+        // スプライトの位置とスケールを設定
+        if (ableLockOnMarkers_[i].sprite) {
+            ableLockOnMarkers_[i].sprite->SetPosition(ableLockOnMarkers_[i].screenPosition);
+
+            if (isCurrentTarget) {
+                // 現在のターゲットは大きく表示
+                ableLockOnMarkers_[i].sprite->SetScale(currentTargetScale_);
+                ableLockOnMarkers_[i].sprite->SetColor(Vector3(1.0f, 0.0f, 0.0f)); // 赤色
+            } else {
+                // 利用可能なターゲットは小さく表示
+                ableLockOnMarkers_[i].sprite->SetScale(ableTargetScale_);
+                ableLockOnMarkers_[i].sprite->SetColor(Vector3(1.0f, 1.0f, 1.0f)); // 黄色
+            }
+        }
+    }
+}
+
+void LockOn::ResizeTargetMarkers(const size_t& targetCount) {
+    if (ableLockOnMarkers_.size() < targetCount) {
+        // 足りない分のマーカーを作成
+        size_t currentSize = ableLockOnMarkers_.size();
+        ableLockOnMarkers_.resize(targetCount);
+
+        for (size_t i = currentSize; i < targetCount; ++i) {
+            ableLockOnMarkers_[i].sprite.reset(Sprite::Create(reticleHandle_, Vector2{0, 0}, Vector4(1, 1, 1, 1)));
+            ableLockOnMarkers_[i].sprite->SetAnchorPoint(Vector2(0.5f, 0.5f));
+        }
+    }
 }
 
 void LockOn::HandleTargetSwitching(const std::vector<LockOnVariant>& targets, const Player* player, FactionType playerFaction) {
@@ -186,7 +244,7 @@ void LockOn::AutoSearchTarget(const std::vector<LockOnVariant>& targets, const P
 
         if (!sortedTargets.empty()) {
             currentTarget_ = sortedTargets[0].second;
-            prePos_        = lockOnMark_->GetPosition();
+            prePos_        = lockOnMarkPos_;
             lerpTime_      = 0.0f;
 
             // validTargets_も更新
@@ -198,6 +256,7 @@ void LockOn::AutoSearchTarget(const std::vector<LockOnVariant>& targets, const P
         }
     }
 }
+
 std::vector<LockOn::LockOnVariant> LockOn::GetValidTargets(const std::vector<LockOnVariant>& targets, const Player* player, FactionType playerFaction) const {
     std::vector<LockOnVariant> validTargets;
     Vector3 relativePosition;
@@ -210,7 +269,8 @@ std::vector<LockOn::LockOnVariant> LockOn::GetValidTargets(const std::vector<Loc
 
     return validTargets;
 }
-void LockOn::UpdateUI(const ViewProjection& viewProjection) {
+
+void LockOn::UpdateCurrentReticleUI(const ViewProjection& viewProjection) {
     if (!currentTarget_.has_value())
         return;
 
@@ -233,7 +293,7 @@ void LockOn::UpdateUI(const ViewProjection& viewProjection) {
     // スプライトの座標と回転を設定
     lockOnMark_->SetPosition(lockOnMarkPos_);
     spriteRotation_ += Frame::DeltaTime();
-    lockOnMark_->transform_.rotate.z = spriteRotation_;
+   /* lockOnMark_->transform_.rotate.z = spriteRotation_;*/
 }
 
 void LockOn::SortTargetsByDistance(std::vector<std::pair<float, LockOnVariant>>& validTargets) const {
@@ -251,6 +311,15 @@ void LockOn::SortTargetsByAngle(std::vector<std::pair<float, LockOnVariant>>& va
 }
 
 void LockOn::Draw() {
+
+    // 利用可能なターゲットマーカーを描画
+    for (const auto& marker : ableLockOnMarkers_) {
+        if (marker.sprite) {
+            marker.sprite->Draw();
+        }
+    }
+
+    // メインのロックオンマーカーを描画
     if (currentTarget_.has_value()) {
         lockOnMark_->Draw();
     }
@@ -308,7 +377,7 @@ bool LockOn::IsTargetRange(const LockOnVariant& target, const Player* player, Ve
 
     // FilterMove
     if (moveConstraint_) {
-       moveConstraint_->FilterMove(from, to);
+        moveConstraint_->FilterMove(from, to);
     }
 
     // ブロック判定
@@ -356,7 +425,9 @@ void LockOn::BindParams() {
     globalParameter_->Bind(groupName_, "angleRange", &angleRange_);
     globalParameter_->Bind(groupName_, "spriteScale", &spriteScale_);
     globalParameter_->Bind(groupName_, "targetChangeSpeed", &targetChangeSpeed_);
+    globalParameter_->Bind(groupName_, "availableTargetScale", &ableTargetScale_);
 }
+
 ///=========================================================
 /// パラメータ調整
 ///==========================================================
@@ -372,6 +443,9 @@ void LockOn::AdjustParam() {
         ImGui::DragFloat("targetChangeSpeed", &targetChangeSpeed_, 0.1f);
         ImGui::DragFloat2("spriteScale", &spriteScale_.x, 0.1f);
 
+        ImGui::Separator();
+        ImGui::Text("Target Markers");
+        ImGui::DragFloat2("Available Target Scale", &ableTargetScale_.x, 0.1f);
         // セーブ・ロード
         globalParameter_->ParamSaveForImGui(groupName_);
         globalParameter_->ParamLoadForImGui(groupName_);
@@ -384,13 +458,3 @@ void LockOn::AdjustParam() {
 const LockOn::LockOnVariant* LockOn::GetCurrentTarget() const {
     return currentTarget_ ? &(*currentTarget_) : nullptr;
 }
-
-// bool LockOn::IsDead(const LockOnVariant& target) const {
-//     target;
-//     return false;
-// }
-//
-// FactionType LockOn::GetFaction(const LockOnVariant& target) const {
-//     target;
-//     return FactionType::Enemy;
-// }

@@ -1,15 +1,107 @@
 #include "GameController.h"
 
+/// engine
+#include "Frame/Frame.h"
+#include "base/TextureManager.h"
+
 /// game
 #include "Actor/Player/Player.h"
 #include "Actor/Station/Base/BaseStation.h"
+#include "GameTimer.h"
+#include "GameScore.h"
 
-GameController::GameController() = default;
+GameController::GameController() {
+	/// NumDraw
+	outOfFieldWarningTimeIntNumDraw_ = std::make_unique<NumDraw>();
+	outOfFieldWarningTimeFracNumDraw_ = std::make_unique<NumDraw>();
+
+	outOfFieldWarningTimeIntNumDraw_->Init(2);
+	outOfFieldWarningTimeFracNumDraw_->Init(2);
+
+	float scale = 3.0f;
+	outOfFieldWarningTimeIntNumDraw_->SetScale({ scale, scale });
+	outOfFieldWarningTimeFracNumDraw_->SetScale({ scale, scale });
+
+	/// 二つの数字の間隔
+	Vector2 offset = { 28.0f, 0.0f };
+	Vector2 basePos = { 640.0f, 360.0f - 30.0f };
+	outOfFieldWarningTimeIntNumDraw_->SetBasePosition(basePos - offset);
+	outOfFieldWarningTimeFracNumDraw_->SetBasePosition(basePos + offset);
+
+	float spacing = 20.0f;
+	outOfFieldWarningTimeIntNumDraw_->SetDigitSpacing(spacing);
+	outOfFieldWarningTimeFracNumDraw_->SetDigitSpacing(spacing);
+
+	outOfFieldWarningTimeFracNumDraw_->SetIsDrawAll(true);
+
+	outOfFieldWarningTimeIntNumDraw_->SetColor(Vector4(0.95f, 0.01f, 0.01f, 1.f));
+	outOfFieldWarningTimeFracNumDraw_->SetColor(Vector4(0.95f, 0.01f, 0.01f, 1.f));
+
+	/// カンマ
+	uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/UI/Comma.png");
+	commaSprite_.reset(Sprite::Create(textureHandle, basePos + Vector2(0, 4.0f), {1, 1, 1, 1}));
+	commaSprite_->anchorPoint_ = { 0.5f, 0.5f };
+	Vector2 texSize = commaSprite_->GetTextureSize();
+	Vector2 size    = Vector2{ 32.0f, 32.0f };
+	commaSprite_->SetScale(size / texSize);
+
+	textureHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/UI/CaveatText.png");
+	oOFWText_.reset(Sprite::Create(textureHandle, basePos + Vector2(0, -50.0f), { 1, 1, 1, 1 }));
+	oOFWText_->anchorPoint_ = { 0.5f, 0.5f };
+
+	gameTimer_ = std::make_unique<GameTimer>();
+	gameTimer_->Init();
+
+	/// スコアリセット
+	GameScore::GetInstance()->ScoreReset();
+}
+
 GameController::~GameController() = default;
 
 void GameController::Update() {
 	isGameClear_ = CheckIsGameClear();
 	isGameOver_ = CheckIsGameOver();
+	isPlayerOutOfField_ = CheckIsPlayerOutOfField();
+
+	if (isPlayerOutOfField_) {
+		outOfFieldTime_ += Frame::DeltaTime() * 0.5f;
+	}
+
+	if (isGameClear_) {
+		/// クリアした時間を記録
+		GameScore::GetInstance()->SetClearTime(gameTimer_->GetTime());
+	}
+
+
+	/// 現在の経過時間を整数部分と小数部分に分ける
+	float remainingTime = kMaxOutOfFieldTime_ - outOfFieldTime_;
+	if (remainingTime < 0.0f) remainingTime = 0.0f;
+	int intPart = static_cast<int>(remainingTime);
+	int fracPart = static_cast<int>((remainingTime - intPart) * 100.0f); // 小数点以下2桁
+	outOfFieldWarningTimeIntNumDraw_->SetNumber(intPart);
+	outOfFieldWarningTimeFracNumDraw_->SetNumber(fracPart);
+
+	outOfFieldWarningTimeIntNumDraw_->Update();
+	outOfFieldWarningTimeFracNumDraw_->Update();
+
+	gameTimer_->Update(isGameClear_);
+}
+
+void GameController::DrawOutOfFieldWarningTime() {
+
+	/// フィールド外に出ているときだけ表示
+	if (!isPlayerOutOfField_) {
+		return;
+	}
+
+	outOfFieldWarningTimeIntNumDraw_->Draw();
+	outOfFieldWarningTimeFracNumDraw_->Draw();
+	commaSprite_->Draw();
+	oOFWText_->Draw();
+}
+
+void GameController::DrawGameTimer() {
+	gameTimer_->Draw();
 }
 
 bool GameController::CheckIsGameOver() {
@@ -25,7 +117,9 @@ bool GameController::CheckIsGameOver() {
 	}
 
 	/// Playerがフィールド外に一定時間以上出たか
-	/// TODO: 実装
+	if (outOfFieldTime_ >= kMaxOutOfFieldTime_) {
+		result = true;
+	}
 
 	return result;
 }
@@ -38,6 +132,17 @@ bool GameController::CheckIsGameClear() {
 		result = true;
 	}
 
+	return result;
+}
+
+bool GameController::CheckIsPlayerOutOfField() {
+	/// 中心から一定距離以上離れたらout of field扱い
+	playerToCenterDistance_ = player_->GetWorldPosition().Length();
+	if (playerToCenterDistance_ > kMaxPlayerToCenterDistance_) {
+		return true;
+	}
+
+	outOfFieldTime_ = 0.0f;
 	return false;
 }
 
@@ -47,6 +152,10 @@ bool GameController::GetIsGameOver() const {
 
 bool GameController::GetIsGameClear() const {
 	return isGameClear_;
+}
+
+bool GameController::GetIsPlayerOutOfField() const {
+	return isPlayerOutOfField_;
 }
 
 

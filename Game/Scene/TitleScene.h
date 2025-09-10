@@ -24,8 +24,11 @@ private:
 	std::vector<Object> object3ds_;
 
 	std::unique_ptr<TitleSprite> titleSprite_ = nullptr;
+	std::unique_ptr<Sprite> pressStartSprite_ = nullptr;
 
 	std::unique_ptr<Fade> fade_ = nullptr;
+
+	int bgmId_;
 
 public:
 	///========================================================
@@ -45,8 +48,6 @@ public:
 	void SpriteDraw()override;
 	void SkyBoxDraw() override;
 	void DrawShadow() override;
-
-
 	void Debug()override;/// debug
 	void ViewProjectionUpdate()override;
 	void ViewProssess()override;

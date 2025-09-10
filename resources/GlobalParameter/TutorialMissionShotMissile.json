@@ -1,0 +1,20 @@
+{
+    "TutorialMissionShotMissile": {
+        "gaugePos": [
+            366.1400146484375,
+            117.0
+        ],
+        "gaugeSize": [
+            0.0,
+            0.0
+        ],
+        "inputThreshold": 0.10000000149011612,
+        "maxWaitTime": 0.30000001192092896,
+        "requiredInputTime": 0.009999999776482582,
+        "showGauge": true,
+        "spritePos": [
+            640.0,
+            120.0
+        ]
+    }
+}

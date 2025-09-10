@@ -22,6 +22,7 @@ public:
 	/// <param name="to">移動希望点</param>
 	/// <returns>制約を考慮した移動後の座標</returns>
 	Vector3 FilterMove(const Vector3& from, const Vector3& to) const override;
+	Vector3 FilterMoveReflect(const Vector3& from, const Vector3& to) const override;
 
 	/// <summary>
 	/// true の場合、境界で止められてる
@@ -53,8 +54,9 @@ private:
 
 private:
 	const IHoleSource* holeSrc_ = nullptr; ///< 穴一覧の供給元
-	RectXZ rect_{-1500.f, 1500.f, -1500.f, 1500.f}; ///< 矩形領域
+	RectXZ rect_{-1500.f * 5.0f, 1500.f * 5.0f, -1500.f * 5.0f, 1500.f * 5.0f }; ///< 矩形領域
 	float eps_ = 0.01f; ///< 押し戻し距離（誤差防止）
-
+	float restitution_      = 0.2f; // 0=吸収, 1=完全反射
+	float tangentFriction_  = 0.9f; // 1=減衰なし, 0=完全停止
 	mutable bool blocked_ = false; ///< 直前の FilterMove でブロックされたかどうか
 };

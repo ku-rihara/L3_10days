@@ -6,6 +6,8 @@
 /// engine
 #include "base/TextureManager.h"
 #include "input/Input.h"
+#include "audio/Audio.h"
+#include "Frame/Frame.h"
 
 void SoundOption::Init() {
 
@@ -99,23 +101,26 @@ void SoundOption::Init() {
 	}
 
 
-	///// selected frame
-	//selectedFrame_.reset(Sprite::Create(
-	//	TextureManager::GetInstance()->LoadTexture("./resources/Texture/Option/SelectedFrame.png"),
-	//	{ 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }
-	//));
+	/// selected frame
+	selectedFrame_.reset(Sprite::Create(
+		TextureManager::GetInstance()->LoadTexture(
+			"./resources/Texture/Option/VolumeSliderSelectedFrame.png"),
+		{ 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }
+	));
 
-	//selectedFrame_->SetScale({ 150.0f, 150.0f });
-	//selectedFrame_->anchorPoint_ = { 0.5f, 0.5f };
-	//selectedFrame_->SetScale(scale);
+	selectedFrame_->SetScale({ 150.0f, 150.0f });
+	selectedFrame_->anchorPoint_ = { 0.5f, 0.5f };
+	selectedFrame_->SetScale(scale);
 
+	isSelected_ = false;
 }
 
-void SoundOption::Update(size_t _currentIndex) {
+void SoundOption::Update(size_t _currentIndex, bool) {
 
 	if (thisIndex_ != _currentIndex) {
 		return;
 	}
+
 
 	/// 音量調整
 	/// Mouseの座標を取得
@@ -139,42 +144,107 @@ void SoundOption::Update(size_t _currentIndex) {
 		item.volumeNum->Update();
 	}
 
-
-	/// Mouseの左クリックが押されているか
-	if (input->IsPressMouse(0)) {
-		/// 音量を設定
-		Vector2 min = soundItems_[selectedIndex_].pos - soundItems_[selectedIndex_].size * 0.5f;
-		Vector2 max = soundItems_[selectedIndex_].pos + soundItems_[selectedIndex_].size * 0.5f;
-		float volume = (mousePos.x - min.x) / (max.x - min.x);
-		volume = std::clamp(volume, 0.0f, 1.0f);
-		soundItems_[selectedIndex_].volume = volume;
-	} else {
-
-		/// 選択しているSoundItemの範囲内にMouseがあるか
-		for (size_t i = 0; i < soundItems_.size(); i++) {
-			auto& item = soundItems_[i];
-			Vector2 min = item.pos - item.size * 0.5f;
-			Vector2 max = item.pos + item.size * 0.5f;
-			if (mousePos.x >= min.x && mousePos.x <= max.x &&
-				mousePos.y >= min.y && mousePos.y <= max.y) {
-				selectedIndex_ = i;
-				break;
+	/// 入力で選択しているItemを変更
+	if (!isSelected_) {
+		if (input->TrrigerKey(DIK_UP) ||
+			input->TrrigerKey(DIK_W) ||
+			input->IsTriggerPad(0, Gamepad::DPadUp)) {
+			/// SEの再生
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/SelectSE.wav");
+			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
+			if (selectedIndex_ > 0) {
+				selectedIndex_--;
 			}
+		}
+
+		if (input->TrrigerKey(DIK_DOWN) ||
+			input->TrrigerKey(DIK_S) ||
+			input->IsTriggerPad(0, Gamepad::DPadDown)) {
+			/// SEの再生
+			int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/SelectSE.wav");
+			Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
+			selectedIndex_ = (selectedIndex_ + 1) % soundItems_.size();
+		}
+	}
+
+
+	if (input->TrrigerKey(DIK_SPACE) ||
+		input->IsTriggerPad(0, Gamepad::A)) {
+		/// SEの再生
+		int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/DecideSE.wav");
+		Audio::GetInstance()->PlayWave(seSoundId, 0.2f);
+		selectedIndex_ = (selectedIndex_) % soundItems_.size();
+		isSelected_ = !isSelected_;
+	}
+
+
+	/// 左右で音量を変更
+	if (isSelected_) {
+
+		/// 減らす
+		static bool isDownInput = false;
+		static float downInterval = 0.3f;
+		if (input->TrrigerKey(DIK_A) ||
+			input->TrrigerKey(DIK_LEFT) ||
+			input->IsTriggerPad(0, Gamepad::DPadLeft)) {
+			float volume = soundItems_[selectedIndex_].volume;
+			volume = std::clamp(volume - 0.01f, 0.0f, 1.0f);
+			soundItems_[selectedIndex_].volume = volume;
+			isDownInput = true;
+		}
+
+		if (isDownInput && input->TrrigerKey(DIK_A) || input->TrrigerKey(DIK_LEFT) ||
+			input->IsPressPad(0, Gamepad::DPadLeft)) {
+			downInterval -= Frame::DeltaTime();
+			if (downInterval < 0.0f) {
+				float volume = soundItems_[selectedIndex_].volume;
+				volume = std::clamp(volume - 0.005f, 0.0f, 1.0f);
+				soundItems_[selectedIndex_].volume = volume;
+			}
+		} else {
+			isDownInput = false;
+			downInterval = 0.3f;
+		}
+
+
+		/// 増やす
+		static bool isUpInput = false;
+		static float upInterval = 0.3f;
+		if (input->TrrigerKey(DIK_S) ||
+			input->TrrigerKey(DIK_RIGHT) ||
+			input->IsTriggerPad(0, Gamepad::DPadRight)) {
+			float volume = soundItems_[selectedIndex_].volume;
+			volume = std::clamp(volume + 0.01f, 0.0f, 1.0f);
+			soundItems_[selectedIndex_].volume = volume;
+			isUpInput = true;
+		}
+
+		/// 長押しで増やす
+		if (isUpInput && input->TrrigerKey(DIK_S) || input->TrrigerKey(DIK_RIGHT) ||
+			input->IsPressPad(0, Gamepad::DPadRight)) {
+			upInterval -= Frame::DeltaTime();
+			if (upInterval < 0.0f) {
+				float volume = soundItems_[selectedIndex_].volume;
+				volume = std::clamp(volume + 0.005f, 0.0f, 1.0f);
+				soundItems_[selectedIndex_].volume = volume;
+			}
+		} else {
+			isUpInput = false;
+			upInterval = 0.3f;
 		}
 	}
 
 
 	/// indexの位置にFrameを表示
-	//Vector2 framePos = soundItems_[selectedIndex_].pos;
-	//float volume = soundItems_[selectedIndex_].volume;
-	//framePos.x += (volume - 0.5f) * soundItems_[selectedIndex_].size.x;
-	//selectedFrame_->SetPosition(framePos);
+	Vector2 framePos = soundItems_[selectedIndex_].pos;
+	float volume = soundItems_[selectedIndex_].volume;
+	framePos.x += (volume - 0.5f) * soundItems_[selectedIndex_].size.x;
+	selectedFrame_->SetPosition(framePos);
 
 }
 
 
 void SoundOption::Draw() {
-
 	for (auto& item : soundItems_) {
 		/// 背景
 		item.background->Draw();
@@ -189,7 +259,7 @@ void SoundOption::Draw() {
 		item.slider->Draw();
 	}
 
-	//selectedFrame_->Draw();
+		selectedFrame_->Draw();
 }
 
 void SoundOption::SetVolume(ItemName _name, float _volume) {

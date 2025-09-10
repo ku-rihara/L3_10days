@@ -3,6 +3,7 @@
 #include "PostEffect/PostEffectRenderer.h"
 #include "Scene/Factory/SceneFactory.h"
 #include"Pipeline/Object3DPiprline.h"
+#include "2d/Sprite.h"
 // renderer
 #include "base/SkyBoxRenderer.h"
 // utility
@@ -18,9 +19,10 @@ void KTGame::Init() {
     sceneFactory_ = std::make_unique<SceneFactory>();
 
     // タイトルから始める
-    pSceneManager_ = SceneManager::GetInstance();
+    pSceneManager_ = SceneManager::GetInstance();   
     pSceneManager_->SetSceneFactory(sceneFactory_.get());
-    pSceneManager_->ChangeScene("GAMEPLAY");
+    pSceneManager_->ChangeScene("TITLE");
+    //pSceneManager_->ChangeScene("GAMEOVEREFFECT");
     /*pSceneManager_->ChangeScene("GAMEPLAY");*/
 }
 

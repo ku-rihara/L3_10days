@@ -15,6 +15,7 @@
 
 /// game
 #include "TitleActor/FighterAircraft/FighterAircraft.h"
+#include "TitleActor/FighterAircraft/Hunger.h"
 #include "Option/GameOption.h"
 
 TitleScene::TitleScene() {}
@@ -26,25 +27,31 @@ void TitleScene::Init() {
 
 	// 生成
 	object3ds_.push_back(std::make_unique<FighterAircraft>(Vector3{}));
-
+	object3ds_.push_back(std::make_unique<Hunger>());
 	// 初期化
 	for (auto& obj : object3ds_) {
 		obj->Init();
 	}
+
+	int32_t texHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/Title/StartUI.png");
+	pressStartSprite_.reset(
+		Sprite::Create(texHandle, { 640.0f, 600.0f }, { 1, 1, 1, 1 }));
+	pressStartSprite_->anchorPoint_ = { 0.5f, 0.5f };
 
 
 	titleSprite_ = std::make_unique<TitleSprite>();
 	titleSprite_->Init();
 
 	/// カメラの位置を調整
+	//viewProjection_.Init();
 	viewProjection_.translation_ = Vector3(4.02f, 2.61f, -7.57f);
 	viewProjection_.rotation_ = Vector3(0.24f, -0.55f, 0.0f);
 
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 
 	/// このシーンのBGMを再生
-	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
-	audio_->PlayBGM(soundId, 0.1f);
+	bgmId_ = audio_->LoadWave("./resources/Sound/BGM/TitleBGM.wav");
+	audio_->PlayBGM(bgmId_, 0.1f);
 
 
 	fade_ = std::make_unique<Fade>();
@@ -52,15 +59,25 @@ void TitleScene::Init() {
 
 
 	Frame::ResetDeltaTime();
+	ViewProjectionUpdate();
 }
 
 void TitleScene::Update() {
 
-	if(input_->PushKey(DIK_ESCAPE)){
-		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
-		audio_->StopBGM(soundId);
+	/// オプションの開閉
+	GameOption* op = GameOption::GetInstance();
+	/// Optionを開ける条件
+	if (!fade_->IsFade()) {
+		/// 入力でoptionを開く
+		if (input_->TrrigerKey(DIK_ESCAPE) ||
+			input_->IsTriggerPad(0, Gamepad::Start)) {
+			if (!op->GetIsOpen()) {
+				op->Open();
+			}
+		}
 	}
 
+	op->Update();
 	for (auto& obj : object3ds_) {
 		obj->Update();
 	}
@@ -68,32 +85,33 @@ void TitleScene::Update() {
 	titleSprite_->Update();
 	fade_->Update();
 
-	if(input_->TrrigerKey(DIK_F)) {
-		fade_->FadeOut(0.02f);
-	}
-
 	Object3DRegistry::GetInstance()->UpdateAll();
 	ParticleManager::GetInstance()->Update();
 
 	Debug();
 	ViewProjectionUpdate();
 
-
 	/// Scene Change
-	if(input_->TrrigerKey(DIK_SPACE)){
-		/// 効果音の再生
-		int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
-		audio_->PlayWave(soundId, 0.2f);
+	if (!op->GetIsOpen() && !fade_->IsFade()) {
+		if (input_->TrrigerKey(DIK_SPACE) ||
+			input_->TrrigerKey(DIK_RETURN) ||
+			input_->IsTriggerPad(0, Gamepad::A)) {
 
-		/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-		return;
+			/// 効果音の再生
+			int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
+			audio_->PlayWave(soundId, 0.2f);
+
+			/// 一旦直接変更するが、あとでフェードをかけるのと、シーンをゲームスタートシーンにする
+			fade_->FadeOut(1.0f);
+		}
 	}
 
 
-	/// Debug用なのであとで消す
-	if (input_->TrrigerKey(DIK_RETURN)) {
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+	/// フェードアウトが終わったらシーンチェンジ
+	if (fade_->IsFadeEnd()) {
+		audio_->StopBGM(bgmId_);
+		SceneManager::GetInstance()->ChangeScene("TUTORIAL");
+		return;
 	}
 }
 
@@ -118,6 +136,10 @@ void TitleScene::SkyBoxDraw() {}
 /// ===================================================
 void TitleScene::SpriteDraw() {
 	titleSprite_->Draw();
+	pressStartSprite_->Draw();
+
+	GameOption* op = GameOption::GetInstance();
+	op->Draw();
 
 	fade_->Draw();
 }

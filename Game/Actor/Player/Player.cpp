@@ -1,6 +1,12 @@
 #include "Player.h"
+
+/// externals
+#include <json.hpp>
+
 #include "Actor/Boundary/Boundary.h"
 #include "Actor/GameCamera/GameCamera.h"
+#include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include "Actor/NPC/EnemyNPC.h"
 #include "Actor/NPC/Navigation/RectXZWithGatesConstraint.h"
 #include "Frame/Frame.h"
 #include "input/Input.h"
@@ -11,6 +17,7 @@
 #include <cmath>
 #include <imgui.h>
 #include <numbers>
+#include <fstream>
 
 const std::vector<Hole>& Player::BoundaryHoleSource::GetHoles() const {
     static const std::vector<Hole> kEmpty;
@@ -40,6 +47,26 @@ void Player::PartsInit() {
     backWingCenter_->Init(&baseTransform_, "BackWingCenter");
 }
 
+void Player::UIInit() {
+    // =========================LifeアイコンUI=========================
+    lifeUI_ = std::make_unique<PlayerLifeUI>();
+    lifeUI_->Init("PlayerLife");
+    lifeUI_->SetPlayer(this);
+    // =========================MissileアイコンUI=========================
+    for (size_t i = 0; i < missileUIs_.size(); ++i) {
+        missileUIs_[i] = std::make_unique<MissileIconUI>();
+        missileUIs_[i]->Init("MissileUI", i);
+        missileUIs_[i]->SetPlayer(this);
+    }
+    // =========================DMGテキストUI=========================
+    dmgTextUI_ = std::make_unique<DMGTextUI>();
+    dmgTextUI_->Init("DamageText");
+    // =========================DMGParUI=========================
+    dmgParUI_ = std::make_unique<PlayerDamageParUI>();
+    dmgParUI_->Init("DamageParUI");
+    dmgParUI_->SetPlayer(this);
+}
+
 void Player::Init() {
 
     // グローバルパラメータ
@@ -47,6 +74,7 @@ void Player::Init() {
     globalParameter_->CreateGroup(groupName_, false);
     BindParams();
     globalParameter_->SyncParamForGroup(groupName_);
+    ReadJsonInversePitch();
 
     // モデル作成
     obj3d_.reset(Object3d::CreateModel("Player.obj"));
@@ -58,7 +86,10 @@ void Player::Init() {
     baseTransform_.quaternion_ = Quaternion::Identity();
     obj3d_->transform_.parent_ = &baseTransform_;
 
+    // パーツ初期化
     PartsInit();
+    // UI初期化
+    UIInit();
 
     // レティクル
     reticle_ = std::make_unique<PlayerReticle>();
@@ -66,13 +97,18 @@ void Player::Init() {
 
     // 弾初期化
     bulletShooter_ = std::make_unique<PlayerBulletShooter>();
-    bulletShooter_->Init();
+    bulletShooter_->Init(&baseTransform_);
+
+    // hpをSet
+    hp_ = maxHp_;
+
+    // startPos
+    baseTransform_.translation_ = startPos_;
 
     // moveConstraint
     Boundary* boundary   = Boundary::GetInstance();
     holeSource_.boundary = boundary;
-    RectXZ rect{-1500.0f, 1500.0f, -1500.0f, 1500.0f};
-    moveConstraint_ = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, rect, 0.01f);
+    moveConstraint_      = std::make_unique<RectXZWithGatesConstraint>(&holeSource_, boundary->GetRectXZWorld(), 0.01f);
 
     // Speed Init
     SpeedInit();
@@ -80,6 +116,10 @@ void Player::Init() {
 }
 
 void Player::Update() {
+
+    // AABB
+    AABBCollider::SetCollisionScale(collisionParamInfo_.collisionSize);
+
     // 入力処理
     HandleInput();
 
@@ -98,6 +138,12 @@ void Player::Update() {
 
     // パーツ更新
     PartsUpdate();
+
+    // UI更新
+    UIUpdate();
+
+    // コリジョンクールタイム更新
+    CollisionCollingUpdate();
 
     // レティクル
     reticle_->Update(this, viewProjection_);
@@ -123,19 +169,17 @@ void Player::MoveUpdate() {
 
     // 跳ね返りの分を加えて適応
     baseTransform_.translation_ += velocity_ + reboundVelocity_;
-
-    /*  baseTransform_.translation_ = Vector3(100, 70, -300);*/
 }
 
 void Player::PartsUpdate() {
     // 入力から目標回転を計算
-    Vector3 backWingInputRotation  = Vector3::ZeroVector();
-    Vector3 frontWingInputRotation = Vector3::ZeroVector();
+    Vector3 backWingInputRotation       = Vector3::ZeroVector();
+    Vector3 frontWingInputRotation      = Vector3::ZeroVector();
     Vector3 backCenterWingInputRotation = Vector3::ZeroVector();
 
     // =========================後ろのWing=========================
     // 上下入力をX回転に変換
-    backWingInputRotation.x = -angleInput_.x * 0.2f;
+    backWingInputRotation.x = -angleInput_.x * 0.3f;
 
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
         backWing->SetInputRotation(backWingInputRotation);
@@ -145,7 +189,7 @@ void Player::PartsUpdate() {
 
     // =========================手前のWing=========================
     // 上下入力をX回転に変換
-    frontWingInputRotation.x = -angleInput_.x * 0.2f;
+    frontWingInputRotation.x = -angleInput_.x * 0.3f;
 
     for (std::unique_ptr<PlayerFrontWing>& frontWing : frontWings_) {
         frontWing->SetInputRotation(frontWingInputRotation);
@@ -155,15 +199,30 @@ void Player::PartsUpdate() {
 
     // =========================後ろのWing=========================
     // 上下入力をX回転に変換
-    backCenterWingInputRotation.y = -angleInput_.y * 0.2f;
+    backCenterWingInputRotation.y = -angleInput_.y * 0.3f;
     backWingCenter_->SetInputRotation(backCenterWingInputRotation);
     backWingCenter_->Update();
     backWingCenter_->SetBaseRotate(obj3d_->transform_.quaternion_.ToEuler());
 }
 
+void Player::UIUpdate() {
+    // =========================LifeアイコンUI=========================
+    lifeUI_->Update();
+
+    // =========================MissileアイコンUI=========================
+    for (size_t i = 0; i < missileUIs_.size(); ++i) {
+        missileUIs_[i]->Update();
+    }
+    // =========================DMGテキストUI=========================
+    dmgTextUI_->Update();
+    // =========================DMGParUI=========================
+
+    dmgParUI_->Update();
+}
+
 void Player::HandleInput() {
     Input* input = Input::GetInstance();
-  
+
     // 入力値をリセット
     Vector2 stickL      = Vector2::ZeroVector();
     float pawInputValue = 0.0f;
@@ -231,11 +290,11 @@ void Player::HandleInput() {
     angleInput_.y = pawInputValue * (speedParam_.yawSpeed * deltaTime);
 
     // ロール
-    float rollInput = -stickL.x;
-    targetRoll_ += rollInput * speedParam_.rollSpeed * deltaTime;
+    rollInput_ = -stickL.x;
+    targetRoll_ += rollInput_ * speedParam_.rollSpeed * deltaTime;
 
     // 制限
-    if (fabs(rollInput) < 0.001f) {
+    if (fabs(rollInput_) < 0.001f) {
         currentMaxRoll_ = 0.0f;
     } else {
         angleInput_.y   = 0.0f;
@@ -250,18 +309,32 @@ void Player::RotateUpdate() {
 
     // ---- 通常のピッチ・ヨー回転処理 ----
     Vector3 targetAngularVelocity = angleInput_;
-    const float damping           = 0.95f;
+    const float damping           = 0.8f;
+
+    // 入力がない場合は減衰
     if (angleInput_.Length() < 0.001f) {
         targetAngularVelocity = angularVelocity_ * damping;
     }
+
+    // 角速度を補間
     angularVelocity_ = Lerp(angularVelocity_, targetAngularVelocity, 0.7f);
 
-    Vector3 localRight = GetRightVector();
-    Vector3 localUp    = GetUpVector();
+    // 現在の姿勢を基に回転を計算
+    Vector3 localRight   = GetRightVector();
+    Vector3 localUp      = GetUpVector();
+    Vector3 localForward = GetForwardVector();
 
-    Quaternion pitchRotation = Quaternion::MakeRotateAxisAngle(localRight, angularVelocity_.x * deltaTime);
-    Quaternion yawRotation   = Quaternion::MakeRotateAxisAngle(localUp, angularVelocity_.y * deltaTime);
+    // ピッチ回転（X軸）
+    if (inversePitch_) {
+        angularVelocity_.x *= -1.0f;
+    }
+        Quaternion pitchRotation = Quaternion::MakeRotateAxisAngle(localRight, angularVelocity_.x * deltaTime);
+    
 
+    // ヨー回転（Y軸）
+    Quaternion yawRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), angularVelocity_.y * deltaTime);
+
+    // 回転を適用
     Quaternion deltaRotation = yawRotation * pitchRotation;
     targetRotation_          = deltaRotation * baseTransform_.quaternion_;
     targetRotation_          = targetRotation_.Normalize();
@@ -269,7 +342,7 @@ void Player::RotateUpdate() {
     // 補正処理
     CorrectionHorizon();
 
-    // 適応
+    // クォータニオンを補間して適用
     baseTransform_.quaternion_ = Quaternion::Slerp(
         baseTransform_.quaternion_, targetRotation_, rotationSmoothness_);
     baseTransform_.quaternion_ = baseTransform_.quaternion_.Normalize();
@@ -277,6 +350,7 @@ void Player::RotateUpdate() {
     // ---- ロールを補間 ----
     currentRoll_ = Lerp(currentRoll_, targetRoll_, speedParam_.rollSpeed * deltaTime);
 
+    // ロールによるヨー補正
     float yawFromRoll = -sin(currentRoll_) * bankRate_ * deltaTime;
     if (fabs(yawFromRoll) > 0.0001f) {
         Quaternion yawFromRollRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), yawFromRoll);
@@ -289,7 +363,6 @@ void Player::RotateUpdate() {
     obj3d_->transform_.quaternion_ = visualRoll;
     obj3d_->transform_.quaternion_ = obj3d_->transform_.quaternion_.Normalize();
 }
-
 void Player::CorrectionHorizon() {
 
     // 補正開始フラグ
@@ -346,6 +419,9 @@ void Player::ReboundByBoundary() {
 
         float reboundVelocityY = reboundVelocity_.y;
 
+        // ダメージ
+        TakeDamageForBoundary();
+
         // 自動入力を開始
         if (reboundVelocityY > 0.0f) { // 上向き
             reboundCorrectionParam_.isAutoRotate         = true;
@@ -373,6 +449,20 @@ void Player::ReboundByBoundary() {
     if (upDot_ >= 0.95f) {
         reboundCorrectionParam_.isAutoRotate = false;
     }
+}
+
+void Player::ReadJsonInversePitch() {
+    /// ----- json ----- ///
+	nlohmann::json json;
+	std::ifstream file("./resources/Option/Operation.json");
+    if (!file.is_open()) {
+        inversePitch_ = false;
+        return;
+	}
+
+	file >> json;
+	inversePitch_ = json.value("inversePitch", false);
+	file.close();
 }
 
 void Player::CheckIsUpsideDown() {
@@ -421,6 +511,11 @@ void Player::UpdateSpeedBehavior() {
     }
 }
 
+void Player::ClosedPaused() {
+	/// ----- ポーズを閉じたときに呼ばれる ----- ///
+	ReadJsonInversePitch();
+}
+
 void Player::SpeedInit() {
     speedParam_.currentForwardSpeed = speedParam_.startForwardSpeed;
 }
@@ -438,8 +533,36 @@ void Player::ReticleDraw() {
     reticle_->Draw();
 }
 
+void Player::TakeDamageForBoundary() {
+    hp_ -= damageValueByBoundary_;
+}
+
+void Player::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
+    if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
+        if (collisionParamInfo_.isColliding) {
+            return;
+        }
+
+        collisionParamInfo_.currentCollTime = collisionParamInfo_.coolTime;
+        collisionParamInfo_.isColliding     = true;
+        pGameCamera_->PlayShake("PlayerHitEnemey");
+    }
+}
+
+void Player::CollisionCollingUpdate() {
+
+    if (!collisionParamInfo_.isColliding) {
+        return;
+    }
+
+    collisionParamInfo_.currentCollTime -= Frame::DeltaTime();
+    if (collisionParamInfo_.currentCollTime <= 0.0f) {
+        collisionParamInfo_.isColliding = false;
+    }
+}
+
 void Player::BindParams() {
-    globalParameter_->Bind(groupName_, "hp", &hp_);
+    globalParameter_->Bind(groupName_, "hp", &maxHp_);
     globalParameter_->Bind(groupName_, "forwardSpeed", &speedParam_.startForwardSpeed);
     globalParameter_->Bind(groupName_, "pitchSpeed", &speedParam_.pitchSpeed);
     globalParameter_->Bind(groupName_, "yawSpeed", &speedParam_.yawSpeed);
@@ -460,15 +583,20 @@ void Player::BindParams() {
     globalParameter_->Bind(groupName_, "autoRotateSpeed", &reboundCorrectionParam_.autoRotateSpeed_);
     globalParameter_->Bind(groupName_, "autoRecoverSpeed", &invCorrectionParam_.autoRotateSpeed_);
     globalParameter_->Bind(groupName_, "rollRotateLimitOffset", &rollRotateOffset_);
+    globalParameter_->Bind(groupName_, "damageValueByBoundary", &damageValueByBoundary_);
+    globalParameter_->Bind(groupName_, "startPos", &startPos_);
+    globalParameter_->Bind(groupName_, "collisionSize", &collisionParamInfo_.collisionSize);
+    globalParameter_->Bind(groupName_, "CollisionCoolTime", &collisionParamInfo_.coolTime);
+    globalParameter_->Bind(groupName_, "CollisionDamageValue", &collisionParamInfo_.damageValue);
 }
-
 void Player::AdjustParam() {
 #ifdef _DEBUG
     if (ImGui::CollapsingHeader(groupName_.c_str())) {
         ImGui::PushID(groupName_.c_str());
 
-        ImGui::DragFloat("Hp", &hp_);
-
+        ImGui::DragFloat("MaxHp", &maxHp_);
+        ImGui::DragFloat("CurrentHP", &hp_);
+        ImGui::DragFloat3("startPos", &startPos_.x, 0.01f);
         // EditParameter
         ImGui::Separator();
         ImGui::Text("Fighter Controls");
@@ -494,6 +622,14 @@ void Player::AdjustParam() {
         ImGui::DragFloat("rollBackTime", &rollBackTime_, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("rollRotateLimit", &rollRotateLimit_, 0.01f);
         ImGui::DragFloat("rollRotateOffset", &rollRotateOffset_, 0.01f);
+
+        ImGui::SeparatorText("Damage");
+        ImGui::DragFloat("damageValueByBoundary", &damageValueByBoundary_, 0.01f);
+        ImGui::DragFloat("damageValueByCollisionEnemy", &collisionParamInfo_.damageValue, 0.01f);
+
+        ImGui::SeparatorText("Collision");
+        ImGui::DragFloat("CollisionCoolTime", &collisionParamInfo_.coolTime, 0.01f);
+        ImGui::DragFloat3("collisionSize", &collisionParamInfo_.collisionSize.x, 0.01f);
 
         ImGui::SeparatorText("etc");
         ImGui::DragFloat("rotationSmoothness", &rotationSmoothness_, 0.01f, 0.0f, 1.0f);
@@ -542,7 +678,15 @@ void Player::AdjustParam() {
 
         ImGui::PopID();
     }
+    ImGui::SeparatorText("UIs");
+    lifeUI_->AdjustParam();
+    for (std::unique_ptr<MissileIconUI>& missileUI : missileUIs_) {
+        missileUI->AdjustParam();
+    }
+    dmgTextUI_->AdjustParam();
+    dmgParUI_->AdjustParam();
 
+    ImGui::SeparatorText("Parts");
     // backWing
     for (std::unique_ptr<PlayerBackWing>& backWing : backWings_) {
         backWing->AdjustParam();
@@ -556,7 +700,7 @@ void Player::AdjustParam() {
     if (backWingCenter_) {
         backWingCenter_->AdjustParam();
     }
-
+    ImGui::SeparatorText("etc");
     // 弾
     if (bulletShooter_) {
         bulletShooter_->AdjustParam();
@@ -567,6 +711,15 @@ void Player::AdjustParam() {
     }
 
 #endif // _DEBUG
+}
+
+void Player::UIDraw() {
+    lifeUI_->Draw();
+    for (std::unique_ptr<MissileIconUI>& missileUI : missileUIs_) {
+        missileUI->Draw();
+    }
+    dmgTextUI_->Draw();
+    dmgParUI_->Draw();
 }
 
 void Player::SetGameCamera(GameCamera* camera) {
@@ -580,4 +733,8 @@ void Player::SetViewProjection(const ViewProjection* viewProjection) {
 
 void Player::SetLockOn(LockOn* lockOn) {
     bulletShooter_->SetLockOn(lockOn);
+}
+
+Vector3 Player::GetCollisionPos() const {
+    return GetWorldPosition();
 }

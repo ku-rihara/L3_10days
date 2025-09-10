@@ -64,10 +64,8 @@ void GameOption::Init() {
 
 	isInitialized_ = true;
 
-
 	isOpen_ = false;
 	Vector2 startPos = { 640.0f, 360.0f };
-	//Vector2 offset = { 0.0f, 100.0f };
 
 	/// 背景
 	uint32_t bgTexHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/default.png");
@@ -96,19 +94,28 @@ void GameOption::Init() {
 	soundOption->Init();
 	menuItems_.emplace_back(std::move(soundOption));
 
+	isDirtyThisFrame_ = false;
 
 	Load();
+
+	/// 一回更新
+	for (size_t i = 0; i < menuItems_.size(); i++) {
+		menuItems_[i]->Update(currentIndex_, true);
+	}
 }
 
 void GameOption::Update() {
-
-	/// Closeする処理
 	Input* input = Input::GetInstance();
-	if (input->TrrigerKey(DIK_ESCAPE) ||
-		input->IsTriggerPad(0, Gamepad::Start)) {
 
-		if (GetIsOpen()) {
-			Close();
+	/// 同一フレーム内でのOpen, Closeを防止 and Itemを選択していないなら
+	if (!isDirtyThisFrame_ && !isSelectedItem_) {
+		/// Closeする処理
+		if (input->TrrigerKey(DIK_ESCAPE) ||
+			input->IsTriggerPad(0, Gamepad::Start) ||
+			input->IsTriggerPad(0, Gamepad::B)) {
+			if (GetIsOpen()) {
+				Close();
+			}
 		}
 	}
 
@@ -117,9 +124,10 @@ void GameOption::Update() {
 		return;
 	}
 
+	bool isAnyItemSelected = false;
+
 	/// Itemを選択していないなら
 	if (!isSelectedItem_) {
-
 		if (input->TrrigerKey(DIK_UP) ||
 			input->TrrigerKey(DIK_W) ||
 			input->IsTriggerPad(0, Gamepad::DPadUp)) {
@@ -144,13 +152,36 @@ void GameOption::Update() {
 			menuItems_[currentIndex_]->GetOffsetPos() * static_cast<float>(currentIndex_);
 		selectedFrame_->SetPosition(itemPos);
 
+		/// 決定
+		if (!isDirtyThisFrame_) {
+			if (input->TrrigerKey(DIK_SPACE) ||
+				input->IsTriggerPad(0, Gamepad::A)) {
+				isSelectedItem_ = true;
+				isAnyItemSelected = true;
+				/// SEの再生
+				int seSoundId = Audio::GetInstance()->LoadWave("./resources/Sound/SE/DecideSE.wav");
+				Audio::GetInstance()->PlayWave(seSoundId, 0.1f);
+			}
+		}
+
 	}
 
 
-	for (size_t i = 0; i < menuItems_.size(); i++) {
-		menuItems_[i]->Update(currentIndex_);
+	if (!isDirtyThisFrame_) {
+		if (input->TrrigerKey(DIK_ESCAPE) ||
+			input->IsTriggerPad(0, Gamepad::B)) {
+			isSelectedItem_ = false;
+		}
 	}
 
+	if (isSelectedItem_) {
+		for (size_t i = 0; i < menuItems_.size(); i++) {
+			menuItems_[i]->Update(currentIndex_, isAnyItemSelected);
+		}
+	}
+
+	prevIsDirtyThisFrame_ = isDirtyThisFrame_;
+	isDirtyThisFrame_ = false;
 }
 
 void GameOption::Draw() {
@@ -159,8 +190,10 @@ void GameOption::Draw() {
 	}
 
 	background_->Draw();
-	selectedFrame_->Draw();
 
+	if (!isSelectedItem_) {
+		selectedFrame_->Draw();
+	}
 
 	for (auto& item : menuItems_) {
 		item->BaseDraw();
@@ -186,25 +219,34 @@ float GameOption::GetSEVolume() const {
 
 void GameOption::Open() {
 	isOpen_ = true;
+	isDirtyThisFrame_ = true;
 
 	/// SEの再生
 	Audio* audio_ = Audio::GetInstance();
-	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
 	audio_->PlayWave(soundId, 0.2f);
 }
 
 void GameOption::Close() {
 	isOpen_ = false;
+	isDirtyThisFrame_ = true;
 
 	/// SEの再生
 	Audio* audio_ = Audio::GetInstance();
-	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
 	audio_->PlayWave(soundId, 0.2f);
 
 	Save();
-
 }
 
 bool GameOption::GetIsOpen() const {
 	return isOpen_;
+}
+
+bool GameOption::GetIsDirtyThisFrame() const {
+	return isDirtyThisFrame_;
+}
+
+bool GameOption::GetPrevIsDirtyThisFrame() const {
+	return prevIsDirtyThisFrame_;
 }

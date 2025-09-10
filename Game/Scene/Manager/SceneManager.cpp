@@ -8,12 +8,12 @@
 
 // シングルトンインスタンスの取得
 SceneManager* SceneManager::GetInstance() {
-	static SceneManager instance; 
+	static SceneManager instance;
 	return &instance;
 }
 
 SceneManager::~SceneManager() {
-	
+
 }
 
 ///==============================================
@@ -22,8 +22,8 @@ SceneManager::~SceneManager() {
 void SceneManager::Update() {
 
 	// 次のシーンが設定されている場合
-    if (Input::GetInstance()->PushKey(DIK_E) && Input::GetInstance()->PushKey(DIK_ESCAPE)) {
-        ChangeScene("EDITOR");
+	if (Input::GetInstance()->PushKey(DIK_E) && Input::GetInstance()->PushKey(DIK_ESCAPE)) {
+		ChangeScene("EDITOR");
 	}
 
 	// 現在のシーンを更新
@@ -51,16 +51,16 @@ void SceneManager::SpriteDraw() {
 }
 
 void SceneManager::SkyBoxDraw() {
-    if (scene_) {
-        scene_->SkyBoxDraw();
-    }
- }
+	if (scene_) {
+		scene_->SkyBoxDraw();
+	}
+}
 
 void SceneManager::DrawShadow() {
-     if (scene_) {
-         scene_->DrawShadow();
-     }
- }
+	if (scene_) {
+		scene_->DrawShadow();
+	}
+}
 
 ///==============================================
 /// シーン切り替え
@@ -70,22 +70,22 @@ void SceneManager::ChangeScene(const std::string& scenemane) {
 	assert(!nextScene_);
 
 	if (scene_) {
-        // 現在のシーンを終了
-        scene_.reset();
-    }
-    
-	Object3DRegistry::GetInstance()->Clear();
-    AnimationRegistry::GetInstance()->Clear();
+		// 現在のシーンを終了
+		scene_.reset();
+	}
 
-    //// グローバル変数の読み込み
-    GlobalParameter::GetInstance()->BindResetAll();
-    GlobalParameter::GetInstance()->LoadFiles();
+	Object3DRegistry::GetInstance()->Clear();
+	AnimationRegistry::GetInstance()->Clear();
+
+	//// グローバル変数の読み込み
+	GlobalParameter::GetInstance()->BindResetAll();
+	GlobalParameter::GetInstance()->LoadFiles();
 
 	// 次のシーンを生成
 	nextScene_ = std::unique_ptr<BaseScene>(sceneFactory_->CreateScene(scenemane));
 	scene_ = std::move(nextScene_);
 	scene_->Init();
-  
+
 	//パーティクルリセット
 	ParticleManager::GetInstance()->ResetAllParticles();
 }

@@ -40,6 +40,8 @@ public:
 	void Close();
 
 	bool GetIsOpen() const;
+	bool GetIsDirtyThisFrame() const;
+	bool GetPrevIsDirtyThisFrame() const;
 
 private:
 	/// ==================================
@@ -47,15 +49,13 @@ private:
 	/// ==================================
 
 	bool isInitialized_ = false;
-
+	bool isDirtyThisFrame_, prevIsDirtyThisFrame_;
+	bool isSelectedItem_;
+	bool isOpen_ = false;
+	size_t currentIndex_ = 0;
+	
 	using Item = std::unique_ptr<IGameOptionItem>;
 	std::vector<Item> menuItems_;
-
-	size_t currentIndex_ = 0;
-	bool isSelectedItem_; 
-
-	bool isOpen_ = false;
-
 
 	std::unique_ptr<Sprite> background_;
 	std::unique_ptr<Sprite> selectedFrame_;

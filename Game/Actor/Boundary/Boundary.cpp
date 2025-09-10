@@ -15,12 +15,21 @@ Boundary* Boundary::GetInstance() {
 Boundary::Boundary() {
 	indexBuffer_.Create(6, DirectXCommon::GetInstance()->GetDxDevice());
 	vertexBuffer_.Create(4, DirectXCommon::GetInstance()->GetDxDevice());
+
+	float scale = 5.0f;
 	vertexBuffer_.SetVertices({
-		{ { -1500, 0, +1500, 1 }, { 0, 0 }, { 0, 1, 0 } },
-		{ { +1500, 0, +1500, 1 }, { 1, 0 }, { 0, 1, 0 } },
-		{ { -1500, 0, -1500, 1 }, { 0, 1 }, { 0, 1, 0 } },
-		{ { +1500, 0, -1500, 1 }, { 1, 1 }, { 0, 1, 0 } }
+		{ { -1500 * scale, 0, +1500 * scale, 1 }, { 0, 0 }, { 0, 1, 0 } },
+		{ { +1500 * scale, 0, +1500 * scale, 1 }, { 1, 0 }, { 0, 1, 0 } },
+		{ { -1500 * scale, 0, -1500 * scale, 1 }, { 0, 1 }, { 0, 1, 0 } },
+		{ { +1500 * scale, 0, -1500 * scale, 1 }, { 1, 1 }, { 0, 1, 0 } }
 		});
+
+	localRectXZ_ = {
+		-1500.0f * scale,
+		+1500.0f * scale,
+		-1500.0f * scale,
+		+1500.0f * scale
+	};
 
 	vertexBuffer_.Map();
 
@@ -46,20 +55,7 @@ void Boundary::Init() {
 }
 
 void Boundary::Update() {
-
-
-	/// debugように
-	if (Input::GetInstance()->TrrigerKey(DIK_P)) {
-		AddCrack({}, 10.0f);
-	}
-
-	if (Input::GetInstance()->TrrigerKey(DIK_O)) {
-		AddCrack({ 200.0f, 0.0f, 0.0f }, 10.0f);
-	}
-
-
 	boundaryShard_->Update();
-
 
 	/// holeの更新
 	for (auto itr = holes_.begin(); itr != holes_.end(); ) {
@@ -75,7 +71,6 @@ void Boundary::Update() {
 			++itr;
 		}
 	}
-
 
 	/// bufferに詰める
 	for (size_t i = 0; i < maxHoleCount_; i++) {
@@ -117,8 +112,8 @@ ConstantBuffer<float>& Boundary::GetTimeBufferRef() {
 	return timeBuffer_;
 }
 
-void Boundary::AddCrack(const Vector3& _pos, float _damage) {
-	boundaryShard_->AddBreakable(_pos, _damage);
+bool Boundary::AddCrack(const Vector3& _pos, float _damage) {
+	return boundaryShard_->AddBreakable(_pos, _damage);
 }
 
 const std::vector<Hole>& Boundary::GetHoles() const {
@@ -169,7 +164,7 @@ size_t Boundary::GetMaxHoleCount() const {
 AABB Boundary::GetWorldAabb(float halfThicknessY) const {
 	RectXZ r = GetRectXZWorld();
 	Vector3 origin, n;
-	GetDividePlane(origin, n); 
+	GetDividePlane(origin, n);
 	AABB box;
 	box.min = { r.minX, origin.y - halfThicknessY, r.minZ };
 	box.max = { r.maxX, origin.y + halfThicknessY, r.maxZ };
@@ -177,7 +172,7 @@ AABB Boundary::GetWorldAabb(float halfThicknessY) const {
 }
 
 bool Boundary::IsInHoleXZ(const Vector3& p, float radius) const {
-	const auto& holes = GetHoles(); 
+	const auto& holes = GetHoles();
 	for (const auto& h : holes) {
 		Vector3 d{ p.x - h.position.x, 0.0f, p.z - h.position.z };
 		float rr = h.radius + radius;
@@ -186,8 +181,14 @@ bool Boundary::IsInHoleXZ(const Vector3& p, float radius) const {
 	return false;
 }
 
-void Boundary::OnBulletImpact(const Contact& c, float damage) {
+void Boundary::ResetHoles() {
+	/// 全ての穴と罅をリセット
+	holes_.clear();
+	boundaryShard_->ResetBreakables();
+}
+
+bool Boundary::OnBulletImpact(const Contact& c, float damage) {
 	// 穴内なら無視（最終防衛）
-	if (IsInHoleXZ(c.point, /*bullet r 不明なら0*/ 0.0f)) return;
-	AddCrack(c.point, damage);
+	if (IsInHoleXZ(c.point, /*bullet r 不明なら0*/ 0.0f)) return false;
+	return AddCrack(c.point, damage);
 }

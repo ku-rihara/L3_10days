@@ -9,6 +9,8 @@ class IMoveConstraint {
 public:
 	virtual ~IMoveConstraint() = default;
 	virtual Vector3 FilterMove(const Vector3& from, const Vector3& to) const = 0;
+	virtual Vector3 FilterMoveReflect(const Vector3& from, const Vector3& to) const = 0;
+
 };
 
 // 穴一覧の供給元(きょうかい

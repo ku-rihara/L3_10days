@@ -19,61 +19,64 @@ EditorScene::~EditorScene() {}
 
 void EditorScene::Init() {
 
-	BaseScene::Init();
-	easingTestObject_ = std::make_unique<EasingTestObj>();
-	easingTestObject_->Init();
+    BaseScene::Init();
+    easingTestObject_ = std::make_unique<EasingTestObj>();
+    easingTestObject_->Init();
 
-	easingEditor_.Init();
+    easingEditor_.Init();
 
-	// Particle初期化(ファイル名,形状,Particle数上限)
-	testEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("test3", PrimitiveType::Box, 500));
-	testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("EnemyDefeat", PrimitiveType::Box, 500));
-	testEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("test2", PrimitiveType::Box, 500));
-	testEmitter_[3].reset(ParticleEmitter::CreateParticlePrimitive("Sphere", PrimitiveType::Sphere, 500));
-	testEmitter_[4].reset(ParticleEmitter::CreateParticlePrimitive("Iocus", PrimitiveType::Box, 500));
+    // Particle初期化(ファイル名,形状,Particle数上限)
+    testEmitter_[2].reset(ParticleEmitter::CreateParticlePrimitive("Explosion1", PrimitiveType::Box, 500));
+    testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("Explosion2", PrimitiveType::Box, 500));
+    testEmitter_[3].reset(ParticleEmitter::CreateParticlePrimitive("Explosion3", PrimitiveType::Box, 500));
+    testEmitter_[4].reset(ParticleEmitter::CreateParticlePrimitive("Explosion5", PrimitiveType::Box, 500));
+    testEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("Explosion4", PrimitiveType::Box, 500));
 
-	easingEditor_.SetVector3Target(&easingTestObject_->GetEasingData());
-	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+    easingEditor_.SetVector3Target(&easingTestObject_->GetEasingData());
+    ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
 void EditorScene::Update() {
 
-	// Particle更新
-	for (int i = 0; i < testEmitter_.size(); i++) {
-		testEmitter_[i]->Update(); // 更新
-		testEmitter_[i]->EditorUpdate(); // パラメータ編集
-		testEmitter_[i]->Emit(); // 発射
+    //// Particle更新
+    for (int i = 0; i < testEmitter_.size(); i++) {
+        testEmitter_[i]->Update(); // 更新
+        testEmitter_[i]->EditorUpdate(); // パラメータ編集
+        testEmitter_[i]->Emit(); // 発射
+    }
 
-		/*   if (Input::GetInstance()->TrrigerKey(DIK_O)) {
-			   testEmitter_[i]->Emit();
-		   }*/
-	}
+    easingEditor_.Edit();
 
-	easingEditor_.Edit();
-	easingTestObject_->Update();
+    // for (int i = 0; i < playerShotEmitter_.size(); i++) {
+    //     playerShotEmitter_[i]->Update(); // 更新
+    //     playerShotEmitter_[i]->EditorUpdate(); // パラメータ編集
+    //     if (input_->TrrigerKey(DIK_Y)) {
+    //         playerShotEmitter_[i]->Emit(); // 発射
+    //     }
+    // }
 
-	Object3DRegistry::GetInstance()->UpdateAll();
-	ParticleManager::GetInstance()->Update();
+    Object3DRegistry::GetInstance()->UpdateAll();
+    ParticleManager::GetInstance()->Update();
 
-	Debug();
-	ViewProjectionUpdate();
+    Debug();
+    ViewProjectionUpdate();
 
-	if (input_->TrrigerKey(DIK_RETURN) && (input_->PushKey(DIK_LCONTROL) || input_->PushKey(DIK_RCONTROL))) {
+    if (input_->TrrigerKey(DIK_RETURN) && (input_->PushKey(DIK_LCONTROL) || input_->PushKey(DIK_RCONTROL))) {
 
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-	}
+        SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+    }
 }
 
 /// ===================================================
 /// モデル描画
 /// ===================================================
 void EditorScene::ModelDraw() {
-	/// commandList取得
-	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
-	Object3DPiprline::GetInstance()->PreDraw(commandList);
-	Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
+    /// commandList取得
+    ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+    Object3DPiprline::GetInstance()->PreDraw(commandList);
+    Object3DRegistry::GetInstance()->DrawAll(viewProjection_);
 
-	ParticleManager::GetInstance()->Draw(viewProjection_);
+    ParticleManager::GetInstance()->Draw(viewProjection_);
 }
 
 /// ===================================================
@@ -93,20 +96,20 @@ void EditorScene::DrawShadow() {}
 
 void EditorScene::Debug() {
 #ifdef _DEBUG
-	ImGui::Begin("Camera");
-	ImGui::DragFloat3("pos", &viewProjection_.translation_.x, 0.1f);
-	ImGui::DragFloat3("rotate", &viewProjection_.rotation_.x, 0.1f);
-	ImGui::End();
+    ImGui::Begin("Camera");
+    ImGui::DragFloat3("pos", &viewProjection_.translation_.x, 0.1f);
+    ImGui::DragFloat3("rotate", &viewProjection_.rotation_.x, 0.1f);
+    ImGui::End();
 
-	easingTestObject_->Debug();
+    easingTestObject_->Debug();
 #endif
 }
 
 // ビュープロジェクション更新
 void EditorScene::ViewProjectionUpdate() {
-	BaseScene::ViewProjectionUpdate();
+    BaseScene::ViewProjectionUpdate();
 }
 
 void EditorScene::ViewProssess() {
-	viewProjection_.UpdateMatrix();
+    viewProjection_.UpdateMatrix();
 }

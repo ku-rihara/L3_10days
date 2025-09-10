@@ -14,6 +14,7 @@
 #include "3d/ModelManager.h"
 #include "random.h"
 #include "Frame/Frame.h"
+#include "audio/Audio.h"
 
 /// game
 #include "Boundary.h"
@@ -44,6 +45,13 @@ void BoundaryShard::Update() {
 		auto& breakable = *itr;
 
 		breakable.frameTime += Frame::DeltaTime();
+
+		/// 一定以上時間が経過したらBreakableを消す
+		if (breakable.frameTime > 30.0f) {
+			itr = breakables_.erase(itr);
+			continue;
+		}
+
 
 		/// 罅のmaxLifeとcurrentLifeを見てstageを決定
 		float lifeRatio = breakable.currentLife / breakable.maxLife;
@@ -219,7 +227,12 @@ StructuredBuffer<BreakableBufferData>& BoundaryShard::GetBreakableBufferRef() {
 	return breakableBuffer_;
 }
 
-void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
+void BoundaryShard::ResetBreakables() {
+	breakables_.clear();
+}
+
+bool BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
+	bool result = false;
 
 	/// すでにある罅と近かったら追加しないで近い罅のlifeを減らす
 	bool isNearBreakable = false;
@@ -228,8 +241,9 @@ void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
 		float distance = (other.position - _position).Length();
 		if (distance < other.radius) {
 			other.currentLife -= _damage;
-			other.radius = std::min(other.radius + _damage, 50.0f);
+			other.radius = std::min(other.radius + _damage, 150.0f); /// 
 			isNearBreakable = true;
+			result = true;
 		}
 	}
 
@@ -245,18 +259,21 @@ void BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
 
 	/// 近くに罅があったときの処理をしたかチェック、したならreturn
 	if (isNearBreakable) {
-		return;
+		return result;
 	}
 
 	/// 罅の追加
 	Breakable breakable;
 	breakable.position = _position;
 	breakable.maxLife = 100.0f;
-	breakable.currentLife = breakable.maxLife;
+	breakable.currentLife = breakable.maxLife - _damage;
 	breakable.stage = 0;
 	breakable.radius = _damage;
 	breakable.shards = loadedShards_;
-
 	breakables_.push_back(std::move(breakable));
+
+	result = true;
+	return result;
 }
+
 

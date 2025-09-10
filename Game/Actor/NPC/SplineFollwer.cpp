@@ -1,275 +1,261 @@
 #include "SplineFollower.h"
-#include "Actor/Spline/Spline.h"
+
+/// std
 #include <algorithm>
 #include <limits>
 #include <cmath>
 
+#include "Navigation/Route/Route.h"
+#include "random.h"
+
 static inline float Clamp1(float v, float lo, float hi) { return (v < lo) ? lo : ((v > hi) ? hi : v); }
 static inline float Rad(float deg) { return deg * 3.1415926535f / 180.0f; }
-static inline float Dist3(const Vector3& a, const Vector3& b) { return (a - b).Length(); }
 
-int SplineFollower::AddRoute(const RouteParam& rp) {
-    Route r;
-    r.spline = rp.spline;
-    r.speedScale = (rp.speedScale > 0.01f) ? rp.speedScale : 1.0f;
-    r.weight = (rp.weight > 0.0f) ? rp.weight : 1.0f;
-    r.lateralOffset = rp.lateralOffset;
-    routes_.push_back(std::move(r));
-    int idx = (int)routes_.size() - 1;
-    RebuildRoutePolyline_(idx);
-    return idx;
+SplineFollower::SplineFollower() = default;
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//      バインド
+/////////////////////////////////////////////////////////////////////////////////////////
+void SplineFollower::BindRoute(Route* r) {
+	route_ = r;
+	u_ = 0.0f;
+	SelectInitialRouteWeighted();
+	RebuildLengthEstimate_();
+
+	// タイマーの初期化をランダムで
+	switchTimer_ = Random::Range(1.0f, switchPeriod_);
 }
 
-void SplineFollower::RebuildRoutePolyline_(int i) {
-    if (i < 0 || i >= (int)routes_.size()) return;
-    auto& r = routes_[i];
-    r.pts.clear();
-    if (!r.spline) return;
-    const auto& cps = r.spline->GetControlPoints();
-    r.pts.insert(r.pts.end(), cps.begin(), cps.end());
-    r.segIdx = 0;
-    r.segRemain = 0.0f;
-}
-
-void SplineFollower::SelectInitialRouteWeighted() {
-    if (routes_.empty()) { currentRoute_ = -1; return; }
-    float total = 0.f;
-    for (auto& r : routes_) total += (r.weight > 0.f ? r.weight : 0.f);
-    currentRoute_ = DrawWeighted_((total > 0.f) ? total : (float)routes_.size());
-}
-
-void SplineFollower::SelectRouteByIndex(int idx) {
-    if (idx >= 0 && idx < (int)routes_.size() && routes_[idx].usable()) currentRoute_ = idx;
-}
-
-int SplineFollower::DrawWeighted_(float totalW) {
-    if (routes_.empty()) return -1;
-    if (totalW <= 0.f) return 0;
-    std::uniform_real_distribution<float> uni(0.f, totalW);
-    float x = uni(rng_);
-    float run = 0.f;
-    for (int i = 0;i < (int)routes_.size();++i) {
-        float w = (routes_[i].weight > 0.f ? routes_[i].weight : 0.f);
-        run += (w > 0.f ? w : 1.f);
-        if (run >= x) return i;
-    }
-    return (int)routes_.size() - 1;
-}
-
-void SplineFollower::RandomizeIndividual(float speedJitterRatio,
-                                         float lateralOffsetMax,
-                                         float switchPeriodMean,
-                                         float switchProb,
-                                         uint32_t seed) {
-    if (seed != 0) rng_.seed(seed);
-    std::uniform_real_distribution<float> U(-1.f, 1.f);
-    std::uniform_real_distribution<float> U01(0.f, 1.f);
-
-    indivSpeedScale_ = 1.f + Clamp1(speedJitterRatio, 0.f, 1.f) * U(rng_);
-    switchPeriod_ =(std::max)(0.5f, switchPeriodMean * (0.75f + 0.5f * U01(rng_)));
-    switchProb_ = Clamp1(switchProb, 0.f, 1.f);
-
-    for (auto& r : routes_) {
-        r.lateralOffset += lateralOffsetMax * U(rng_);
-    }
-}
-
+/////////////////////////////////////////////////////////////////////////////////////////
+//      最大旋回速度
+/////////////////////////////////////////////////////////////////////////////////////////
 void SplineFollower::SetMaxTurnRateDeg(float degPerSec) {
-    maxTurnRateDeg_ = (degPerSec > 0.f ? degPerSec : 180.f);
+	maxTurnRateDeg_ = (degPerSec > 0.f ? degPerSec : 180.f);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+//      初期候補選択
+/////////////////////////////////////////////////////////////////////////////////////////
+void SplineFollower::SelectInitialRouteWeighted() {
+	if (!route_ || route_->GetVariantCount() <= 0) return;
+	route_->ChooseRandomVariant();
+	RebuildLengthEstimate_();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//      有効チェック
+/////////////////////////////////////////////////////////////////////////////////////////
 bool SplineFollower::HasUsableRoute() const noexcept {
-    return (currentRoute_ >= 0 && currentRoute_ < (int)routes_.size() && routes_[currentRoute_].usable());
+	return (route_ && route_->GetVariantCount() > 0 && route_->GetActiveIndex() >= 0);
 }
 
-void SplineFollower::SnapCursorToNearest_(int i, const Vector3& pos) {
-    auto& r = routes_[i];
-    if (!r.usable()) { r.segIdx = 0; r.segRemain = 0.0f; return; }
-
-    const size_t n = r.pts.size();
-    size_t bestI = 0;
-    float  bestD2 = (std::numeric_limits<float>::max)();
-    float  bestRemain = 0.0f;
-
-    for (size_t k = 0; k < n; ++k) {
-        const Vector3 A = r.pts[k];     
-        const Vector3 B = r.pts[(k + 1) % n];
-        Vector3 AB = B - A;
-        float ab2 = Vector3::Dot(AB, AB);
-        if (ab2 < 1e-8f) continue;
-        Vector3 AP = pos - A;
-        float t = Vector3::Dot(AP, AB) / ab2;
-        t = Clamp1(t, 0.f, 1.f);
-        Vector3 Q = A + AB * t;
-        Vector3 PQ = pos - Q;
-        float d2 = Vector3::Dot(PQ, PQ);
-        if (d2 < bestD2) {
-            bestD2 = d2;
-            bestI = (int)k;
-            bestRemain = Dist3(Q, B);   // Q→B の残距離
-        }
-    }
-    r.segIdx = bestI;
-    r.segRemain = bestRemain;
-}
-
-Vector3 SplineFollower::AddLateralOffset_(const Vector3& base, const Vector3& dir, float offset) {
-    const Vector3 up = Vector3::ToUp(); // (0,1,0)
-    Vector3 right = Vector3::Cross(up, Vector3::NormalizeOr(dir, Vector3::ToRight()));
-    return base + right * offset;
-}
-
-Vector3 SplineFollower::RouteDesiredDir_(int i, const Vector3& pos, float lookAheadDist, const Vector3& fallback) const {
-    const auto& r = routes_[i];
-    if (!r.usable()) return fallback;
-
-    const size_t n = r.pts.size();
-    size_t seg = r.segIdx;
-    float  remain = r.segRemain;
-
-    const Vector3 A0 = r.pts[seg];
-    const Vector3 B0 = r.pts[(seg + 1) % n];
-    const float segLen0 = Dist3(A0, B0);
-    Vector3 abDir = (segLen0 > 1e-6f) ? Vector3::NormalizeOr(B0 - A0, Vector3::ToRight())
-        : Vector3::ToRight();
-
-// 現在点（セグメント上）
-    Vector3 cur = A0 + abDir * (segLen0 - remain);
-
-    // 目標点：lookAheadDist 先（複数セグメント跨ぎ可）
-    float   need = lookAheadDist;
-    Vector3 p = cur;
-    size_t  s = seg;
-    float   rem = remain;
-
-    while (need > rem + 1e-6f) {
-        need -= rem;
-        s = (s + 1) % n;
-        const Vector3 A = r.pts[s];
-        const Vector3 B = r.pts[(s + 1) % n];
-        float segLen = Dist3(A, B);
-        if (segLen < 1e-6f) { rem = 0.f; break; }
-        p = A;
-        rem = segLen;
-    }
-    if (rem > 1e-6f && need > 0.f) {
-        const Vector3 A = r.pts[s];
-        const Vector3 B = r.pts[(s + 1) % n];
-        Vector3 d = Vector3::NormalizeOr(B - A, abDir);
-        p = p + d *(std::min)(need, rem);
-        abDir = d; // 直近方向を更新
-    }
-
-    // 平行レーンの横ずれ
-    p = AddLateralOffset_(p, abDir, r.lateralOffset);
-
-    return Vector3::NormalizeOr(p - pos, abDir);
-}
-
-Vector3 SplineFollower::RotateToward_(const Vector3& cur, const Vector3& des, float maxAngleRad) {
-    Vector3 a = Vector3::NormalizeOr(cur, Vector3::ToForward());
-    Vector3 b = Vector3::NormalizeOr(des, Vector3::ToForward());
-    float dot = std::clamp(Vector3::Dot(a, b), -1.0f, 1.0f);
-    float theta = std::acos(dot);
-    if (theta <= maxAngleRad) return b;
-    float t = maxAngleRad / (theta + 1e-8f);
-    Vector3 lerp = a * (1.0f - t) + b * t;
-    return Vector3::NormalizeOr(lerp, b);
-}
-
+/////////////////////////////////////////////////////////////////////////////////////////
+//      近傍uへスナップ
+/////////////////////////////////////////////////////////////////////////////////////////
 void SplineFollower::ResetAt(const Vector3& currentPos) {
-    if (routes_.empty()) { currentRoute_ = -1; return; }
-    if (currentRoute_ < 0 || !routes_[currentRoute_].usable()) {
-        SelectInitialRouteWeighted();
-    }
-    if (currentRoute_ >= 0) SnapCursorToNearest_(currentRoute_, currentPos);
-    switchTimer_ = 0.0f;
-    lastDesired_ = Vector3::ToForward();
+	if (!HasUsableRoute()) return;
+
+	// 粗サーチ→微調整
+	const int   coarseN = 64;
+	float bestU = 0.0f;
+	float bestD2 = (std::numeric_limits<float>::max)();
+
+	for (int i = 0; i < coarseN; ++i) {
+		float u = (i + 0.5f) / coarseN;
+		Vector3 p = Sample_(u);
+		Vector3 d = p - currentPos;
+		float d2 = Vector3::Dot(d, d);
+		if (d2 < bestD2) { bestD2 = d2; bestU = u; }
+	}
+
+	// 微調整（左右に小刻み探索）
+	const float du = 1.0f / (coarseN * 8.0f);
+	for (int k = -8; k <= 8; ++k) {
+		float u = Wrap01_(bestU + du * k);
+		Vector3 p = Sample_(u);
+		Vector3 d = p - currentPos;
+		float d2 = Vector3::Dot(d, d);
+		if (d2 < bestD2) { bestD2 = d2; bestU = u; }
+	}
+	u_ = Wrap01_(bestU);
 }
 
-SplineFollower::Output SplineFollower::Tick(const Vector3& currentPos,
-                                            const Vector3& currentHeading,
-                                            float baseSpeed,
-                                            float dt) {
-    Output o{};
-    if (!HasUsableRoute()) {
-        o.desiredDir = currentHeading;
-        o.plannedDist =(std::max)(0.0f, baseSpeed * dt);
-        o.switched = false;
-        return o;
-    }
+/////////////////////////////////////////////////////////////////////////////////////////
+//      個体差＆切替パラメータ
+/////////////////////////////////////////////////////////////////////////////////////////
+void SplineFollower::RandomizeIndividual(float speedJitterRatio,
+										 float lateralOffsetMax,
+										 float switchPeriodMean,
+										 float switchProb,
+										 uint32_t seed) {
+	if (seed != 0) rng_.seed(seed);
 
-    const auto& r = routes_[currentRoute_];
-    const float planned =(std::max)(0.0f, baseSpeed * indivSpeedScale_ * r.speedScale * dt);
+	std::uniform_real_distribution<float> U01(0.f, 1.f);
+	std::uniform_real_distribution<float> U(-1.f, 1.f);
 
-    // 少し先を見越す
-    const float lookAhead = planned;
-    Vector3 desired = RouteDesiredDir_(currentRoute_, currentPos, lookAhead, currentHeading);
-
-    // 回頭制限
-    const float maxTurn = Rad(maxTurnRateDeg_) * dt;
-    Vector3 turned = RotateToward_(currentHeading, desired, maxTurn);
-
-    o.desiredDir = turned;
-    o.plannedDist = planned;
-    o.switched = false;
-
-    // 端トリガ（簡易）
-    bool atEnd = (routes_[currentRoute_].segRemain <= 1e-6f);
-    MaybeSwitch_(dt, currentPos, atEnd);
-
-    lastDesired_ = turned;
-    return o;
+	indivSpeedScale_ = 1.f + Clamp1(speedJitterRatio, 0.f, 1.f) * U(rng_);
+	lateralOffset_ = lateralOffsetMax * U(rng_);
+	switchPeriod_ = (std::max)(0.5f, switchPeriodMean * (0.75f + 0.5f * U01(rng_)));
+	switchProb_ = Clamp1(switchProb, 0.f, 1.f);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+//      Tick（スプライン追従計画）
+/////////////////////////////////////////////////////////////////////////////////////////
+SplineFollower::Output
+SplineFollower::Tick(const Vector3& currentPos,
+					 const Vector3& currentHeading,
+					 float baseSpeed,
+					 float dt) {
+	Output o{};
+	if (!HasUsableRoute()) {
+		o.desiredDir = currentHeading;
+		o.plannedDist = (std::max)(0.0f, baseSpeed * dt);
+		o.switched = false;
+		return o;
+	}
+
+	// === 前進距離：NPCの速度そのまま（揃えるために indivSpeedScale_ は使わない） ===
+	const float planned = (std::max)(0.0f, baseSpeed * dt);
+
+	// === 方向：スプラインの接線（首振り防止） ===
+	Vector3 tan = TangentAt_(u_);
+	tan = Vector3::NormalizeOr(tan, currentHeading);
+
+	// 横オフセットは安定のため 0 に寄せる（必要なら係数を上げる）
+	if (std::fabs(lateralOffset_) > 1e-6f) {
+		Vector3 right = Vector3::Cross(Vector3::ToUp(), tan);
+		if (right.Length() > 1e-3f) {
+			right = Vector3::Normalize(right);
+			// 小さめの係数で“接線に少しだけ寄せ”る（0 でもOK）
+			tan = Vector3::NormalizeOr(tan + right * (lateralOffset_ * 0.0f), tan);
+		}
+	}
+
+	// 回頭制限
+	const float maxTurn = Rad(maxTurnRateDeg_) * dt;
+	Vector3 turned = RotateToward_(currentHeading, tan, maxTurn);
+
+	o.desiredDir = turned;
+	o.plannedDist = planned;
+	o.switched = MaybeSwitch_(dt, currentPos, /*atEnd*/ false);
+
+	return o;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//      Advance
+/////////////////////////////////////////////////////////////////////////////////////////
 void SplineFollower::Advance(float actualMovedDist) {
-    if (!HasUsableRoute() || actualMovedDist <= 0.0f) return;
-    AdvanceOnRoute_(currentRoute_, actualMovedDist);
+	if (!HasUsableRoute() || actualMovedDist <= 0.0f) return;
+	const float du = actualMovedDist * speedToDu_;
+	u_ = Wrap01_(u_ + du);
 }
 
-void SplineFollower::AdvanceOnRoute_(int i, float dist) {
-    auto& r = routes_[i];
-    if (!r.usable()) return;
-    const size_t n = r.pts.size();
-    float rem = r.segRemain;
-    while (dist > 0.0f) {
-        if (rem <= 1e-6f) {
-            r.segIdx = (r.segIdx + 1) % n;
-            const Vector3 A = r.pts[r.segIdx];
-            const Vector3 B = r.pts[(r.segIdx + 1) % n];
-            rem = Dist3(A, B);
-            if (rem < 1e-6f) { r.segRemain = 0.0f; return; }
-        }
-        float step =(std::min)(dist, rem);
-        rem -= step;
-        dist -= step;
-    }
-    r.segRemain = rem;
+/////////////////////////////////////////////////////////////////////////////////////////
+//      サンプル（u）
+/////////////////////////////////////////////////////////////////////////////////////////
+Vector3 SplineFollower::Sample_(float u) const {
+	if (!HasUsableRoute()) return {};
+	return route_->Sample(Clamp1(u, 0.0f, 1.0f));
 }
 
-void SplineFollower::MaybeSwitch_(float dt, const Vector3& pos, bool atSegmentEnd) {
-    if (routes_.size() <= 1) return;
+/////////////////////////////////////////////////////////////////////////////////////////
+//      長さ見積もりの再構築
+/////////////////////////////////////////////////////////////////////////////////////////
+void SplineFollower::RebuildLengthEstimate_() {
+	if (!HasUsableRoute()) {
+		curveLen_ = 1.0f;
+		speedToDu_ = 1.0f;
+		return;
+	}
+	const int N = 128;
+	Vector3 prev = Sample_(0.0f);
+	float acc = 0.0f;
+	for (int i = 1; i <= N; ++i) {
+		float u = (float)i / N;
+		Vector3 p = Sample_(u);
+		acc += (p - prev).Length();
+		prev = p;
+	}
+	curveLen_ = (acc > 1e-5f ? acc : 1.0f);
+	speedToDu_ = 1.0f / curveLen_;
+}
 
-    switchTimer_ += dt;
-    const bool timeTrigger = (switchTimer_ >= switchPeriod_);
-    const bool endTrigger = atSegmentEnd;
+/////////////////////////////////////////////////////////////////////////////////////////
+//      Wrap01
+/////////////////////////////////////////////////////////////////////////////////////////
+float SplineFollower::Wrap01_(float u) {
+	u = std::fmod(u, 1.0f);
+	if (u < 0.0f) u += 1.0f;
+	return u;
+}
 
-    if (!(timeTrigger || endTrigger)) return;
+/////////////////////////////////////////////////////////////////////////////////////////
+//      接線（微小差分）
+/////////////////////////////////////////////////////////////////////////////////////////
+Vector3 SplineFollower::TangentAt_(float u) const {
+	const float eps = 1.0f / 1024.0f;
+	Vector3 a = Sample_(Wrap01_(u));
+	Vector3 b = Sample_(Wrap01_(u + eps));
+	return Vector3::NormalizeOr(b - a, Vector3::ToForward());
+}
 
-    std::uniform_real_distribution<float> U01(0.f, 1.f);
-    if (U01(rng_) <= switchProb_) {
-        float total = 0.f;
-        for (auto& r : routes_) total += (r.weight > 0.f ? r.weight : 0.f);
+/////////////////////////////////////////////////////////////////////////////////////////
+//      候補切替
+/////////////////////////////////////////////////////////////////////////////////////////
+bool SplineFollower::MaybeSwitch_(float dt, const Vector3& /*pos*/, bool atEnd) {
+	if (!HasUsableRoute() || route_->GetVariantCount() <= 1) return false;
 
-        int pick;
-        do {
-            pick = DrawWeighted_((total > 0.f) ? total : (float)routes_.size());
-        } while (pick == currentRoute_ && routes_.size() > 1);
+	// スイッチのタイマー更新
+	switchTimer_ += dt;
+	const bool timeTrigger = (switchTimer_ >= switchPeriod_);
+	if (!timeTrigger) return false;
 
-        currentRoute_ = pick;
-        SnapCursorToNearest_(currentRoute_, pos);
-        switchTimer_ = 0.0f;
-    } else {
-        if (timeTrigger) switchTimer_ = 0.0f;
-    }
+	// 次周期へ
+	switchTimer_ = 0.0f;
+
+	// 確率判定
+	std::uniform_real_distribution<float> U01(0.f, 1.f);
+	if (U01(rng_) > switchProb_) return false;
+
+	// ---- 切替前の情報を保持 ----
+	const float oldLen = curveLen_;   // 旧バリアントの推定全長
+	const float uBefore = u_;         // 旧u（正規化）
+
+	// 端まで来ているなら、わずかに手前に戻してから切替（端スナップを避ける）
+	float uForSwitch = uBefore;
+	if (atEnd) {
+		uForSwitch = (std::min)(uBefore, 0.995f);
+	}
+
+	// ---- バリアントを切替（uは維持前提）----
+	route_->SwitchVariantKeepU(uForSwitch);
+
+	// ---- 新バリアントの長さに合わせて u を再スケール（弧長だいたい維持）----
+	RebuildLengthEstimate_();
+
+	if (curveLen_ > 1e-6f && oldLen > 1e-6f) {
+		const float s = uBefore * oldLen;  // 旧弧長
+		const float uAfter = s / curveLen_;
+		u_ = Wrap01_(uAfter);
+	} else {
+		u_ = Wrap01_(uBefore);
+	}
+
+	return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//      回頭補助
+/////////////////////////////////////////////////////////////////////////////////////////
+Vector3 SplineFollower::RotateToward_(const Vector3& cur, const Vector3& des, float maxAngleRad) {
+	Vector3 a = Vector3::NormalizeOr(cur, Vector3::ToForward());
+	Vector3 b = Vector3::NormalizeOr(des, Vector3::ToForward());
+	float dot = std::clamp(Vector3::Dot(a, b), -1.0f, 1.0f);
+	float theta = std::acos(dot);
+	if (theta <= maxAngleRad) return b;
+	float t = maxAngleRad / (theta + 1e-8f);
+	Vector3 lerp = a * (1.0f - t) + b * t;
+	return Vector3::NormalizeOr(lerp, b);
 }

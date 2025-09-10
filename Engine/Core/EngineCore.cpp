@@ -34,7 +34,9 @@
 #include "Pipeline/BoundaryShardPipeline.h"
 #include "Pipeline/MiniMapIconPipeline.h"
 #include "Pipeline/MiniMapPipeline.h"
+#include "Pipeline/SkyDomePipeline.h"
 #include "Pipeline/EffectPipelines/GameScreenEffectPipeline.h"
+#include "Pipeline/EffectPipelines/PlayerOutOfFieldWarningEffectPipeline.h"
 
 ///=======================================================================
 /// 初期化
@@ -81,6 +83,8 @@ void EngineCore::Initialize(const char* title, int width, int height) {
     MiniMapIconPipeline::GetInstance()->Init(directXCommon_);
     MiniMapPipeline::GetInstance()->Init(directXCommon_);
     GameScreenEffectPipeline::GetInstance()->Init(directXCommon_);
+    PlayerOutOfFieldWarningEffectPipeline::GetInstance()->Init(directXCommon_);
+    SkyDomePipeline::GetInstance()->Init(directXCommon_);
 
     skinningObject3DPipeline_ = SkinningObject3DPipeline::GetInstance();
     skinningObject3DPipeline_->Init(directXCommon_);
@@ -143,6 +147,7 @@ void EngineCore::BeginFrame() {
     imguiManager_->Begin();
 #endif
     input_->Update();
+	audio_->Update();
     light_->Update();
 }
 

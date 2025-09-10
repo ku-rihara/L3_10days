@@ -5,8 +5,12 @@
 #include "Box.h"
 
 NpcBullet::NpcBullet() {
-	//AABBCollider::Init();
-	//AABBCollider::isAdaptCollision = false;
+	AABBCollider::Init();
+	cTransform_.translation_ = { 0, -1000.0f, 0 }; // 見えないところに移動
+	AABBCollider::isAdaptCollision = false;
+	baseTransform_.Init();
+	baseTransform_.translation_ = { 0, -1000.0f, 0 }; // 見えないところに移動
+	baseTransform_.UpdateMatrix();
 }
 
 /// ===================================================
@@ -25,6 +29,8 @@ void NpcBullet::Init() {
 	BaseObject::Init();
 	obj3d_->transform_.parent_ = &baseTransform_;
 	isInitialized_ = true;
+	speed_ = 150.0f;
+
 }
 
 void NpcBullet::Init(const Vector3& dir) {
@@ -45,9 +51,13 @@ void NpcBullet::Update() {
 	Hit();
 
 	lifeRemain_ -= Frame::DeltaTime();
-	if (lifeRemain_ <= 0.0f) Deactivate();
+	if (lifeRemain_ <= 0.0f) {
+		Deactivate(); 
+	}
 
 	BaseObject::Update();
+	cTransform_.translation_ = GetWorldPosition();
+	cTransform_.UpdateMatrix();
 }
 
 /// ===================================================
@@ -58,11 +68,17 @@ void NpcBullet::Move() {
 }
 
 void NpcBullet::Hit() {}
-//
-//void NpcBullet::OnCollisionEnter(BaseCollider*) {
-//	/// 何かに衝突したら消える
-//	//Deactivate();
-//}
+
+void NpcBullet::OnCollisionEnter(BaseCollider* other) {
+	if (!isInitialized_) {
+		return;
+	}
+
+	/// 何かに衝突したら消える
+	if (dynamic_cast<NpcBullet*>(other)) return;
+
+	Deactivate();
+}
 
 /// ===================================================
 /// パラメータ同期

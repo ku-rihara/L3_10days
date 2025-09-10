@@ -16,7 +16,11 @@ public:
 
     void Finalize();
 
-   
+    /// ===================================================
+    /// collision methods
+    /// ===================================================
+     void OnCollisionEnter(BaseCollider* other) override;
+
 private:
     /// =======================↓追加↓===============================
     TargetID myTargetId_          = INVALID_TARGET_ID;

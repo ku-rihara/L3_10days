@@ -4,13 +4,18 @@
 #include "BaseObject/BaseObject.h"
 #include "Behavior/BasePlayerSpeedBehavior.h"
 #include "Bullet/PlayerBulletShooter.h"
-#include "Easing/Easing.h"
 #include "Reticle/PlayerReticle.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 // parts
 #include "Parts/PlayerBackWing.h"
 #include "Parts/PlayerBackWingCenter.h"
 #include "Parts/PlayerFrontWing.h"
+// UI
+#include "UI/PlayerLifeUI.h"
+#include"UI/MissileIconUI.h"
+#include"UI/DMGTextUI.h"
+#include"UI/PlayerDamageParUI.h"
+
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -20,7 +25,7 @@ class LockOn;
 class GameCamera;
 class Boundary;
 struct Hole;
-class Player : public BaseObject {
+class Player : public BaseObject,public AABBCollider {
 public:
     struct SpeedParam {
         float startForwardSpeed;
@@ -33,6 +38,14 @@ public:
         float rollSpeed;
     };
 
+    struct CollisionParamInfo {
+        Vector3 collisionSize;
+        float currentCollTime;
+        float coolTime;
+        bool isColliding;
+        float damageValue;
+    };
+
     struct AutoCorrectionParam {
         bool isAutoRotate;
         float autoRotateDirection_;
@@ -43,7 +56,7 @@ public:
     struct BoundaryHoleSource : IHoleSource {
         const Boundary* boundary = nullptr;
         const std::vector<Hole>& GetHoles() const override;
-    };
+    }; 
 
 public:
     Player()  = default;
@@ -52,9 +65,13 @@ public:
     // 初期化、更新
     void Init();
     void PartsInit();
+    void UIInit();
+
     void Update();
     void PartsUpdate();
+    void UIUpdate();
 
+    void UIDraw();
     void ReticleDraw();
 
     // speed
@@ -76,12 +93,21 @@ public:
     float GetRollDegree() const;
 
     // Check
-    void CheckIsUpsideDown();   //<逆さ判定
-    bool CheckIsRollMax()const; //<ロールMAX判定
+    void CheckIsUpsideDown(); //<逆さ判定
+    bool CheckIsRollMax() const; //<ロールMAX判定
 
     // Behavior management
     void ChangeSpeedBehavior(std::unique_ptr<BasePlayerSpeedBehavior> behavior);
     void UpdateSpeedBehavior();
+
+	/// ポーズを閉じたときに呼ばれる
+    void ClosedPaused();
+    void TakeDamageForBoundary();
+
+    // collision
+    void OnCollisionStay([[maybe_unused]] BaseCollider* other);
+    Vector3 GetCollisionPos() const override;
+    void CollisionCollingUpdate();
 
 private:
     // Move
@@ -89,6 +115,8 @@ private:
     void RotateUpdate();
     void MoveUpdate();
     void ReboundByBoundary();
+
+	void ReadJsonInversePitch();
 
 private:
     // ブースト
@@ -98,15 +126,26 @@ private:
     // Parts
     std::array<std::unique_ptr<PlayerBackWing>, 2> backWings_;
     std::array<std::unique_ptr<PlayerFrontWing>, 2> frontWings_;
-    std::unique_ptr<PlayerBackWingCenter> backWingCenter_;
+    std::unique_ptr<PlayerBackWingCenter> backWingCenter_ = nullptr;
+
+    // UIs
+    std::unique_ptr<PlayerLifeUI> lifeUI_ = nullptr;
+    std::unique_ptr<DMGTextUI> dmgTextUI_ = nullptr;
+    std::unique_ptr<PlayerDamageParUI> dmgParUI_ = nullptr;
+    std::array<std::unique_ptr<MissileIconUI>, 2> missileUIs_;
 
     // globalParameter
     GlobalParameter* globalParameter_;
     const std::string groupName_ = "Player";
     GameCamera* pGameCamera_     = nullptr;
 
+    // collisionInfo
+    CollisionParamInfo collisionParamInfo_;
+
     // Parameter
     float hp_;
+    float maxHp_;
+    float damageValueByBoundary_;
 
     // speed
     SpeedParam speedParam_;
@@ -117,9 +156,12 @@ private:
     Vector3 angleInput_        = Vector3::ZeroVector();
     Quaternion targetRotation_ = Quaternion::Identity();
 
+    Vector3 startPos_;
+
     // ピッチ
     float pitchBackTime_;
     float pitchReturnThreshold_;
+	bool inversePitch_ = false;
 
     // バンク強さ、逆さ判定の値
     float bankRate_;
@@ -148,6 +190,7 @@ private:
     float rollRotateLimit_;
     float rollRotateOffset_;
     float currentMaxRoll_;
+    float rollInput_;
 
     // other class
     const ViewProjection* viewProjection_                   = nullptr;
@@ -158,6 +201,7 @@ private:
 
     BoundaryHoleSource holeSource_;
 
+
 public:
     // ゲッター
     const Vector3& GetPosition() const { return baseTransform_.translation_; }
@@ -166,10 +210,16 @@ public:
     PlayerBulletShooter* GetBulletShooter() const { return bulletShooter_.get(); }
     const SpeedParam& GetSpeedParam() const { return speedParam_; }
     const float& GetRollRotateLimit() const { return rollRotateLimit_; }
-	const Vector3& GetAngleInput() const { return angleInput_; }
-	float GetHP() const { return hp_; }
+    const Vector3& GetAngleInput() const { return angleInput_; }
+    float GetHP() const { return hp_; }
+    const float& GetMaxHP() const { return maxHp_; }
+	float GetRollInput() const { return rollInput_; }
+	bool GetInversePitch() const { return inversePitch_; }
+    BasePlayerSpeedBehavior* GetSpeedBehavior() { return speedBehavior_.get(); }
 
     void SetGameCamera(GameCamera* camera);
     void SetLockOn(LockOn* lockOn);
     void SetViewProjection(const ViewProjection* viewProjection);
+    void SetHP(float hp) { hp_ = hp; }
+	void SetInversePitch(bool inv) { inversePitch_ = inv; }
 };

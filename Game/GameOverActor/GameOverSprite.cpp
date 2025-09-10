@@ -3,6 +3,7 @@
 /// engine
 #include "base/TextureManager.h"
 #include "input/Input.h"
+#include "audio/Audio.h"
 
 GameOverSprite::GameOverSprite() = default;
 GameOverSprite::~GameOverSprite() = default;
@@ -31,8 +32,8 @@ void GameOverSprite::Init() {
 		itemFrame_->SetPosition({ 40.0f, 680.0f });
 	}
 
-	offset_ = { 0.0f, 60.0f };
-	startPos_ = { 65.0f, 500.0f };
+	offset_ = { 0.0f, 60.0f * 1.5f };
+	startPos_ = { 65.0f, 515.0f };
 
 	{	/// selected frame
 		uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture(
@@ -44,7 +45,6 @@ void GameOverSprite::Init() {
 
 	{	/// icons
 		const std::vector<std::string> iconPaths = {
-			"./resources/Texture/GameResult/GameOverTextCheckPoint.png",
 			"./resources/Texture/GameResult/GameOverTextRetryGame.png",
 			"./resources/Texture/GameResult/GameOverTextReturnTitle.png"
 		};
@@ -64,15 +64,27 @@ void GameOverSprite::Update() {
 
 	/// 更新
 	Input* input = Input::GetInstance();
+	Audio* audio = Audio::GetInstance();
+
 	if (input->TrrigerKey(DIK_W) ||
-		input->TrrigerKey(DIK_UP)) {
+		input->TrrigerKey(DIK_UP) ||
+		input->IsTriggerPad(0, Gamepad::DPadUp)) {
+
+		int soundId = audio->LoadWave("./resources/Sound/SE/SelectSE.wav");
+		audio->PlayWave(soundId, 0.1f);
+
 		if (selectIndex_ > 0) {
 			--selectIndex_;
 		}
 	}
 
 	if (input->TrrigerKey(DIK_S) ||
-		input->TrrigerKey(DIK_DOWN)) {
+		input->TrrigerKey(DIK_DOWN) ||
+		input->IsTriggerPad(0, Gamepad::DPadDown)) {
+
+		int soundId = audio->LoadWave("./resources/Sound/SE/SelectSE.wav");
+		audio->PlayWave(soundId, 0.1f);
+
 		if (selectIndex_ < kMaxIcons_ - 1) {
 			++selectIndex_;
 		}
@@ -95,4 +107,8 @@ void GameOverSprite::Draw() {
 		icon->Draw();
 	}
 
+}
+
+size_t GameOverSprite::GetSelectIndex() const {
+	return selectIndex_;
 }
