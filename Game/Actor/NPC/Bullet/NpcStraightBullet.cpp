@@ -7,7 +7,7 @@
 void NpcStraightBullet::Init() {
 	if (isInitialized_) return;
 
-	modelName_ = "cube.obj";
+	modelName_ = "Missile.obj";
 	groupName_ = "NpcStraightBullet";
 
 	NpcBullet::Init();                       // 基底のセットアップ（モデル・親子付け等）

@@ -47,6 +47,7 @@ GameScene::~GameScene() = default;
 
 void GameScene::Init() {
 	BaseScene::Init();
+	Frame::ResetDeltaTime();
 
 	// option load
 	GameOption::GetInstance()->Init();
@@ -154,6 +155,7 @@ void GameScene::Init() {
 	/// BGMの再生
 	bgmId_ = audio_->LoadWave("./resources/Sound/BGM/InGameBGM.wav");
 	audio_->PlayBGM(bgmId_, 0.05f);
+	Frame::ResetDeltaTime();
 }
 
 void GameScene::Update() {
