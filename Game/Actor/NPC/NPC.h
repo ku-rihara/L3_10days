@@ -19,7 +19,7 @@ class BaseStation;
 class Line3D;
 class Boundary;
 class NpcFireController;
-class RouteCollection;         // ★追加
+class RouteCollection;  
 struct Hole;
 
 class NPC : public BaseObject, public AABBCollider {
@@ -67,8 +67,9 @@ public:
 	/// ===================================================
 	/// collision methods
 	/// ===================================================
-	void OnCollisionEnter(BaseCollider* other) override;
 	void BindAttackRouteAtEntry_(const Vector3& center);
+	virtual void OnCollisionEnter(BaseCollider* other) override;
+
 public:
 	// ★ロールはNPC側でも保持（Navigatorに反映しつつ保存）
 	void SetRole(NpcNavigator::Role r) { role_ = r; navigator_.SetRole(r); }

@@ -155,9 +155,7 @@ void TutorialScene::HandleSceneTransition() {
         /// 効果音の再生
         /*	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
             audio_->PlayWave(soundId, 0.2f);
-            audio_->StopBGM(bgmId_);*/
-
-      
+            audio_->StopBGM(bgmId_);*/    
     } 
 
      // 自動的にチュートリアルを開始
@@ -235,9 +233,7 @@ void TutorialScene::ModelDraw() {
     boundaryEdgePipeline->PreDraw(commandList);
     boundaryEdgePipeline->Draw(commandList, viewProjection_);
 
-    MiniMapPipeline* miniMapPipeline = MiniMapPipeline::GetInstance();
-    miniMapPipeline->PreDraw(commandList);
-    miniMapPipeline->Draw(commandList, miniMap_.get());
+  
 }
 
 /// ===================================================

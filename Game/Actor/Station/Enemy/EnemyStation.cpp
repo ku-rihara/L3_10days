@@ -1,94 +1,138 @@
 #include "EnemyStation.h"
 
+#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "Actor/NPC/EnemyNPC.h"
 #include "Actor/NPC/Pool/NpcPool.h"
-#include "Frame/Frame.h"
 #include "Actor/Player/Player.h"
-#include "utility/ParameterEditor/GlobalParameter.h"
-#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
+#include "base/TextureManager.h"
+#include "Frame/Frame.h"
 #include "imgui.h"
+#include "utility/ParameterEditor/GlobalParameter.h"
 
-EnemyStation::EnemyStation(){ BaseStation::SetFaction(FactionType::Enemy); }
+EnemyStation::EnemyStation() { BaseStation::SetFaction(FactionType::Enemy); }
 
-EnemyStation::EnemyStation(const std::string& name) :
-	BaseStation(name){ BaseStation::SetFaction(FactionType::Enemy); }
+EnemyStation::EnemyStation(const std::string& name) : BaseStation(name) { BaseStation::SetFaction(FactionType::Enemy); }
 
-EnemyStation::~EnemyStation(){ spawned_.clear(); }
+EnemyStation::~EnemyStation() { spawned_.clear(); }
 
 /// ===================================================
 /// 初期化
 /// ===================================================
-void EnemyStation::Init(){
-	obj3d_.reset(Object3d::CreateModel("EnemyBase.obj"));
-	BaseObject::Init();
-	obj3d_->transform_.parent_ = &baseTransform_;
+void EnemyStation::Init() {
+    obj3d_.reset(Object3d::CreateModel("EnemyBase.obj"));
+    BaseObject::Init();
+    obj3d_->transform_.parent_ = &baseTransform_;
 
-	globalParam_ = GlobalParameter::GetInstance();
-	faction_ = FactionType::Enemy;
-	BaseStation::Init();
+    globalParam_ = GlobalParameter::GetInstance();
+    faction_     = FactionType::Enemy;
+    BaseStation::Init();
 
-	fireController_ = std::make_unique<NpcFireController>();
-	fireController_->Init();
+    int handle = TextureManager::GetInstance()->LoadTexture("Resources/Texture/UI/BossReticle.png");
+    bossReticle_.reset(Sprite::Create(handle, Vector2::ZeroVector(), Vector4::kWHITE()));
+    bossReticle_->anchorPoint_ = Vector2(0.5f, 0.5f);
 
-	shootCooldown_ = shootInterval_;
+    fireController_ = std::make_unique<NpcFireController>();
+    fireController_->Init();
+
+    shootCooldown_ = shootInterval_;
+}
+
+void EnemyStation::SpriteUpdate(const ViewProjection& viewPro) {
+
+    // ターゲットの座標取得
+    Vector3 positionView = {};
+    // 敵のロックオン座標を取得
+    Vector3 positionWorld = GetWorldPosition();
+
+    positionView = TransformMatrix(positionWorld, viewPro.matView_);
+    // 距離条件チェック
+    if (0.0f <= positionView.z && positionView.z <= 1280.0f) {
+        float actTangent = std::atan2(std::sqrt(positionView.x * positionView.x + positionView.y * positionView.y), positionView.z);
+
+        // コーンに収まっているか
+        isDraw_ = (std::fabsf(actTangent) <= std::fabsf(180.0f * 3.14f));
+    }
+
+    Vector3 positionScreen = ScreenTransform(positionWorld, viewPro);
+    Vector2 positionScreenV2(positionScreen.x, positionScreen.y);
+
+    bossReticle_->SetScale(Vector2(0.2f,0.2f));
+    bossReticle_->SetPosition(positionScreenV2);
+
+    spriteRotation_ += Frame::DeltaTime();
+    bossReticle_->transform_.rotate.z = spriteRotation_;
 }
 
 /// ===================================================
 /// 更新
 /// ===================================================
-void EnemyStation::Update(){
-	float dt = Frame::DeltaTime();
-	//スポーン
-	currentTime_ += dt;
-	if (currentTime_ >= spawnInterbal_){ SpawnNPC(GetWorldPosition()); }
+void EnemyStation::Update() {
+    float dt = Frame::DeltaTime();
+    // スポーン
+    currentTime_ += dt;
+    if (currentTime_ >= spawnInterbal_) {
+        SpawnNPC(GetWorldPosition());
+    }
 
-	//弾の発射
-	if (fireController_) fireController_->Tick();
+    // 弾の発射
+    if (fireController_)
+        fireController_->Tick();
 
-	TryFire();
+    TryFire();
 
-	for (auto& enemy : spawned_){ enemy->Update(); }
+    for (auto& enemy : spawned_) {
+        enemy->Update();
+    }
 
-	BaseStation::Update();
+    BaseStation::Update();
 }
 
 /// ===================================================
 /// npcのスポーン
 
-void EnemyStation::SpawnNPC(const Vector3& pos){
-	if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_) return;
+void EnemyStation::SpawnNPC(const Vector3& pos) {
+    if (static_cast<int>(spawned_.size()) >= maxConcurrentUnits_)
+        return;
 
-	auto npc = pool_.Acquire();
-	npc->Init();
-	npc->SetFaction(FactionType::Enemy);
+    auto npc = pool_.Acquire();
+    npc->Init();
+    npc->SetFaction(FactionType::Enemy);
 
-	if (auto* rival = this->GetRivalStation()){ npc->SetTargetProvider(this); }
+    if (auto* rival = this->GetRivalStation()) {
+        npc->SetTargetProvider(this);
+    }
 
-	npc->SetWorldPosition(pos);
-	npc->SetTarget(GetRivalStation());
-	if (const auto* rc = GetRouteCollection()){ npc->AttachRoutes(rc); }
-	spawned_.push_back(std::move(npc));
-	currentTime_ = 0.0f;
+    npc->SetWorldPosition(pos);
+    npc->SetTarget(GetRivalStation());
+    if (const auto* rc = GetRouteCollection()) {
+        npc->AttachRoutes(rc);
+    }
+    spawned_.push_back(std::move(npc));
+    currentTime_ = 0.0f;
 }
 
-void EnemyStation::SetPlayerPtr(const Player* player){ pPlayer_ = player; }
+void EnemyStation::SetPlayerPtr(const Player* player) { pPlayer_ = player; }
 
-void EnemyStation::CollectTargets(std::vector<const BaseObject*>& out) const{
-	BaseStation::CollectTargets(out);
+void EnemyStation::CollectTargets(std::vector<const BaseObject*>& out) const {
+    BaseStation::CollectTargets(out);
 
-	// 自分が Enemy で、プレイヤーが指定されていれば攻撃候補に追加
-	if (GetFactionType() == FactionType::Enemy && pPlayer_){ out.push_back(static_cast<const BaseObject*>(pPlayer_)); }
+    // 自分が Enemy で、プレイヤーが指定されていれば攻撃候補に追加
+    if (GetFactionType() == FactionType::Enemy && pPlayer_) {
+        out.push_back(static_cast<const BaseObject*>(pPlayer_));
+    }
 }
 
 void EnemyStation::TryFire() {
-    if (!fireController_) return;
-    if (!pPlayer_) return;
+    if (!fireController_)
+        return;
+    if (!pPlayer_)
+        return;
 
     const float dt = Frame::DeltaTime();
 
     // ===== バースト（直進連射）中の処理 =====
     if (burstActive_) {
-        burstTimer_    -= dt;
+        burstTimer_ -= dt;
         burstCooldown_ -= dt;
 
         if (burstTimer_ <= 0.0f) {
@@ -109,7 +153,7 @@ void EnemyStation::TryFire() {
             Vector3 dir = toTgt.Normalize();
             // もし Normalize がゼロベクトルを返す場合のフォールバック
             if (std::fabs(dir.x) < 1e-6f && std::fabs(dir.y) < 1e-6f && std::fabs(dir.z) < 1e-6f) {
-                dir = Vector3{0,0,1};
+                dir = Vector3{0, 0, 1};
             }
 
             fireController_->SpawnStraight(myPos, dir);
@@ -127,16 +171,18 @@ void EnemyStation::TryFire() {
 
     // 二乗距離（演算子不要）
     const float dx = toTgt.x, dy = toTgt.y, dz = toTgt.z;
-    const float dist2  = dx*dx + dy*dy + dz*dz;
+    const float dist2  = dx * dx + dy * dy + dz * dz;
     const float range2 = fireRange_ * fireRange_;
-    if (dist2 > range2) return;            // 射程外
+    if (dist2 > range2)
+        return; // 射程外
 
-    if (shootCooldown_ > 0.0f) return;      // クールダウン中
+    if (shootCooldown_ > 0.0f)
+        return; // クールダウン中
 
     // 方向（Normalize 使用）
     Vector3 dir = toTgt.Normalize();
     if (std::fabs(dir.x) < 1e-6f && std::fabs(dir.y) < 1e-6f && std::fabs(dir.z) < 1e-6f) {
-        dir = Vector3{0,0,1};
+        dir = Vector3{0, 0, 1};
     }
 
     // 射程の半分以内ならバースト開始、それ以外はホーミング1発
@@ -144,13 +190,21 @@ void EnemyStation::TryFire() {
     if (dist2 <= halfRange2) {
         // バースト開始（すぐ撃ちたいので cooldown 0）
         burstActive_   = true;
-        burstTimer_    = 2.0f;     // 2 秒間
-        burstInterval_ = 0.1f;     // 0.1 秒間隔
-        burstCooldown_ = 0.0f;     // 次フレームですぐ撃つ
+        burstTimer_    = 2.0f; // 2 秒間
+        burstInterval_ = 0.1f; // 0.1 秒間隔
+        burstCooldown_ = 0.0f; // 次フレームですぐ撃つ
         shootCooldown_ = shootInterval_;
     } else {
         // 通常のホーミング射撃（1 発）
         fireController_->SpawnHoming(myPos, dir, static_cast<const BaseObject*>(pPlayer_));
         shootCooldown_ = shootInterval_;
     }
+}
+
+void EnemyStation::DrawSprite() {
+    if (!isDraw_) {
+        return;
+    }
+
+    bossReticle_->Draw();
 }
