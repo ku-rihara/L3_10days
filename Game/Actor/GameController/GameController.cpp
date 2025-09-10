@@ -45,6 +45,10 @@ GameController::GameController() {
 	Vector2 size    = Vector2{ 32.0f, 32.0f };
 	commaSprite_->SetScale(size / texSize);
 
+	textureHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/UI/CaveatText.png");
+	oOFWText_.reset(Sprite::Create(textureHandle, basePos + Vector2(0, -50.0f), { 1, 1, 1, 1 }));
+	oOFWText_->anchorPoint_ = { 0.5f, 0.5f };
+
 	gameTimer_ = std::make_unique<GameTimer>();
 	gameTimer_->Init();
 
@@ -93,6 +97,7 @@ void GameController::DrawOutOfFieldWarningTime() {
 	outOfFieldWarningTimeIntNumDraw_->Draw();
 	outOfFieldWarningTimeFracNumDraw_->Draw();
 	commaSprite_->Draw();
+	oOFWText_->Draw();
 }
 
 void GameController::DrawGameTimer() {
