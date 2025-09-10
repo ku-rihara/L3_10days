@@ -93,6 +93,10 @@ void TutorialMissionManager::Update() {
         currentMission->Update();
         CheckMissionCompletion();
     }
+
+    if (missions_[7]->GetStatus() == BaseTutorialMission::MissionStatus::COMPLETED) {
+        status_ = TutorialStatus::COMPLETED;
+    }
 }
 
 void TutorialMissionManager::UpdateTransition() {
@@ -265,7 +269,7 @@ void TutorialMissionManager::CheckMissionCompletion() {
         return;
     }
 
-    // ミッションが完了した瞬間の処理（一度だけ実行）
+    // ミッションが完了した瞬間の処理
     if (currentMission->IsCompleted() && status_ == TutorialStatus::IN_PROGRESS && !isWaitingForCloseAnimation_) {
 
         completedMissions_++;
