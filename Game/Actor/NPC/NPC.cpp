@@ -113,7 +113,7 @@ void NPC::Init() {
 	AABBCollider::SetCollisionScale(Vector3{ 1, 1, 1 } *10.0f);
 
 	// 初期移動速度
-	speed_ = 65.0f;
+	speed_ = 100.0f;
 	// ★ Navigator に初期速度を反映
 	navigator_.SetSpeed(speed_);
 }
@@ -239,76 +239,139 @@ void NPC::StartOrbit(const Vector3& center) {
 }
 
 void NPC::Move() {
-	if (!isActive_) return;
+    if (!isActive_) return;
 
-	const float dt = Frame::DeltaTime();
-	const Vector3 npcPos = GetWorldPosition();
+    const float dt = Frame::DeltaTime();
+    const Vector3 npcPos = GetWorldPosition();
 
-	NpcNavigator::StationSide side{};
-	side.allyBase = hasDefendAnchor_ ? defendAnchor_ : npcPos;   // 防衛アンカー or 現在地
-	side.enemyBase = target_ ? target_->GetWorldPosition() : npcPos;
-	navigator_.SetStationSide(side);
+    // ---- ステーション側コンテキストを反映（ロール依存の目標用）----
+    NpcNavigator::StationSide side{};
+    side.allyBase  = hasDefendAnchor_ ? defendAnchor_ : npcPos;          // 防衛アンカー or 現在地
+    side.enemyBase = target_ ? target_->GetWorldPosition() : npcPos;
+    navigator_.SetStationSide(side);
 
-	Vector3 sensedTgt = npcPos;
-	if (const BaseObject* ft = PickFrustumTarget()) {
-		sensedTgt = ft->GetWorldPosition();
-	} else if (target_) {
-		sensedTgt = side.enemyBase;
-	}
+    // ---- センサー（視錐台内の目標を優先）----
+    Vector3 sensedTgt = npcPos;
+    if (const BaseObject* ft = PickFrustumTarget()) { sensedTgt = ft->GetWorldPosition(); }
+    else if (target_) { sensedTgt = side.enemyBase; }
 
-	const Boundary* boundary = Boundary::GetInstance();
-	const std::vector<Hole>& holes = boundary->GetHoles();
+    // ---- ホール情報取得 ----
+    const Boundary* boundary = Boundary::GetInstance();
+    const std::vector<Hole>& holes = boundary->GetHoles();
 
-	navigator_.SetSpeed(speed_);
+    // ---- スピード毎フレーム反映 ----
+    navigator_.SetSpeed(speed_);
 
-	// 状態遷移の検知
-	auto prevState = navigator_.GetState();
+    // ---- 状態遷移の検知 ----
+    const auto prevState = navigator_.GetState();
 
-	// 役割駆動ナビゲーション
-	const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, sensedTgt, holes);
+    // ---- 役割駆動ナビゲーション ----
+    const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, sensedTgt, holes);
 
-	// ★Orbit へ入った瞬間にスプラインを中心へ合わせてバインド＋最近点へスナップ
-	if (prevState != NpcNavigator::State::Orbit &&
-		navigator_.GetState() == NpcNavigator::State::Orbit) {
-		const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
-		BindOrbitRouteAtEntry_(center);
-		// その場で線に乗る
-		navigator_.ResetFollowerAt(GetWorldPosition());
-	}
+    // ★Orbit へ入った瞬間にスプラインを中心へ合わせてバインド＋最近点へスナップ
+    if (prevState != NpcNavigator::State::Orbit &&
+        navigator_.GetState() == NpcNavigator::State::Orbit) {
+        const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
+        BindOrbitRouteAtEntry_(center);
+        navigator_.ResetFollowerAt(GetWorldPosition()); // その場で線に乗る
+    }
 
-	// ---- 目的地へ移動（制約を通す）----
-	Vector3 from = baseTransform_.translation_;
-	Vector3 to = from + desiredDelta;
+    // ============================================================
+    // 目的地へ移動：
+    //  1) ToHole 以外で境界に当たったら「壁直前まで進む + 残りを接線でスライド」
+    //  2) スライドしない通常フレームだけ制約(FilterMove)を適用
+    // ============================================================
+    Vector3 from = baseTransform_.translation_;
+    Vector3 to   = from + desiredDelta;
 
-	if (moveConstraint_) { to = moveConstraint_->FilterMove(from, to); }
+    auto Normalize3 = [](const Vector3& v, const Vector3& fb = Vector3(0,0,1)) {
+        const float L = v.Length(); return (L > 1e-6f) ? (v * (1.0f/L)) : fb;
+    };
+    auto SegmentPlaneHit = [](const Vector3& A, const Vector3& B,
+                              const Vector3& P, const Vector3& N,
+                              float& tHit, Vector3& Q)->bool {
+        const float da = Vector3::Dot(N, A - P);
+        const float db = Vector3::Dot(N, B - P);
+        if (da * db > 0.0f) return false;            // どちらも同じ側
+        const float denom = (da - db);
+        if (std::fabs(denom) < 1e-8f) return false;  // ほぼ平行
+        tHit = da / (da - db);
+        if (tHit < 0.0f || tHit > 1.0f) return false;
+        Q = A + (B - A) * tHit;
+        return true;
+    };
 
-	// === 進行方向へ機体を向ける ===
-	const Vector3 v = to - from;
-	const float vLen = v.Length();
-	if (vLen > 1e-6f) {
-		const Vector3 dir = v * (1.0f / vLen);
+    bool didSlide = false;
 
-		const float targetYaw = std::atan2(dir.x, dir.z);
-		const float targetPitch = std::atan2(-dir.y, std::sqrt(dir.x * dir.x + dir.z * dir.z));
+    // ---- ToHole 以外は越境禁止：壁ヒット時にスライドする ----
+    if (navigator_.GetState() != NpcNavigator::State::ToHole) {
+        Vector3 P, N;
+        boundary->GetDividePlane(P, N);
+        N = Normalize3(N, Vector3::ToUp());
 
-		const float turnRateRadPerSec = std::numbers::pi_v<float> *2.0f;
-		const float maxStep = turnRateRadPerSec * dt;
+        // 本来の意図距離（スピード×dt）
+        const float intendedLen = speed_ * dt;
 
-		baseTransform_.rotateOder_ = RotateOder::XYZ;
+        // 進行方向（desiredDelta がゼロに近い場合は前フレ）
+        const Vector3 heading = Normalize3(desiredDelta, Vector3(0,0,1));
 
-		Vector3& rot = baseTransform_.rotation_;
-		rot.y = MoveTowardsAngle(rot.y, targetYaw, maxStep);
-		rot.x = MoveTowardsAngle(rot.x, targetPitch, maxStep);
+        // 「本来の終点」（壁と交差するかを見る）
+        const Vector3 idealTo = from + heading * intendedLen;
 
-		const float bankGain = 0.6f;
-		const float bankMax = std::numbers::pi_v<float> *0.35f;
-		float yawErr = WrapPi(targetYaw - rot.y);
-		float targetBank = std::clamp(-yawErr * bankGain, -bankMax, bankMax);
-		const float bankRate = std::numbers::pi_v<float> *1.2f;
-		rot.z = MoveTowardsAngle(rot.z, targetBank, bankRate * dt);
-	}
+        float tHit; Vector3 Q;
+        if (SegmentPlaneHit(from, idealTo, P, N, tHit, Q)) {
+            // 壁直前までの距離と残り距離に分解
+            const float tClamped  = std::clamp(tHit, 0.0f, 1.0f);
+            const float lenToWall = tClamped * intendedLen;
+            const float lenRemain = (std::max)(0.0f, intendedLen - lenToWall);
 
-	baseTransform_.translation_ = to;
+            // めり込み防止の押し戻し（小さすぎ/大きすぎなら調整）
+            const float pushBack = 0.01f;
+            const float lenToUse = (std::max)(0.0f, lenToWall - pushBack);
+
+            // 接線方向（法線成分を除去）
+            const Vector3 tangent = Normalize3(heading - N * Vector3::Dot(heading, N), heading);
+
+            const Vector3 deltaToWall = heading * lenToUse;
+            const Vector3 deltaSlide  = tangent * lenRemain;
+
+            to = from + deltaToWall + deltaSlide;
+            didSlide = true;
+        }
+    }
+
+    // ---- スライドしていない通常フレームだけ制約を通す（2重クリップ防止）----
+    if (moveConstraint_ && !didSlide) {
+        to = moveConstraint_->FilterMove(from, to);
+    }
+
+    // === 進行方向へ機体を向ける（従来どおり）===
+    const Vector3 v = to - from;
+    const float vLen = v.Length();
+    if (vLen > 1e-6f) {
+        const Vector3 dir = v * (1.0f / vLen);
+
+        const float targetYaw   = std::atan2(dir.x, dir.z);
+        const float targetPitch = std::atan2(-dir.y, std::sqrt(dir.x * dir.x + dir.z * dir.z));
+
+        const float turnRateRadPerSec = std::numbers::pi_v<float> * 2.0f;
+        const float maxStep = turnRateRadPerSec * dt;
+
+        baseTransform_.rotateOder_ = RotateOder::XYZ;
+
+        Vector3& rot = baseTransform_.rotation_;
+        rot.y = MoveTowardsAngle(rot.y, targetYaw,  maxStep);
+        rot.x = MoveTowardsAngle(rot.x, targetPitch, maxStep);
+
+        const float bankGain = 0.6f;
+        const float bankMax  = std::numbers::pi_v<float> * 0.35f;
+        float yawErr = WrapPi(targetYaw - rot.y);
+        float targetBank = std::clamp(-yawErr * bankGain, -bankMax, bankMax);
+        const float bankRate = std::numbers::pi_v<float> * 1.2f;
+        rot.z = MoveTowardsAngle(rot.z, targetBank, bankRate * dt);
+    }
+
+    baseTransform_.translation_ = to;
 }
 
 // Orbit突入時にスプラインを中心へ平行移動してバインド
@@ -326,9 +389,9 @@ void NPC::BindOrbitRouteAtEntry_(const Vector3& center) {
 	// routes_ は const なので使用時だけ外す
 	auto* rc = const_cast<RouteCollection*>(routes_);
 	if (auto* route = rc->GetRoute(rt)) {
-		route->SetBaseOffset(center);        // 原点を Orbit 中心へ平行移動
-		navigator_.BindOrbitRoute(route);    // ルートをバインド
-		navigator_.SelectInitialOrbitRoute();// バリアント選択
+		route->SetBaseOffset(center);				// 原点を Orbit 中心へ平行移動
+		navigator_.BindOrbitRoute(route);			// ルートをバインド
+		navigator_.SelectInitialOrbitRoute();		// バリアント選択
 	}
 }
 
