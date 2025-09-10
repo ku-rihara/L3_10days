@@ -16,7 +16,7 @@ PSOutput main(VSOutput input) {
 
     float alpha = PerlinNoise(scaledUV + gTime.value * 0.02);
 
-    output.color = color;
+    output.color = color * 0.75f;
     color.a = alpha;
 
     return output;
