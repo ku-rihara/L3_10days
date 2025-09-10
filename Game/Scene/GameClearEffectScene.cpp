@@ -45,6 +45,9 @@ void GameClearEffectScene::Init() {
 	bg->GetObj3d()->SetTexture("SkyDome.png");
 	sceneObj_.emplace_back(std::move(bg));
 
+	/// fade
+	fade_ = std::make_unique<Fade>();
+	fade_->Init();
 
 	/// particle
 	ExpEmitter::GetInstance()->Init();
@@ -53,11 +56,16 @@ void GameClearEffectScene::Init() {
 
 	changedTime_ = 8.0f;
 	interval_ = 0.2f;
+
+	/// フェード開始
+	fade_->FadeOut(0.1f);
 }
 
 void GameClearEffectScene::Update() {
 	Debug();
 	ViewProjectionUpdate();
+
+	fade_->Update();
 
 	for (auto& obj : sceneObj_) {
 		obj->Update();
@@ -70,9 +78,9 @@ void GameClearEffectScene::Update() {
 			{
 				Random::Range(-10.0f, 10.0f) * 10.0f,
 				Random::Range(-10.0f, 10.0f) * 10.0f,
-				Random::Range(-10.0f, 10.0f) * 10.0f,
+				Random::Range(-10.0f, 10.0f) * 10.0f
 			}
-			);
+		);
 	}
 
 
@@ -90,6 +98,7 @@ void GameClearEffectScene::Update() {
 	if (changedTime_ <= 0.0f) {
 		/// 0を下回ったらシーンチェンジ
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+		return;
 	}
 
 
@@ -106,7 +115,9 @@ void GameClearEffectScene::ModelDraw() {
 	ParticleManager::GetInstance()->Draw(viewProjection_);
 }
 
-void GameClearEffectScene::SpriteDraw() {}
+void GameClearEffectScene::SpriteDraw() {
+	fade_->Draw();
+}
 
 void GameClearEffectScene::SkyBoxDraw() {}
 

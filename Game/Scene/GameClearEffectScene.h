@@ -7,12 +7,14 @@
 /// base
 #include "BaseScene.h"
 #include "BaseObject/BaseObject.h"
+#include "Fade/Fade.h"
 #include "utility/ParticleEditor/ParticleEmitter.h"
 
 class GameClearEffectScene : public BaseScene {
 
 	std::vector<std::unique_ptr<BaseObject>> sceneObj_;
 	std::unique_ptr<ParticleEmitter> emitter_;
+	std::unique_ptr<Fade> fade_;
 
 	Vector3 basePos_;
 	
