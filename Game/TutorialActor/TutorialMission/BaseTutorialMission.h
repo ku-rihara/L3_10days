@@ -99,6 +99,8 @@ protected:
     Vector2 gaugePos_;
     Vector2 gaugeSize_;
     bool showGauge_;
+
+    std::unique_ptr<Sprite> okSprite_ = nullptr;
     std::unique_ptr<Sprite> gaugeBackSprite_ = nullptr;
     std::unique_ptr<Sprite> gaugeFillSprite_ = nullptr;
 

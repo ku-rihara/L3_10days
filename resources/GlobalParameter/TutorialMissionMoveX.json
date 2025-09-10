@@ -9,9 +9,9 @@
             25.65999984741211
         ],
         "inputThreshold": 0.10000000149011612,
-        "maxWaitTime": 3.0,
+        "maxWaitTime": 4.199999809265137,
         "requiredInputTime": 2.0,
-        "showGauge": false,
+        "showGauge": true,
         "spritePos": [
             649.3699951171875,
             160.89999389648438

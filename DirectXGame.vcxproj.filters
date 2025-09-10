@@ -264,6 +264,7 @@
     <ClCompile Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMissionY.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMissionRoll.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -527,6 +528,7 @@
     <ClInclude Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMissionY.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMissionRoll.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

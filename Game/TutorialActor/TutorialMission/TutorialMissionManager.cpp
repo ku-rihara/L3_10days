@@ -5,7 +5,7 @@
 #include <imgui.h>
 
 TutorialMissionManager::TutorialMissionManager() {
-    missionTransitionDelay_ = 2.0f; // デフォルト2秒の遅延
+    missionTransitionDelay_ = 0.5f; // デフォルト2秒の遅延
     transitionState_        = TransitionState::NONE;
     transitionTimer_        = 0.0f;
 }
@@ -19,15 +19,13 @@ void TutorialMissionManager::Init() {
     transitionTimer_     = 0.0f;
 
     // ミッション初期化（複数のミッションを追加）
-    missions_[0] = std::make_unique<MoveMission>();
+    missions_[0] = std::make_unique<MoveMission>();// Pitch
     missions_[0]->Init("TutorialMissionMoveX", "MoveXMission");
-    missions_[1] = std::make_unique<MoveMissionY>();
+    missions_[1] = std::make_unique<MoveMissionY>();// Yaw
     missions_[1]->Init("TutorialMissionMoveY", "MoveYMission");
+    missions_[2] = std::make_unique<MoveMissionY>(); // Yaw
+    missions_[2]->Init("TutorialMissionMoveY", "MoveYMission");
    
-
-    // 他のミッションも追加可能
-    // missions_[1] = std::make_unique<AnotherMission>();
-    // missions_[1]->Init("TutorialMissionY", "YMission");
 
     // 全ミッションを初期化
     for (auto& mission : missions_) {

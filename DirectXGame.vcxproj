@@ -283,6 +283,7 @@
     <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\BaseTutorialMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMission.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMissionRoll.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMissionY.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -537,6 +538,7 @@
     <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\BaseTutorialMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMission.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMissionRoll.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMissionY.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.h" />
     <ClInclude Include="math\Box.h" />

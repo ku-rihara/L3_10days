@@ -43,6 +43,9 @@ void BaseTutorialMission::Update() {
     sprite_->SetPosition(spritePos_);
     sprite_->SetScale(tempScale_);
 
+    okSprite_->SetPosition(spritePos_);
+    okSprite_->SetScale(tempScale_);
+
     gaugeFillSprite_->SetScale(Vector2(1.0f, tempScale_.y));
     gaugeBackSprite_->SetScale(Vector2(1.0f, tempScale_.y));
 
@@ -64,9 +67,14 @@ void BaseTutorialMission::EndUpdate() {
 }
 
 void BaseTutorialMission::SpriteDraw() {
-    // メインスプライトの描画
-    if (sprite_ && (scaleAnimState_ != ScaleAnimationState::NONE)) {
-        sprite_->Draw();
+
+    if (status_ == MissionStatus::COMPLETED || scaleAnimState_ == ScaleAnimationState::CLOSING) {
+        okSprite_->Draw();
+    } else {
+        // メインスプライトの描画
+        if (sprite_ && (scaleAnimState_ != ScaleAnimationState::NONE)) {
+            sprite_->Draw();
+        }
     }
 
     // ゲージの描画
@@ -135,7 +143,7 @@ void BaseTutorialMission::StartScaleCloseAnimation() {
         scaleAnimState_ = ScaleAnimationState::CLOSING;
 
         // クローズ演出をリセットして開始
-     
+
         closeEase_.yScale->Reset();
 
         // 演出終出時のコールバック設定
@@ -209,12 +217,15 @@ void BaseTutorialMission::InitializeGauge() {
     gaugeFillSprite_.reset(Sprite::Create(fillHandle, Vector2::ZeroVector(), Vector4::kWHITE()));
     gaugeFillSprite_->anchorPoint_ = Vector2(0.0f, 0.5f);
 
+    int okHandle = TextureManager::GetInstance()->LoadTexture(filePath_ + "OK.png");
+    okSprite_.reset(Sprite::Create(okHandle, Vector2::ZeroVector(), Vector4::kWHITE()));
+    okSprite_->anchorPoint_ = Vector2(0.5f, 0.5f);
+
     // ゲージの初期設定
     showGauge_ = false;
 }
 
 void BaseTutorialMission::UpdateGauge() {
-   
 
     // ゲージ位置の更新
     gaugeBackSprite_->SetPosition(gaugePos_);
@@ -229,10 +240,9 @@ void BaseTutorialMission::UpdateGauge() {
 }
 
 void BaseTutorialMission::DrawGauge() {
-   
-        gaugeBackSprite_->Draw();
-        gaugeFillSprite_->Draw();
-    
+
+    gaugeBackSprite_->Draw();
+    gaugeFillSprite_->Draw();
 }
 
 void BaseTutorialMission::BindParams() {
