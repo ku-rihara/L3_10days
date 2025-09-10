@@ -3,9 +3,13 @@
 /// engine
 #include "3d/ModelManager.h"
 #include "Frame/Frame.h"
-
+#include "Pipeline/SkyDomePipeline.h"
+#include "Dx/DirectXCommon.h"
+#include "base/TextureManager.h"
 
 void SkyDome::Init() {
+	TextureManager::GetInstance()->LoadTexture("./resources/Model/skydome/Hexagon.png");
+
 	const std::string instanceName = "skydome.obj";
 
 	// 新しいModelインスタンスを作成
@@ -36,9 +40,15 @@ void SkyDome::Init() {
 
 void SkyDome::Update() {}
 
-void SkyDome::Draw(const ViewProjection& _vp) {
+void SkyDome::DrawBG(const ViewProjection& _vp) {
 	bg_->obj3d_->Draw(_vp);
-	obj3d_->Draw(_vp);
+}
+
+void SkyDome::DrawSkyDome(const ViewProjection& _vp) {
+	ID3D12GraphicsCommandList* cmdList = DirectXCommon::GetInstance()->GetCommandList();
+
+	SkyDomePipeline::GetInstance()->PreDraw(cmdList);
+	SkyDomePipeline::GetInstance()->Draw(cmdList, _vp, this);
 }
 
 

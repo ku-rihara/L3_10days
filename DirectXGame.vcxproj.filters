@@ -261,6 +261,7 @@
     <ClCompile Include="Game\Actor\ExpEmitter\ExpEmitter.cpp" />
     <ClCompile Include="Game\Scene\TutorialScene.cpp" />
     <ClCompile Include="Game\Actor\GameController\GameTimer.cpp" />
+    <ClCompile Include="Game\Pipeline\SkyDomePipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -521,6 +522,7 @@
     <ClInclude Include="Game\Actor\ExpEmitter\ExpEmitter.h" />
     <ClInclude Include="Game\Scene\TutorialScene.h" />
     <ClInclude Include="Game\Actor\GameController\GameTimer.h" />
+    <ClInclude Include="Game\Pipeline\SkyDomePipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
