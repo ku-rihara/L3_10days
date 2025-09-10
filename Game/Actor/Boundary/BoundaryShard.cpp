@@ -220,6 +220,10 @@ StructuredBuffer<BreakableBufferData>& BoundaryShard::GetBreakableBufferRef() {
 	return breakableBuffer_;
 }
 
+void BoundaryShard::ResetBreakables() {
+	breakables_.clear();
+}
+
 bool BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
 	bool result = false;
 

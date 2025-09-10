@@ -12,6 +12,9 @@ class GameClearEffectScene : public BaseScene {
 
 	std::vector<std::unique_ptr<BaseObject>> sceneObj_;
 
+	float interval_;
+	float time_;
+
 public:
 	GameClearEffectScene();
 	~GameClearEffectScene() override;
@@ -21,6 +24,7 @@ public:
 	void SpriteDraw() override;
 	void SkyBoxDraw() override;
 	void DrawShadow() override;
+	void Debug() override;
 	void ViewProssess() override;
 };
 

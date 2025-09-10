@@ -195,6 +195,12 @@ bool Boundary::IsInHoleXZ(const Vector3& p, float radius) const {
 	return false;
 }
 
+void Boundary::ResetHoles() {
+	/// 全ての穴と罅をリセット
+	holes_.clear();
+	boundaryShard_->ResetBreakables();
+}
+
 bool Boundary::OnBulletImpact(const Contact& c, float damage) {
 	// 穴内なら無視（最終防衛）
 	if (IsInHoleXZ(c.point, /*bullet r 不明なら0*/ 0.0f)) return false;
