@@ -30,7 +30,7 @@ void EnemyStation::Init(){
 	fireController_ = std::make_unique<NpcFireController>();
 	fireController_->Init();
 
-	shootCooldown = shootInterval;
+	shootCooldown_ = shootInterval_;
 }
 
 /// ===================================================
@@ -81,28 +81,76 @@ void EnemyStation::CollectTargets(std::vector<const BaseObject*>& out) const{
 }
 
 void EnemyStation::TryFire() {
-	if (!fireController_) return;
-	if (!pPlayer_) return;
+    if (!fireController_) return;
+    if (!pPlayer_) return;
 
-	const float dt = Frame::DeltaTime();
-	shootCooldown -= dt;
+    const float dt = Frame::DeltaTime();
 
-	const Vector3 myPos     = this->GetWorldPosition();
-	const Vector3 targetPos = pPlayer_->GetWorldPosition();
-	const Vector3 toTgt     = targetPos - myPos;
+    // ===== バースト（直進連射）中の処理 =====
+    if (burstActive_) {
+        burstTimer_    -= dt;
+        burstCooldown_ -= dt;
 
-	// 射程判定（LengthSq が無い場合は直接書く）
-	const float dist2  = toTgt.x*toTgt.x + toTgt.y*toTgt.y + toTgt.z*toTgt.z;
-	const float range2 = fireRange_ * fireRange_;
-	if (dist2 > range2) return;
+        if (burstTimer_ <= 0.0f) {
+            // バースト終了
+            burstActive_   = false;
+            burstTimer_    = 0.0f;
+            burstCooldown_ = 0.0f;
+            // バースト直後の硬直を作りたいなら shootCooldown = shootInterval; など
+            return;
+        }
 
-	if (shootCooldown > 0.0f) return;
+        if (burstCooldown_ <= 0.0f) {
+            const Vector3 myPos     = this->GetWorldPosition();
+            const Vector3 targetPos = pPlayer_->GetWorldPosition();
+            const Vector3 toTgt     = targetPos - myPos;
 
-	Vector3 dir = toTgt;
-	float len = dir.Length();
-	if (len > 1e-5f) dir = dir / len;
-	else             dir = {0,0,1};
+            // 正規化（演算子を使わず Normalize を使用）
+            Vector3 dir = toTgt.Normalize();
+            // もし Normalize がゼロベクトルを返す場合のフォールバック
+            if (std::fabs(dir.x) < 1e-6f && std::fabs(dir.y) < 1e-6f && std::fabs(dir.z) < 1e-6f) {
+                dir = Vector3{0,0,1};
+            }
 
-	fireController_->SpawnHoming(myPos, dir, pPlayer_);
-	shootCooldown = shootInterval;
+            fireController_->SpawnStraight(myPos, dir);
+            burstCooldown_ = burstInterval_; // 次弾まで 0.1s
+        }
+        return; // バースト中は通常処理に入らない
+    }
+
+    // ===== 通常処理（バースト外）=====
+    shootCooldown_ -= dt;
+
+    const Vector3 myPos     = this->GetWorldPosition();
+    const Vector3 targetPos = pPlayer_->GetWorldPosition();
+    const Vector3 toTgt     = targetPos - myPos;
+
+    // 二乗距離（演算子不要）
+    const float dx = toTgt.x, dy = toTgt.y, dz = toTgt.z;
+    const float dist2  = dx*dx + dy*dy + dz*dz;
+    const float range2 = fireRange_ * fireRange_;
+    if (dist2 > range2) return;            // 射程外
+
+    if (shootCooldown_ > 0.0f) return;      // クールダウン中
+
+    // 方向（Normalize 使用）
+    Vector3 dir = toTgt.Normalize();
+    if (std::fabs(dir.x) < 1e-6f && std::fabs(dir.y) < 1e-6f && std::fabs(dir.z) < 1e-6f) {
+        dir = Vector3{0,0,1};
+    }
+
+    // 射程の半分以内ならバースト開始、それ以外はホーミング1発
+    const float halfRange2 = (fireRange_ * 0.5f) * (fireRange_ * 0.5f);
+    if (dist2 <= halfRange2) {
+        // バースト開始（すぐ撃ちたいので cooldown 0）
+        burstActive_   = true;
+        burstTimer_    = 2.0f;     // 2 秒間
+        burstInterval_ = 0.1f;     // 0.1 秒間隔
+        burstCooldown_ = 0.0f;     // 次フレームですぐ撃つ
+        shootCooldown_ = shootInterval_;
+    } else {
+        // 通常のホーミング射撃（1 発）
+        fireController_->SpawnHoming(myPos, dir, static_cast<const BaseObject*>(pPlayer_));
+        shootCooldown_ = shootInterval_;
+    }
 }

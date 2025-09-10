@@ -36,7 +36,15 @@ private:
 	std::unique_ptr<NpcFireController> fireController_;
 	const Player* pPlayer_ = nullptr;
 
-	float shootCooldown = 0;
-	float shootInterval = 3.0f;
-	float fireRange_ = 500.0f; //< 射程
+	float fireRange_ = 700.0f; //< 射程
+
+	// 通常射撃用
+	float shootCooldown_  = 0.0f;
+	float shootInterval_  = 1.0f;
+
+	// バースト射撃用
+	bool  burstActive_    = false;
+	float burstTimer_     = 0.0f;   // 残り時間
+	float burstInterval_  = 0.1f;   // 弾間隔
+	float burstCooldown_  = 0.0f;   // 次弾までの残り
 };
