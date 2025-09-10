@@ -29,12 +29,16 @@ public:
 
 	void Init() override;
 	void Update() override;
-	void Draw(const ViewProjection& _vp);
+	void DrawBG(const ViewProjection& _vp);
+	void DrawSkyDome(const ViewProjection& _vp);
+
+	Object3d* GetObj3d() { return obj3d_.get(); }
 
 private:
 	float time_;
 	std::unique_ptr<BackgroundObj> bg_ = nullptr;
 };
+
 
 
 

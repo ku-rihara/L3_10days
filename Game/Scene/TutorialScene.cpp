@@ -173,7 +173,8 @@ void TutorialScene::ModelDraw() {
 
     /// 天球を描画
     Object3DPiprline::GetInstance()->PreDraw(commandList);
-    skyDome_->Draw(viewProjection_);
+    skyDome_->DrawBG(viewProjection_);
+    skyDome_->DrawSkyDome(viewProjection_);
 
     /// 境界の描画
     BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
