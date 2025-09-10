@@ -68,7 +68,7 @@ public:
 	/// collision methods
 	/// ===================================================
 	void OnCollisionEnter(BaseCollider* other) override;
-
+	void BindAttackRouteAtEntry_(const Vector3& center);
 public:
 	// ★ロールはNPC側でも保持（Navigatorに反映しつつ保存）
 	void SetRole(NpcNavigator::Role r) { role_ = r; navigator_.SetRole(r); }

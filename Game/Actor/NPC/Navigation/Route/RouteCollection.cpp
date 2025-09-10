@@ -35,11 +35,11 @@ void RouteCollection::Init(){
 		Vector3 offset{0.0f, 0.0f, 0.0f};
 		switch (t) {
 		case RouteType::AllyDifence:
-		case RouteType::AllyAttack:
+		case RouteType::EnemyAttack:
 			offset = {0.0f, -500.0f, 0.0f};
 			break;
 		case RouteType::EnemyDirence:
-		case RouteType::EnemyAttack:
+		case RouteType::AllyAttack:
 			offset = {0.0f,  500.0f, 0.0f};
 			break;
 		default:

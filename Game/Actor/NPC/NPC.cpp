@@ -244,9 +244,9 @@ void NPC::Move() {
     const float dt = Frame::DeltaTime();
     const Vector3 npcPos = GetWorldPosition();
 
-    // ---- ステーション側コンテキストを反映（ロール依存の目標用）----
+    // ---- ステーション側コンテキスト ----
     NpcNavigator::StationSide side{};
-    side.allyBase  = hasDefendAnchor_ ? defendAnchor_ : npcPos;          // 防衛アンカー or 現在地
+    side.allyBase  = hasDefendAnchor_ ? defendAnchor_ : npcPos; // 防衛アンカー or 現在地
     side.enemyBase = target_ ? target_->GetWorldPosition() : npcPos;
     navigator_.SetStationSide(side);
 
@@ -255,95 +255,40 @@ void NPC::Move() {
     if (const BaseObject* ft = PickFrustumTarget()) { sensedTgt = ft->GetWorldPosition(); }
     else if (target_) { sensedTgt = side.enemyBase; }
 
-    // ---- ホール情報取得 ----
+    // ---- ホール ----
     const Boundary* boundary = Boundary::GetInstance();
-    const std::vector<Hole>& holes = boundary->GetHoles();
+    const std::vector<Hole>& holes = boundary ? boundary->GetHoles() : std::vector<Hole>{};
 
-    // ---- スピード毎フレーム反映 ----
+    // ---- 速度反映 ----
     navigator_.SetSpeed(speed_);
 
     // ---- 状態遷移の検知 ----
     const auto prevState = navigator_.GetState();
 
-    // ---- 役割駆動ナビゲーション ----
+    // ---- ナビ tick ----
     const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, sensedTgt, holes);
 
-    // ★Orbit へ入った瞬間にスプラインを中心へ合わせてバインド＋最近点へスナップ
+    // ★ ToAttack へ入った瞬間：攻撃用ルートを再バインド（中心＝敵拠点）＋線にスナップ
+    if (prevState != NpcNavigator::State::ToAttack &&
+        navigator_.GetState() == NpcNavigator::State::ToAttack) {
+        const Vector3 center = side.enemyBase;
+        BindAttackRouteAtEntry_(center);
+        navigator_.ResetFollowerAt(GetWorldPosition()); // その場でスプラインへ
+    }
+
+    // ★ Orbit へ入った瞬間：防衛/哨戒用にルートを再バインド＋線にスナップ
     if (prevState != NpcNavigator::State::Orbit &&
         navigator_.GetState() == NpcNavigator::State::Orbit) {
         const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
         BindOrbitRouteAtEntry_(center);
-        navigator_.ResetFollowerAt(GetWorldPosition()); // その場で線に乗る
+        navigator_.ResetFollowerAt(GetWorldPosition());
     }
 
-    // ============================================================
-    // 目的地へ移動：
-    //  1) ToHole 以外で境界に当たったら「壁直前まで進む + 残りを接線でスライド」
-    //  2) スライドしない通常フレームだけ制約(FilterMove)を適用
-    // ============================================================
+    // ---- 目的地へ移動（----
     Vector3 from = baseTransform_.translation_;
     Vector3 to   = from + desiredDelta;
 
-    auto Normalize3 = [](const Vector3& v, const Vector3& fb = Vector3(0,0,1)) {
-        const float L = v.Length(); return (L > 1e-6f) ? (v * (1.0f/L)) : fb;
-    };
-    auto SegmentPlaneHit = [](const Vector3& A, const Vector3& B,
-                              const Vector3& P, const Vector3& N,
-                              float& tHit, Vector3& Q)->bool {
-        const float da = Vector3::Dot(N, A - P);
-        const float db = Vector3::Dot(N, B - P);
-        if (da * db > 0.0f) return false;            // どちらも同じ側
-        const float denom = (da - db);
-        if (std::fabs(denom) < 1e-8f) return false;  // ほぼ平行
-        tHit = da / (da - db);
-        if (tHit < 0.0f || tHit > 1.0f) return false;
-        Q = A + (B - A) * tHit;
-        return true;
-    };
-
-    bool didSlide = false;
-
-    // ---- ToHole 以外は越境禁止：壁ヒット時にスライドする ----
-    if (navigator_.GetState() != NpcNavigator::State::ToHole) {
-        Vector3 P, N;
-        boundary->GetDividePlane(P, N);
-        N = Normalize3(N, Vector3::ToUp());
-
-        // 本来の意図距離（スピード×dt）
-        const float intendedLen = speed_ * dt;
-
-        // 進行方向（desiredDelta がゼロに近い場合は前フレ）
-        const Vector3 heading = Normalize3(desiredDelta, Vector3(0,0,1));
-
-        // 「本来の終点」（壁と交差するかを見る）
-        const Vector3 idealTo = from + heading * intendedLen;
-
-        float tHit; Vector3 Q;
-        if (SegmentPlaneHit(from, idealTo, P, N, tHit, Q)) {
-            // 壁直前までの距離と残り距離に分解
-            const float tClamped  = std::clamp(tHit, 0.0f, 1.0f);
-            const float lenToWall = tClamped * intendedLen;
-            const float lenRemain = (std::max)(0.0f, intendedLen - lenToWall);
-
-            // めり込み防止の押し戻し（小さすぎ/大きすぎなら調整）
-            const float pushBack = 0.1f;
-            const float lenToUse = (std::max)(0.0f, lenToWall - pushBack);
-
-            // 接線方向（法線成分を除去）
-            const Vector3 tangent = Normalize3(heading - N * Vector3::Dot(heading, N), heading);
-
-            const Vector3 deltaToWall = heading * lenToUse;
-            const Vector3 deltaSlide  = tangent * lenRemain;
-
-            to = from + deltaToWall + deltaSlide;
-            didSlide = true;
-        }
-    }
-
-    // ---- スライドしていない通常フレームだけ制約を通す（2重クリップ防止）----
-    if (moveConstraint_ && !didSlide) {
-        to = moveConstraint_->FilterMove(from, to);
-    }
+    if (moveConstraint_) { to = moveConstraint_->FilterMove(from, to); }
 
     // === 進行方向へ機体を向ける（従来どおり）===
     const Vector3 v = to - from;
@@ -380,18 +325,24 @@ void NPC::BindOrbitRouteAtEntry_(const Vector3& center) {
 
 	// 陣営×ロール → RouteType
 	RouteType rt;
+	const auto navRole = navigator_.GetRole();
+
 	if (faction_ == FactionType::Ally) {
-		rt = (role_ == NpcNavigator::Role::DefendBase) ? RouteType::AllyDifence : RouteType::AllyAttack;
+		rt = (navRole == NpcNavigator::Role::DefendBase)
+				? RouteType::AllyDifence
+				: RouteType::AllyAttack;      // ★攻撃は AllyAttack
 	} else {
-		rt = (role_ == NpcNavigator::Role::DefendBase) ? RouteType::EnemyDirence : RouteType::EnemyAttack;
+		rt = (navRole == NpcNavigator::Role::DefendBase)
+				? RouteType::EnemyDirence
+				: RouteType::EnemyAttack;     // ★攻撃は EnemyAttack
 	}
 
 	// routes_ は const なので使用時だけ外す
 	auto* rc = const_cast<RouteCollection*>(routes_);
 	if (auto* route = rc->GetRoute(rt)) {
-		route->SetBaseOffset(center);				// 原点を Orbit 中心へ平行移動
-		navigator_.BindOrbitRoute(route);			// ルートをバインド
-		navigator_.SelectInitialOrbitRoute();		// バリアント選択
+		route->SetBaseOffset(center);          // 原点を Orbit 中心へ平行移動
+		navigator_.BindOrbitRoute(route);      // ルートをバインド
+		navigator_.SelectInitialOrbitRoute();  // バリアント選択
 	}
 }
 
@@ -558,4 +509,16 @@ void NPC::LoadData() {
 void NPC::SaveData() {
 	const std::string path = fileDirectory_;
 	globalParam_->SaveFile(groupName_, path);
+}
+
+void NPC::BindAttackRouteAtEntry_(const Vector3& center){
+	if (!routes_) return;
+	RouteType rt = (faction_ == FactionType::Ally) ? RouteType::AllyAttack : RouteType::EnemyAttack;
+
+	auto* rc = const_cast<RouteCollection*>(routes_);
+	if (auto* route = rc->GetRoute(rt)) {
+		route->SetBaseOffset(center);
+		navigator_.BindOrbitRoute(route);
+		navigator_.SelectInitialOrbitRoute();
+	}
 }
