@@ -9,6 +9,7 @@
 #include "Matrix4x4.h"
 #include "Physics/SweepAabb.h"
 #include "PlayerBulletShooter.h"
+#include "Actor/ExpEmitter/ExpEmitter.h"
 
 #include "audio/Audio.h"
 
@@ -263,6 +264,8 @@ void PlayerMissile::HitBoundary() {
                     particleShooter_->SetIsBreakBoundary(true);
 					int se = audio->LoadWave("./resources/Sound/SE/BoundaryCollision.wav");
 					audio->PlayWave(se, 0.1f);
+					/// explosion
+                    ExpEmitter::GetInstance()->Emit(hit->point);
                 }
                 Deactivate();
             }
