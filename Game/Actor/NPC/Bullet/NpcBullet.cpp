@@ -5,8 +5,11 @@
 #include "Box.h"
 
 NpcBullet::NpcBullet() {
-	//AABBCollider::Init();
-	//AABBCollider::isAdaptCollision = false;
+	AABBCollider::Init();
+	AABBCollider::isAdaptCollision = false;
+	baseTransform_.Init();
+	baseTransform_.translation_ = { 0, -1000.0f, 0 }; // 見えないところに移動
+	baseTransform_.UpdateMatrix();
 }
 
 /// ===================================================
@@ -14,6 +17,7 @@ NpcBullet::NpcBullet() {
 /// ===================================================
 void NpcBullet::Init() {
 	globalParam_ = GlobalParameter::GetInstance();
+	AABBCollider::isAdaptCollision = true;
 
 	globalParam_->CreateGroup(groupName_, true);
 	globalParam_->ClearBindingsForGroup(groupName_);
@@ -26,6 +30,7 @@ void NpcBullet::Init() {
 	obj3d_->transform_.parent_ = &baseTransform_;
 	isInitialized_ = true;
 	speed_ = 150.0f;
+
 }
 
 void NpcBullet::Init(const Vector3& dir) {
@@ -61,11 +66,17 @@ void NpcBullet::Move() {
 }
 
 void NpcBullet::Hit() {}
-//
-//void NpcBullet::OnCollisionEnter(BaseCollider*) {
-//	/// 何かに衝突したら消える
-//	//Deactivate();
-//}
+
+void NpcBullet::OnCollisionEnter(BaseCollider* other) {
+	if (!isInitialized_) {
+		return;
+	}
+
+	/// 何かに衝突したら消える
+	if (dynamic_cast<NpcBullet*>(other)) return;
+
+	Deactivate();
+}
 
 /// ===================================================
 /// パラメータ同期
