@@ -19,9 +19,5 @@ PSOutput main(VSOutput input) {
     output.color = color;
     color.a = alpha;
 
-    if(color.a < 0.1) {
-        discard;
-    }
-
     return output;
 }
