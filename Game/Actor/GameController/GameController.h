@@ -26,6 +26,7 @@ public:
 
 	/// 残り時間の表示
 	void DrawOutOfFieldWarningTime();
+	void DrawGameTimer();
 
 	/// チェック
 	bool CheckIsGameOver();
@@ -52,6 +53,8 @@ private:
 	std::unique_ptr<NumDraw> outOfFieldWarningTimeFracNumDraw_;  // 小数部分
 	std::unique_ptr<Sprite> commaSprite_; // 小数点
 
+	/// ゲームタイマー
+	std::unique_ptr<class GameTimer> gameTimer_;
 
 public:
 	/// getter

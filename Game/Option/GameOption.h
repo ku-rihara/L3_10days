@@ -57,7 +57,6 @@ private:
 	using Item = std::unique_ptr<IGameOptionItem>;
 	std::vector<Item> menuItems_;
 
-
 	std::unique_ptr<Sprite> background_;
 	std::unique_ptr<Sprite> selectedFrame_;
 
