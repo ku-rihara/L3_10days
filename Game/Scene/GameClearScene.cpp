@@ -20,6 +20,9 @@ void GameClearScene::Init() {
 	/// 各種初期化
 	gameClearSprite_->Init();
 
+	fade_ = std::make_unique<Fade>();
+	fade_->Init();
+
 	bgmId_ = audio_->LoadWave("./resources/Sound/BGM/ResultBGM.wav");
 	audio_->PlayBGM(bgmId_, 0.1f);
 }
@@ -27,21 +30,30 @@ void GameClearScene::Init() {
 void GameClearScene::Update() {
 	gameClearSprite_->Update();
 
-	/// タイトルに戻る処理
-	if (input_->TrrigerKey(DIK_RETURN) ||
-		input_->TrrigerKey(DIK_SPACE) ||
-		input_->IsTriggerPad(0, Gamepad::A)) {
+	fade_->Update();
 
-		/// 効果音の再生
-		int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
-		audio_->PlayWave(soundId, 0.1f);
+	if (!fade_->IsFade()) {
+		/// タイトルに戻る処理
+		if (input_->TrrigerKey(DIK_RETURN) ||
+			input_->TrrigerKey(DIK_SPACE) ||
+			input_->IsTriggerPad(0, Gamepad::A)) {
 
+			fade_->FadeOut(1.2f);
+
+			/// 効果音の再生
+			int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
+			audio_->PlayWave(soundId, 0.1f);
+		}
+	}
+
+
+	if (fade_->IsFadeEnd()) {
 		/// bgm stop
 		audio_->StopBGM(bgmId_);
-
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
+
 
 }
 
@@ -49,6 +61,7 @@ void GameClearScene::ModelDraw() {}
 
 void GameClearScene::SpriteDraw() {
 	gameClearSprite_->Draw();
+	fade_->Draw();
 }
 
 void GameClearScene::SkyBoxDraw() {}
