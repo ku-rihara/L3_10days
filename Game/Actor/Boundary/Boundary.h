@@ -56,7 +56,7 @@ public:
 	/// ----- 他のメンバーが使いそうな関数 ----- ///
 
 	/// 罅の追加、罅が一定時間経過したら穴を追加する処理が走る
-	void AddCrack(const Vector3& _pos, float _damage);
+	bool AddCrack(const Vector3& _pos, float _damage);
 
 	/// 現在出現している穴のリスト
 	const std::vector<Hole>& GetHoles() const;
@@ -74,7 +74,7 @@ public:
 	// AABB(厚みを極薄にする
 	AABB GetWorldAabb(float halfThicknessY = 0.05f)const;
 
-	void OnBulletImpact(const Contact& c, float damage)override;
+	bool OnBulletImpact(const Contact& c, float damage)override;
 
 	bool IsInHoleXZ(const Vector3& p, float radius)const;
 
