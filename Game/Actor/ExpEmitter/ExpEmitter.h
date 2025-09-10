@@ -8,17 +8,20 @@
 #include <memory>
 #include <array>
 
-class ExpEmitter {
+class ExpEmitter final {
+	ExpEmitter();
+	~ExpEmitter();
 public:
-    ExpEmitter()  = default;
-    ~ExpEmitter() = default;
 
-    void Init();
-    void Update();
-    void Emit(const Vector3& pos);
+	static ExpEmitter* GetInstance();
 
-    static ExpEmitter* GetInstance();
+	void Init();
+	void Update();
+	void Emit(const Vector3& pos);
 
 private:
-    std::array<std::unique_ptr<ParticleEmitter>, 5> emitter_;
+	std::array<std::unique_ptr<ParticleEmitter>, 5> emitter_;
+
+	class Audio* audio_;
+	int soundId_;
 };

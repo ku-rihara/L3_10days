@@ -65,7 +65,7 @@ void GameScene::Init() {
 	stations_[FactionType::Enemy] = std::make_unique<EnemyStation>("EnemyStation");
 	gameCamera_ = std::make_unique<GameCamera>();
 	lockOn_ = std::make_unique<LockOn>();
-    std::array<std::unique_ptr<ParticleEmitter>, 5> expEmitter_;
+	//std::array<std::unique_ptr<ParticleEmitter>, 5> expEmitter_;
 
 	UnitDirectorConfig cfg;
 	cfg.squadSize = 4; // 攻撃小隊の目安
@@ -177,13 +177,13 @@ void GameScene::Update() {
 	}
 
 
+	/// ポーズからタイトルに戻る
 	if (pause_->IsSceneChange()) {
 		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
 
-	ExpEmitter::GetInstance()->Update();
 
 #ifdef _DEBUG /// Scene Change (Debug)
 	// Scene Change
@@ -237,6 +237,12 @@ void GameScene::Debug() {
 #ifdef _DEBUG
 
 	ImGui::Begin("Object");
+
+	if (ImGui::Button("emit exp")) {
+		ExpEmitter::GetInstance()->Emit({});
+	}
+
+
 	player_->AdjustParam();
 	for (auto& kv : stations_) {
 		kv.second->ShowGui();
@@ -271,8 +277,9 @@ void GameScene::GameUpdate() {
 	for (auto& kv : stations_) {
 		kv.second->Update();
 	}
-	for (auto& bb : boundaryBreakers_)
+	for (auto& bb : boundaryBreakers_) {
 		bb->Update();
+	}
 	skyDome_->Update();
 
 	//----- それぞれのLockOn対象を取得 -----
@@ -306,8 +313,8 @@ void GameScene::GameUpdate() {
 
 	/// effect update
 	playerLocusEffect_->Update();
-
 	gameController_->Update();
+	ExpEmitter::GetInstance()->Update();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();
@@ -339,8 +346,9 @@ void GameScene::GameModelDraw() {
 	Line3DPipeline* line3dPipeline = Line3DPipeline::GetInstance();
 	line3dPipeline->PreDraw(commandList);
 
-	for (auto& stations : stations_)
+	for (auto& stations : stations_) {
 		stations.second->DrawDebug(viewProjection_);
+	}
 
 	/// 天球を描画
 	Object3DPiprline::GetInstance()->PreDraw(commandList);
@@ -390,10 +398,11 @@ void GameScene::GameSpriteDraw() {
 
 	Sprite::PreDraw(commandList);
 	gameController_->DrawOutOfFieldWarningTime();
+	gameController_->DrawGameTimer();
 	uis_->Draw();
 	player_->ReticleDraw();
 	lockOn_->Draw();
-    player_->UIDraw();
+	player_->UIDraw();
 	/// ミニマップ描画
 	miniMap_->DrawMiniMapFrame();
 

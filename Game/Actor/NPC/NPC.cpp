@@ -11,6 +11,8 @@
 #include "imgui.h"
 #include "Actor/Player/Bullet/BasePlayerBullet.h"
 #include "Actor/NPC/Bullet/NpcBullet.h"
+#include "Actor/GameController/GameScore.h"
+#include "Actor/ExpEmitter/ExpEmitter.h"
 
 #include "Navigation/Route/RouteCollection.h"
 #include "Navigation/Route/Route.h"
@@ -443,7 +445,9 @@ void NPC::OnCollisionEnter(BaseCollider* other) {
 			if (hp_ <= 0.0f) {
 				hp_ = 0.0f;
 				Deactivate();
+				GameScore::GetInstance()->AddBreakEnemyCount(); // スコア加算
 				/// エフェクトの生成
+				ExpEmitter::GetInstance()->Emit(GetWorldPosition());
 			}
 		}
 		return;
