@@ -115,7 +115,7 @@ protected:
     float   spawnInterbal_ = 5.0f; // 既存綴りに合わせ保持
     int     maxConcurrentUnits_ = 20;
     int     initialSpawnCount_ = 20;
-    float   initialSpawnDistanceFromThis_ = 1000.0f;
+    float   initialSpawnDistanceFromThis_ = 3000.0f;
 
     // ---- game state ----
     FactionType faction_{};

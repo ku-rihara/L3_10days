@@ -62,7 +62,7 @@ void StationAI::UpdateWeighted(float dt,
 	const float rivalHp = GetHp(rival);
 	const float rivalMaxHp = GetMaxHp(rival);
 	const Vector3 rivalPos = GetPos(rival);
-	rivalCached_ = rival; // ★キャッシュしておく（ApplyQuotas で使用）
+	rivalCached_ = rival;
 
 	// === 正規化 ===
 	const float sHP = (selfMaxHp > 0.0f) ? std::clamp(selfHp / selfMaxHp,0.0f,1.0f) : 0.0f;

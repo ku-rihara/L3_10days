@@ -326,7 +326,7 @@ void NPC::Move() {
             const float lenRemain = (std::max)(0.0f, intendedLen - lenToWall);
 
             // めり込み防止の押し戻し（小さすぎ/大きすぎなら調整）
-            const float pushBack = 0.01f;
+            const float pushBack = 0.1f;
             const float lenToUse = (std::max)(0.0f, lenToWall - pushBack);
 
             // 接線方向（法線成分を除去）
