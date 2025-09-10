@@ -16,7 +16,9 @@ enum class RouteType {
     AllyDifence,
     AllyAttack,
     EnemyDirence,
-    EnemyAttack
+    EnemyAttack,
+    AllyBoundaryBreaker,
+    EnemyBoundaryBreaker
 };
 
 class Route {
@@ -44,7 +46,6 @@ public:
 
     void    ChooseRandomVariant(std::optional<uint32_t> seed = std::nullopt);
 
-    // ★Vector3 に統一（Spline::Sample 型依存を排除）
     Vector3 Sample(float u) const;
 
     const RouteUnit* GetActiveUnit() const {
@@ -54,6 +55,8 @@ public:
 
     int       GetActiveIndex() const { return activeIndex_; }
     void      SetActiveIndex(int idx);
+    int GetUnitCount() const noexcept;
+    const Spline* GetSpline(int unitIndex) const noexcept;
     int       GetVariantCount() const { return static_cast<int>(variants_.size()); }
     RouteType GetType() const { return type_; }
 

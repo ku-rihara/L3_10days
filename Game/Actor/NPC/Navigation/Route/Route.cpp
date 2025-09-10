@@ -104,7 +104,16 @@ void Route::DrawDebug(const ViewProjection& vp) const { for (const auto& v : var
 
 void Route::SetBaseOffset(const Vector3& p) {
     for (auto& v : variants_) {
-        v.basePosition = p; // Update() で original + basePosition に再適用される
+        v.basePosition = p;
+        v.preBasePosition = Vector3(99999, 99999, 99999); // 保険
+
+        if (v.spline) {
+            auto& cps = v.spline->GetControlPointsMutable();
+            cps.resize(v.originalCps_.size());
+            for (size_t i = 0; i < v.originalCps_.size(); ++i) {
+                cps[i] = v.originalCps_[i] + v.basePosition;
+            }
+        }
     }
 }
 
@@ -160,4 +169,14 @@ void Route::SetActiveIndex(int idx) {
     }
     idx = std::clamp(idx, 0, static_cast<int>(variants_.size()) - 1);
     activeIndex_ = idx;
+}
+
+int Route::GetUnitCount() const noexcept {
+    return static_cast<int>(variants_.size());
+}
+
+const Spline* Route::GetSpline(int unitIndex) const noexcept {
+    if (unitIndex < 0 || unitIndex >= static_cast<int>(variants_.size())) return nullptr;
+    const auto& unit = variants_[unitIndex];
+    return unit.spline ? unit.spline.get() : nullptr;
 }

@@ -24,7 +24,7 @@ void PlayerStation::Init() {
 	obj3d_->transform_.parent_ = &baseTransform_;
 
 	globalParam_ = GlobalParameter::GetInstance();
-
+	faction_ = FactionType::Ally;
 	BaseStation::Init();
 }
 

@@ -24,12 +24,28 @@ void RouteCollection::Init(){
 		RouteType::AllyDifence,
 		RouteType::AllyAttack,
 		RouteType::EnemyDirence,
-		RouteType::EnemyAttack
+		RouteType::EnemyAttack,
 	};
 
 	for (auto t : all) {
 		auto r = std::make_unique<Route>();
 		r->Init(t, kBaseDir);
+
+		// ---- 陣営ごとに baseOffset を設定 ----
+		Vector3 offset{0.0f, 0.0f, 0.0f};
+		switch (t) {
+		case RouteType::AllyDifence:
+		case RouteType::AllyAttack:
+			offset = {0.0f, -500.0f, 0.0f};
+			break;
+		case RouteType::EnemyDirence:
+		case RouteType::EnemyAttack:
+			offset = {0.0f,  500.0f, 0.0f};
+			break;
+		default:
+			break;
+		}
+		r->SetBaseOffset(offset);
 		routes_.emplace(t, std::move(r));
 	}
 }
