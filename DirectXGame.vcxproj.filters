@@ -270,6 +270,11 @@
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMissionY.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\ShotMissileMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.cpp" />
+    <ClCompile Include="Game\TitleActor\FighterAircraft\Hunger.cpp" />
+    <ClCompile Include="Game\GameClearActor\GameClearEffect.cpp" />
+    <ClCompile Include="Game\Scene\GameClearEffectScene.cpp" />
+    <ClCompile Include="Game\Scene\GameOverEffectScene.cpp" />
+    <ClCompile Include="Game\Object\SceneObject.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\BreakBoundaryMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\DiveHoleMission.cpp" />
   </ItemGroup>
@@ -541,6 +546,11 @@
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMissionY.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\ShotMissileMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.h" />
+    <ClInclude Include="Game\TitleActor\FighterAircraft\Hunger.h" />
+    <ClInclude Include="Game\GameClearActor\GameClearEffect.h" />
+    <ClInclude Include="Game\Scene\GameClearEffectScene.h" />
+    <ClInclude Include="Game\Scene\GameOverEffectScene.h" />
+    <ClInclude Include="Game\Object\SceneObject.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\BreakBoundaryMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\DiveHoleMission.h" />
   </ItemGroup>

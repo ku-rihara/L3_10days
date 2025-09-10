@@ -12,6 +12,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
+    <ClCompile Include="Game\Scene\GameOverEffectScene.cpp" />
+    <ClCompile Include="Game\Scene\GameClearEffectScene.cpp" />
+    <ClCompile Include="Game\GameClearActor\GameClearEffect.cpp" />
     <ClCompile Include="Game\Actor\GameController\GameTimer.cpp" />
     <ClCompile Include="Game\Actor\ExpEmitter\ExpEmitter.cpp" />
     <ClCompile Include="Game\Actor\GameController\GameScore.cpp" />
@@ -248,9 +251,13 @@
     <ClCompile Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.cpp" />
     <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutOfFieldWarningEffectPipeline.cpp" />
     <ClCompile Include="Game\Pipeline\SkyDomePipeline.cpp" />
+    <ClCompile Include="Game\Object\SceneObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
+    <ClInclude Include="Game\Scene\GameOverEffectScene.h" />
+    <ClInclude Include="Game\Scene\GameClearEffectScene.h" />
+    <ClInclude Include="Game\GameClearActor\GameClearEffect.h" />
     <ClInclude Include="Game\Actor\GameController\GameTimer.h" />
     <ClInclude Include="Game\Actor\ExpEmitter\ExpEmitter.h" />
     <ClInclude Include="Game\Actor\GameController\GameScore.h" />
@@ -511,6 +518,7 @@
     <ClInclude Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.h" />
     <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutOfFieldWarningEffectPipeline.h" />
     <ClInclude Include="Game\Pipeline\SkyDomePipeline.h" />
+    <ClInclude Include="Game\Object\SceneObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

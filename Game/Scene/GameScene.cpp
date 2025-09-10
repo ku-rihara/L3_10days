@@ -56,6 +56,7 @@ void GameScene::Init(){
 
 	// 爆発エミッター
 	ExpEmitter::GetInstance()->Init();
+	Boundary::GetInstance()->ResetHoles();
 
 	// 生成
 	//====================================生成===================================================

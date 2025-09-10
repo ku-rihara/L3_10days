@@ -46,6 +46,13 @@ void BoundaryShard::Update() {
 
 		breakable.frameTime += Frame::DeltaTime();
 
+		/// 一定以上時間が経過したらBreakableを消す
+		if (breakable.frameTime > 30.0f) {
+			itr = breakables_.erase(itr);
+			continue;
+		}
+
+
 		/// 罅のmaxLifeとcurrentLifeを見てstageを決定
 		float lifeRatio = breakable.currentLife / breakable.maxLife;
 
@@ -218,6 +225,10 @@ const std::vector<Shard>& BoundaryShard::GetLoadedShards() const {
 
 StructuredBuffer<BreakableBufferData>& BoundaryShard::GetBreakableBufferRef() {
 	return breakableBuffer_;
+}
+
+void BoundaryShard::ResetBreakables() {
+	breakables_.clear();
 }
 
 bool BoundaryShard::AddBreakable(const Vector3& _position, float _damage) {
