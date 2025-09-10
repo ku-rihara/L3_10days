@@ -17,19 +17,23 @@ void PlayerAltUI::Init() {
 	altUISprite_->SetScale({ size.x / texSize.x, size.y / texSize.y });
 
 
-	altNumDraw_ = std::make_unique<NumDraw>();
-	altNumDraw_->Init(4);
-	altNumDraw_->SetBasePosition({ position.x, position.y + 2.0f });
-	altNumDraw_->SetDigitSpacing(10.0f);
 
 	int32_t textureHandle = TextureManager::GetInstance()->LoadTexture(
 		"./resources/Texture/UI/Minus.png");
 	minusSprite_.reset(Sprite::Create(
-		textureHandle, { position.x - 16.0f, position.y + 2.0f }, { 1, 1, 1, 1 }));
+		textureHandle, { position.x, position.y + 2.0f }, { 1, 1, 1, 1 }));
 	minusSprite_->anchorPoint_ = { 0.5f, 0.5f };
 	Vector2 minusSize = { 32, 32 };
 	Vector2 minusTexSize = minusSprite_->GetTextureSize();
 	minusSprite_->SetScale({ minusSize.x / minusTexSize.x, minusSize.y / minusTexSize.y });
+	minusSprite_->SetColor({ 0.239f, 1.0f, 0.239f });
+
+
+	altNumDraw_ = std::make_unique<NumDraw>();
+	altNumDraw_->Init(4);
+	altNumDraw_->SetBasePosition({ position.x + 16.0f, position.y + 2.0f });
+	altNumDraw_->SetDigitSpacing(10.0f);
+	altNumDraw_->SetAlignment(NumDraw::Alignment::Right);
 
 }
 
@@ -43,6 +47,12 @@ void PlayerAltUI::Update(Player* _player) {
 	}
 
 	altNumDraw_->SetNumber(alt);
+
+	minusSprite_->SetPosition({
+		altNumDraw_->GetBasePosition().x - (altNumDraw_->GetDigitSpacing() * altNumDraw_->GetNumDigits()) ,
+		minusSprite_->GetPosition().y
+		});
+
 }
 
 void PlayerAltUI::Draw() {

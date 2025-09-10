@@ -161,3 +161,15 @@ void NumDraw::SetIsDrawAll(bool _isDrawAll) {
 void NumDraw::SetAlignment(Alignment _alignment) {
 	alignment_ = _alignment;
 }
+
+const Vector2& NumDraw::GetBasePosition() const {
+	return basePosition_;
+}
+
+float NumDraw::GetDigitSpacing() const {
+	return digitSpacing_;
+}
+
+int32_t NumDraw::GetNumDigits() const {
+	return digitNum_;
+}

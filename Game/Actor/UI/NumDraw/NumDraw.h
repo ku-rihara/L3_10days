@@ -35,6 +35,10 @@ public:
 	void SetIsDrawAll(bool _isDrawAll);
 	void SetAlignment(Alignment _alignment);
 
+	const Vector2& GetBasePosition() const;
+	float GetDigitSpacing() const;
+	int32_t GetNumDigits() const;
+
 private:
 
 	const std::string kFilePath_;

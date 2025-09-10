@@ -12,6 +12,7 @@
 #include "Actor/Player/Bullet/BasePlayerBullet.h"
 #include "Actor/NPC/Bullet/NpcBullet.h"
 #include "Actor/GameController/GameScore.h"
+#include "Actor/ExpEmitter/ExpEmitter.h"
 
 #include <limits>
 #include <cmath>
@@ -421,6 +422,7 @@ void NPC::OnCollisionEnter(BaseCollider* other) {
 				Deactivate();
 				GameScore::GetInstance()->AddBreakEnemyCount(); // スコア加算
 				/// エフェクトの生成
+				ExpEmitter::GetInstance()->Emit(GetWorldPosition());
 			}
 		}
 		return;
