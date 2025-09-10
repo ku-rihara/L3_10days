@@ -5,6 +5,7 @@
 #include "BasePlayerBullet.h"
 #include "Frame/Frame.h"
 #include "Physics/SweepAabb.h"
+#include "Actor/Station/Base/BaseStation.h"
 #include <Actor/EnemyInfo/EnemyInfoUI.h>
 
 void PlayerNormalBullet::Init() {
@@ -89,6 +90,13 @@ void PlayerNormalBullet::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
         EnemyInfoUI::GetInstance()->SetHit();
         Deactivate();
     }
+
+    if(BaseStation* station = dynamic_cast<BaseStation*>(other)) {
+        if(station->GetFactionType() == FactionType::Enemy) {
+            EnemyInfoUI::GetInstance()->SetHit();
+            Deactivate();
+        }
+	}
 }
 
 void PlayerNormalBullet::HitBoundary() {

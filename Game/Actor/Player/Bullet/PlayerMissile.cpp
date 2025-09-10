@@ -10,6 +10,7 @@
 #include "Physics/SweepAabb.h"
 #include "PlayerBulletShooter.h"
 #include "Actor/ExpEmitter/ExpEmitter.h"
+#include "Actor/Station/Base/BaseStation.h"
 
 #include "audio/Audio.h"
 
@@ -242,6 +243,12 @@ void PlayerMissile::SetMissileParameters(const MissileParameter& params) {
 void PlayerMissile::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
     if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
         Deactivate();
+    }
+
+    if (BaseStation* station = dynamic_cast<BaseStation*>(other)) {
+        if (station->GetFactionType() == FactionType::Enemy) {
+            Deactivate();
+        }
     }
 }
 
