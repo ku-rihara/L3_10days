@@ -3,7 +3,7 @@
 /// 仮想ライトと計算
 static const float3 gLightDirection = normalize(float3(1, -1, 1));
 static const float3 gLightColor = float3(1, 1, 1);
-static const float3 gAmbientColor = float3(0.1, 0.1, 0.1);
+static const float3 gAmbientColor = float3(0.4, 0.6, 0.4);
 
 float3 CalculateLighting(float3 normal) {
 	float NdotL = max(dot(normal, -gLightDirection), 0.0);

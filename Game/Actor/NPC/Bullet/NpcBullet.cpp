@@ -6,6 +6,7 @@
 
 NpcBullet::NpcBullet() {
 	AABBCollider::Init();
+	cTransform_.translation_ = { 0, -1000.0f, 0 }; // 見えないところに移動
 	AABBCollider::isAdaptCollision = false;
 	baseTransform_.Init();
 	baseTransform_.translation_ = { 0, -1000.0f, 0 }; // 見えないところに移動
@@ -17,7 +18,6 @@ NpcBullet::NpcBullet() {
 /// ===================================================
 void NpcBullet::Init() {
 	globalParam_ = GlobalParameter::GetInstance();
-	AABBCollider::isAdaptCollision = true;
 
 	globalParam_->CreateGroup(groupName_, true);
 	globalParam_->ClearBindingsForGroup(groupName_);
