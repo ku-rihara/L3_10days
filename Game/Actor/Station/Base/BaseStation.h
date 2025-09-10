@@ -111,7 +111,7 @@ protected:
 
     // パラメータ（保存対象）
     Vector3 initialPosition_{};
-    float   maxLife_ = 100.0f;
+    float   maxLife_ = 1500.0f;
     float   spawnInterbal_ = 5.0f; // 既存綴りに合わせ保持
     int     maxConcurrentUnits_ = 20;
     int     initialSpawnCount_ = 20;
@@ -119,7 +119,7 @@ protected:
 
     // ---- game state ----
     FactionType faction_{};
-    float   hp_ = 100.0f;
+    float   hp_ = 1500.0f;
     float   currentTime_ = 0.0f;
     Vector3 prevRoutePos_{};
     const RouteCollection* pRouteCollection_ = nullptr;

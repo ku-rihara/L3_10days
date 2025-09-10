@@ -276,7 +276,6 @@ void NPC::Move() {
         navigator_.ResetFollowerAt(GetWorldPosition()); // その場でスプラインへ
     }
 
-    // ★ Orbit へ入った瞬間：防衛/哨戒用にルートを再バインド＋線にスナップ
     if (prevState != NpcNavigator::State::Orbit &&
         navigator_.GetState() == NpcNavigator::State::Orbit) {
         const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
@@ -449,7 +448,7 @@ const BaseObject* NPC::PickFrustumTarget() const {
 /// ===================================================
 /// Collision
 /// ===================================================
-void NPC::OnCollisionEnter(BaseCollider* other) {
+void NPC::OnCollisionStay(BaseCollider* other) {
 
 	/// 敵のNPCにプレイヤー弾が当たったらダメージ
 	if (faction_ == FactionType::Enemy) {
