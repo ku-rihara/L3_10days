@@ -98,7 +98,7 @@ void GameOverEffectScene::Update() {
 	changedTime_ -= Frame::DeltaTime();
 	if (changedTime_ <= 0.0f) {
 		/// 0を下回ったらシーンチェンジ
-		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
 		return;
 	}
 
