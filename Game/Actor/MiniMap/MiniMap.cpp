@@ -14,7 +14,8 @@ void MiniMap::Init(BaseStation* _ally, BaseStation* _enemy) {
 
 	TextureManager::GetInstance()->LoadTexture("./resources/Texture/MiniMap/Icon.png");
 	TextureManager::GetInstance()->LoadTexture("./resources/Texture/MiniMap/RadarIconEnemy.png");
-	TextureManager::GetInstance()->LoadTexture("./resources/Texture/uvChecker.png");
+	TextureManager::GetInstance()->LoadTexture("./resources/Texture/MiniMap/PlayerBaseIcon.png");
+	TextureManager::GetInstance()->LoadTexture("./resources/Texture/MiniMap/EnemyBaseIcon.png");
 
 	miniMapSize_ = { 300.0f, 300.0f };
 	miniMapPos_ = { 12.0f, 720.0f - 12.0f };
@@ -43,6 +44,8 @@ void MiniMap::Init(BaseStation* _ally, BaseStation* _enemy) {
 	friendIconBuffer_.Create(100, DirectXCommon::GetInstance()->GetDxDevice());
 	enemyIconBuffer_.Create(100, DirectXCommon::GetInstance()->GetDxDevice());
 	playerMissile_.Create(12, DirectXCommon::GetInstance()->GetDxDevice());
+	playerStation_.Create(2, DirectXCommon::GetInstance()->GetDxDevice());
+	enemyStation_.Create(2, DirectXCommon::GetInstance()->GetDxDevice());
 
 	miniMapBuffer_.Create(DirectXCommon::GetInstance()->GetDxDevice());
 	Vector2 size = miniMapFrameSprite_->GetTextureSize();
@@ -159,6 +162,38 @@ void MiniMap::Update() {
 		}
 
 		missileCount_ = static_cast<UINT>(player->GetBulletShooter()->GetActiveMissiles().size());
+
+
+
+		/// ステーションのアイコン更新
+		// 味方ステーション
+		if (pAllyStation_) {
+			Vector3 relativePos = pAllyStation_->GetWorldPosition() - playerPos;
+			Vector3 localPos = TransformMatrix(relativePos, matPlayerRotY_);
+			localPos *= mapScale;
+			Vector2 mapPos = { miniMapPos_.x + localPos.x, miniMapPos_.y - localPos.z };
+			Matrix4x4 matIcon = MakeAffineMatrix(
+				Vector3(scale * 1.5f, scale * 1.5f, 1.0f),
+				Vector3(0.0f, 0.0f, 0.0f),
+				Vector3(mapPos.x, mapPos.y, 0.0f)
+			);
+			playerStation_.SetMappedData(0, { matIcon });
+		}
+
+		// 敵ステーション
+		if (pEnemyStation_) {
+			Vector3 relativePos = pEnemyStation_->GetWorldPosition() - playerPos;
+			Vector3 localPos = TransformMatrix(relativePos, matPlayerRotY_);
+			localPos *= mapScale;
+			Vector2 mapPos = { miniMapPos_.x + localPos.x, miniMapPos_.y - localPos.z };
+			Matrix4x4 matIcon = MakeAffineMatrix(
+				Vector3(scale * 1.5f, scale * 1.5f, 1.0f),
+				Vector3(0.0f, 0.0f, 0.0f),
+				Vector3(mapPos.x, mapPos.y, 0.0f)
+			);
+			enemyStation_.SetMappedData(0, { matIcon });
+		}
+
 	}
 
 }
@@ -190,6 +225,14 @@ StructuredBuffer<IconBufferData>& MiniMap::GetEnemyIconBufferRef() {
 
 StructuredBuffer<IconBufferData>& MiniMap::GetPlayerMissileBufferRef() {
 	return playerMissile_;
+}
+
+StructuredBuffer<IconBufferData>& MiniMap::GetPlayerStationBufferRef() {
+	return playerStation_;
+}
+
+StructuredBuffer<IconBufferData>& MiniMap::GetEnemyStationBufferRef() {
+	return enemyStation_;
 }
 
 ConstantBuffer<PlayerBufferData>& MiniMap::GetPlayerBufferRef() {

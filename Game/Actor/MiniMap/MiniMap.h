@@ -53,6 +53,8 @@ public:
 	StructuredBuffer<IconBufferData>& GetFriendIconBufferRef();
 	StructuredBuffer<IconBufferData>& GetEnemyIconBufferRef();
 	StructuredBuffer<IconBufferData>& GetPlayerMissileBufferRef();
+	StructuredBuffer<IconBufferData>& GetPlayerStationBufferRef();
+	StructuredBuffer<IconBufferData>& GetEnemyStationBufferRef();
 	ConstantBuffer<PlayerBufferData>& GetPlayerBufferRef();
 	ConstantBuffer<MiniMapMatrix>& GetMiniMapMatrixBufferRef();
 
@@ -90,6 +92,9 @@ private:
 	StructuredBuffer<IconBufferData> friendIconBuffer_;
 	StructuredBuffer<IconBufferData> enemyIconBuffer_;
 	StructuredBuffer<IconBufferData> playerMissile_;
+	StructuredBuffer<IconBufferData> playerStation_;
+	StructuredBuffer<IconBufferData> enemyStation_;
+
 	UINT missileCount_ = 0;
 	ConstantBuffer<PlayerBufferData> playerBuffer_;
 	ConstantBuffer<MiniMapMatrix> miniMapMatrixBuffer_;
