@@ -8,6 +8,7 @@
 #include "3d/Object3d.h"
 
 class BackgroundObj : public BaseObject {
+	friend class SkyDome;
 public:
 	BackgroundObj();
 	~BackgroundObj();
