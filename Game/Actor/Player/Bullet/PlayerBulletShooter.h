@@ -1,7 +1,7 @@
 #pragma once
 #include "Actor/Player/TargetManager/TargetManager.h "
 #include "BasePlayerBullet.h"
-#include "MissileSlotManager.h" 
+#include "MissileSlotManager.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include "utility/ParticleEditor/ParticleEmitter.h"
 #include <array>
@@ -134,6 +134,9 @@ private:
     bool normalBulletInput_ = false;
     bool missileInput_      = false;
 
+    // tutorial 用
+    bool isBreakBoundary_ = false;
+
 public:
     /// -----------------------------------------------------------------
     /// Getter
@@ -159,10 +162,11 @@ public:
 
     const bool& GetIsNormalBulletInput() const { return normalBulletInput_; }
     const bool& GetIsMissileInput() const { return missileInput_; }
-
+    const bool& GetIsBoundaryBreak() const { return isBreakBoundary_; }
     /// -----------------------------------------------------------------
     /// Setter
     /// -----------------------------------------------------------------
     void SetViewProjection(const ViewProjection* vp) { viewProjection_ = vp; }
     void SetLockOn(LockOn* lockOn) { pLockOn_ = lockOn; }
+    void SetIsBreakBoundary(const bool& is) { isBreakBoundary_ = is; }
 };

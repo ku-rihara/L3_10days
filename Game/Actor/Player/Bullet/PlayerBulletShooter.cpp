@@ -60,6 +60,7 @@ void PlayerBulletShooter::Update(const Player* player) {
     }
 
     float deltaTime = Frame::DeltaTime();
+  
 
     // ミサイルスロットマネージャーの更新
     missileSlotManager_.Update(deltaTime);
