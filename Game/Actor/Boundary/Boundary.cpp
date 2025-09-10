@@ -126,8 +126,8 @@ ConstantBuffer<float>& Boundary::GetTimeBufferRef() {
 	return timeBuffer_;
 }
 
-void Boundary::AddCrack(const Vector3& _pos, float _damage) {
-	boundaryShard_->AddBreakable(_pos, _damage);
+bool Boundary::AddCrack(const Vector3& _pos, float _damage) {
+	return boundaryShard_->AddBreakable(_pos, _damage);
 }
 
 const std::vector<Hole>& Boundary::GetHoles() const {
@@ -195,8 +195,8 @@ bool Boundary::IsInHoleXZ(const Vector3& p, float radius) const {
 	return false;
 }
 
-void Boundary::OnBulletImpact(const Contact& c, float damage) {
+bool Boundary::OnBulletImpact(const Contact& c, float damage) {
 	// 穴内なら無視（最終防衛）
-	if (IsInHoleXZ(c.point, /*bullet r 不明なら0*/ 0.0f)) return;
-	AddCrack(c.point, damage);
+	if (IsInHoleXZ(c.point, /*bullet r 不明なら0*/ 0.0f)) return false;
+	return AddCrack(c.point, damage);
 }

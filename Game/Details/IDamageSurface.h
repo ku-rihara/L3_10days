@@ -4,5 +4,5 @@
 class IDamageSurface {
 public:
 	virtual ~IDamageSurface() = default;
-	virtual void OnBulletImpact(const Contact& c, float damage) = 0;
+	virtual bool OnBulletImpact(const Contact& c, float damage) = 0;
 };

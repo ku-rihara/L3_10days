@@ -9,7 +9,11 @@
 #include "Matrix4x4.h"
 #include "Physics/SweepAabb.h"
 #include "PlayerBulletShooter.h"
+
+#include "audio/Audio.h"
+
 #include <numbers>
+
 
 void PlayerMissile::Init() {
     // モデル作成
@@ -253,7 +257,12 @@ void PlayerMissile::HitBoundary() {
             // 穴内なら無効
             if (!boundary->IsInHoleXZ(hit->point, param_.collisionRadiusForBoundary)) {
                 // 破壊通知（AddCrack 内部呼び出し）
-                boundary->OnBulletImpact(*hit, param_.damage);
+                if (boundary->OnBulletImpact(*hit, param_.damage * 2.0f)) {
+					/// SEの再生
+					Audio* audio = Audio::GetInstance();
+					int se = audio->LoadWave("./resources/Sound/SE/BoundaryCollision.wav");
+					audio->PlayWave(se, 0.1f);
+                }
                 Deactivate();
             }
         }
