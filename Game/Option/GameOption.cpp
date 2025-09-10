@@ -223,7 +223,7 @@ void GameOption::Open() {
 
 	/// SEの再生
 	Audio* audio_ = Audio::GetInstance();
-	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
 	audio_->PlayWave(soundId, 0.2f);
 }
 
@@ -233,7 +233,7 @@ void GameOption::Close() {
 
 	/// SEの再生
 	Audio* audio_ = Audio::GetInstance();
-	int soundId = audio_->LoadWave("./resources/Sound/the_tmp.wav");
+	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
 	audio_->PlayWave(soundId, 0.2f);
 
 	Save();
