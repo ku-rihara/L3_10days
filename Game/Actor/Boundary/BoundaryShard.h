@@ -73,6 +73,8 @@ public:
 	void Update();
 	void Draw();
 
+	void ResetBreakables();
+
 	bool AddBreakable(const Vector3& _position, float _damage);
 
 	void LoadShardModel(const std::string& _filepath);

@@ -55,20 +55,7 @@ void Boundary::Init() {
 }
 
 void Boundary::Update() {
-
-
-	/// debugように
-	if (Input::GetInstance()->TrrigerKey(DIK_P)) {
-		AddCrack({}, 10.0f);
-	}
-
-	if (Input::GetInstance()->TrrigerKey(DIK_O)) {
-		AddCrack({ 200.0f, 0.0f, 0.0f }, 10.0f);
-	}
-
-
 	boundaryShard_->Update();
-
 
 	/// holeの更新
 	for (auto itr = holes_.begin(); itr != holes_.end(); ) {
@@ -84,7 +71,6 @@ void Boundary::Update() {
 			++itr;
 		}
 	}
-
 
 	/// bufferに詰める
 	for (size_t i = 0; i < maxHoleCount_; i++) {
@@ -193,6 +179,12 @@ bool Boundary::IsInHoleXZ(const Vector3& p, float radius) const {
 		if ((d.x * d.x + d.z * d.z) <= rr * rr) return true;
 	}
 	return false;
+}
+
+void Boundary::ResetHoles() {
+	/// 全ての穴と罅をリセット
+	holes_.clear();
+	boundaryShard_->ResetBreakables();
 }
 
 bool Boundary::OnBulletImpact(const Contact& c, float damage) {

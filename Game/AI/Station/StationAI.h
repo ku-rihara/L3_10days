@@ -46,7 +46,7 @@ struct StationAiOutput {
 class StationAI {
 public:
 	void Initialize(BaseStation* owner, IUnitDirector* director);
-
+	void ShowGui();
 	void SetConfig(const StationAiConfig& c) { cfg_ = c; }
 	StationAiConfig& Config() { return cfg_; }
 	const StationAiOutput& GetLastOutput() const { return out_; }
@@ -81,4 +81,17 @@ private:
 	float lastSelf_ = 1.0f;
 	float lastRival_ = 1.0f;
 	float replanT_ = 0.0f;
+
+	struct DebugSnap {
+		float S = 0.0f;   // 自HPの低さ = 1 - hpEmaSelf
+		float R = 0.0f;   // 相手HPの低さ = 1 - hpEmaRival
+		float H = 0.0f;   // homeThreat
+		float D = 0.0f;   // 距離正規化（refAttackRange基準）
+		float Sd = 0.0f;  // 自被弾レート（正規化）
+		float Rd = 0.0f;  // 相手被弾レート（正規化）
+		float U_attack = 0.0f;
+		float U_defend = 0.0f;
+		float pAtk     = 0.0f; // シグモイドの攻撃確率
+		float dist     = 0.0f; // 実距離
+	} dbg_;
 };
