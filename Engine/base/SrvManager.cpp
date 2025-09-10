@@ -2,7 +2,7 @@
 #include <cassert>
 
 // 最大SRV数の定義
-const uint32_t SrvManager::kMaxCount = 514;
+const uint32_t SrvManager::kMaxCount = 514*5;
 
 // シングルトンインスタンスの取得
 SrvManager* SrvManager::GetInstance() {

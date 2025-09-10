@@ -132,12 +132,12 @@
         "scaleEaseParm.endValueV3.max": [
             2.700000047683716,
             1.7000000476837158,
-            6.699999809265137
+            2.4000000953674316
         ],
         "scaleEaseParm.endValueV3.min": [
             4.599999904632568,
             2.799999952316284,
-            7.900000095367432
+            4.5
         ],
         "scaleEaseParm.isScaleEase": true,
         "scaleEaseParm.maxTime": 0.3499999940395355,

@@ -104,31 +104,39 @@ void TutorialScene::Init() {
 
 void TutorialScene::InitializeTutorialMissions() {
     // プレイヤーをチュートリアルマネージャーに設定
-    tutorialManager_->SetPlayer(player_.get());  
+    tutorialManager_->SetPlayer(player_.get());
 }
 
 void TutorialScene::Update() {
     /// オプションの開閉
-    GameOption* op = GameOption::GetInstance();
-    /// Optionを開ける条件
-    if (!fade_->IsFade()) {
-        /// 入力でOptionを開く
-        if (input_->TrrigerKey(DIK_ESCAPE) || input_->IsTriggerPad(0, Gamepad::Start)) {
-            if (!op->GetIsOpen()) {
-                op->Open();
-            }
+    /* GameOption* op = GameOption::GetInstance();
+     /// Optionを開ける条件
+     if (!fade_->IsFade()) {
+         /// 入力でOptionを開く
+         if (input_->TrrigerKey(DIK_ESCAPE) || input_->IsTriggerPad(0, Gamepad::Start)) {
+             if (!op->GetIsOpen()) {
+                 op->Open();
+             }
+         }
+     }*/
+
+    if (input_->TrrigerKey(DIK_ESCAPE) || input_->IsTriggerPad(0, Gamepad::Start)) {
+        if (!isTutorialEnd_) {
+            isTutorialEnd_ = true;
+            fade_->FadeOut(1.0f);
         }
     }
 
-    op->Update();
-
+   
+    /*   op->Update();*/
     // tutorial update
     TutorialUpdate();
+    HandleSceneTransition();
 
     /// Scene Change
-    if (!op->GetIsOpen()) {
-        HandleSceneTransition();
-    }
+    /* if (!op->GetIsOpen()) {
+         HandleSceneTransition();
+     }*/
 
     /// フェードアウトが終わったらシーンチェンジ
     if (fade_->IsFadeEnd()) {
@@ -140,19 +148,23 @@ void TutorialScene::Update() {
 void TutorialScene::HandleSceneTransition() {
     // チュートリアルが完了した場合、スペースキーでゲームシーンへ
     if (tutorialManager_->IsCompleted()) {
-           /// 効果音の再生
-            /*	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
-                audio_->PlayWave(soundId, 0.2f);
-                audio_->StopBGM(bgmId_);*/
-
+        if (!isTutorialEnd_) {
+            isTutorialEnd_ = true;
             fade_->FadeOut(1.0f);
-        
-    } else {
-        // チュートリアル進行中：自動的にチュートリアルを開始
-        if (!tutorialManager_->IsInProgress() && !tutorialManager_->IsTransitioning() && tutorialManager_->GetStatus() == TutorialMissionManager::TutorialStatus::NOT_STARTED) {
-            tutorialManager_->StartTutorial();
         }
+        /// 効果音の再生
+        /*	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
+            audio_->PlayWave(soundId, 0.2f);
+            audio_->StopBGM(bgmId_);*/
+
+      
+    } 
+
+     // 自動的にチュートリアルを開始
+    if (!tutorialManager_->IsInProgress() && !tutorialManager_->IsTransitioning() && tutorialManager_->GetStatus() == TutorialMissionManager::TutorialStatus::NOT_STARTED) {
+        tutorialManager_->StartTutorial();
     }
+
 }
 
 void TutorialScene::TutorialUpdate() {
@@ -162,6 +174,8 @@ void TutorialScene::TutorialUpdate() {
     player_->Update();
     gameCamera_->Update();
     skyDome_->Update();
+
+    Boundary::GetInstance()->Update();
 
     // lockOn更新
     /* lockOn_->Update(targets, player_.get(), viewProjection_, FactionType::Enemy);*/
@@ -250,9 +264,8 @@ void TutorialScene::SpriteDraw() {
 }
 
 void TutorialScene::DrawTutorialCompletionMessage() {
-   
+
     if (tutorialManager_->IsCompleted()) {
-    
     }
 }
 
