@@ -301,6 +301,7 @@ void GameScene::GameUpdate(){
 	playerLocusEffect_->Update();
 	gameController_->Update();
 	ExpEmitter::GetInstance()->Update();
+    ExpEmitter::GetInstance()->HormingUpdate();
 
 	/// objectの行列の更新をする
 	Object3DRegistry::GetInstance()->UpdateAll();

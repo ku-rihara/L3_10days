@@ -47,13 +47,13 @@ void EditorScene::Update() {
 
     easingEditor_.Edit();
 
-    //for (int i = 0; i < playerShotEmitter_.size(); i++) {
-    //    playerShotEmitter_[i]->Update(); // 更新
-    //    playerShotEmitter_[i]->EditorUpdate(); // パラメータ編集
-    //    if (input_->TrrigerKey(DIK_Y)) {
-    //        playerShotEmitter_[i]->Emit(); // 発射
-    //    }
-    //}
+    // for (int i = 0; i < playerShotEmitter_.size(); i++) {
+    //     playerShotEmitter_[i]->Update(); // 更新
+    //     playerShotEmitter_[i]->EditorUpdate(); // パラメータ編集
+    //     if (input_->TrrigerKey(DIK_Y)) {
+    //         playerShotEmitter_[i]->Emit(); // 発射
+    //     }
+    // }
 
     Object3DRegistry::GetInstance()->UpdateAll();
     ParticleManager::GetInstance()->Update();

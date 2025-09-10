@@ -46,6 +46,7 @@ private:
     std::unique_ptr<TutorialMissionManager> tutorialManager_ = nullptr;
 
     Boundary* boundary_ = nullptr;
+    bool isTutorialEnd_=false;
 
 public:
     ///========================================================

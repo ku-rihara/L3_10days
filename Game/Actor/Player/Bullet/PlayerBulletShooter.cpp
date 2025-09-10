@@ -26,7 +26,7 @@ void PlayerBulletShooter::Init(WorldTransform* parent) {
     missileSlotManager_.Initialize(
         typeSpecificParams_.missileSystem.maxSlots,
         typeSpecificParams_.missileSystem.cooldownTime);
-
+   /* testEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("EnemyMissile", PrimitiveType::Box, 500));*/
     // 通常弾用Particle
     playerShotEmitter_[0].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot1", PrimitiveType::Plane, 500));
     playerShotEmitter_[1].reset(ParticleEmitter::CreateParticlePrimitive("PlayerShot2", PrimitiveType::Plane, 500));
