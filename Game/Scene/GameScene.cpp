@@ -287,6 +287,7 @@ void GameScene::GameUpdate(){
 	for (auto& station : stations_){
 		if (station.second->GetHp() > 0/*&&生きてたら*/){
 			auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
+            enemyStation->SpriteUpdate(viewProjection_);
 			targets.emplace_back(enemyStation);
 		}
 	}
@@ -389,6 +390,14 @@ void GameScene::GameSpriteDraw(){
 	player_->ReticleDraw();
 	lockOn_->Draw();
 	player_->UIDraw();
+
+	for (auto& station : stations_) {
+        if (station.second->GetHp() > 0 /*&&生きてたら*/) {
+            auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
+            enemyStation->DrawSprite();
+        }
+    }
+
 	/// ミニマップ描画
 	miniMap_->DrawMiniMapFrame();
 

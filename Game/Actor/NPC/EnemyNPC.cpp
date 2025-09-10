@@ -1,6 +1,7 @@
 #include "EnemyNPC.h"
 
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
+#include"Actor/Player/Bullet/PlayerNormalBullet.h"
 
 EnemyNPC::EnemyNPC() {
     // 調整用グループ名
@@ -26,7 +27,7 @@ void EnemyNPC::Init() {
     obj3d_->transform_.parent_ = &baseTransform_;
 
     NPC::Init();
-    SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+   /* SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));*/
 
     /// =======================↓追加↓===============================
 
@@ -44,6 +45,7 @@ void EnemyNPC::Init() {
 /// ===================================================
 void EnemyNPC::Update() {
     NPC::Update();
+    SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
 /// =======================↓追加↓===============================
@@ -55,5 +57,14 @@ void EnemyNPC::Finalize() {
     if (targetManager_ && myTargetId_ != INVALID_TARGET_ID) {
         targetManager_->UnregisterTarget(myTargetId_);
         myTargetId_ = INVALID_TARGET_ID;
+    }
+}
+
+ /// ===================================================
+/// collision methods
+/// ===================================================
+void EnemyNPC::OnCollisionEnter(BaseCollider* other) {
+    if (dynamic_cast<PlayerNormalBullet*>(other)) {
+        SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
     }
 }
