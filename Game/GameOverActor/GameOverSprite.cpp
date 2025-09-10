@@ -67,7 +67,8 @@ void GameOverSprite::Update() {
 	Audio* audio = Audio::GetInstance();
 
 	if (input->TrrigerKey(DIK_W) ||
-		input->TrrigerKey(DIK_UP)) {
+		input->TrrigerKey(DIK_UP) ||
+		input->IsTriggerPad(0, Gamepad::DPadUp)) {
 
 		int soundId = audio->LoadWave("./resources/Sound/SE/SelectSE.wav");
 		audio->PlayWave(soundId, 0.1f);
@@ -78,7 +79,8 @@ void GameOverSprite::Update() {
 	}
 
 	if (input->TrrigerKey(DIK_S) ||
-		input->TrrigerKey(DIK_DOWN)) {
+		input->TrrigerKey(DIK_DOWN) ||
+		input->IsTriggerPad(0, Gamepad::DPadDown)) {
 
 		int soundId = audio->LoadWave("./resources/Sound/SE/SelectSE.wav");
 		audio->PlayWave(soundId, 0.1f);
