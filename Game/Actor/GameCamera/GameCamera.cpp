@@ -126,7 +126,7 @@ void GameCamera::AdjustParam() {
 void GameCamera::OffsetInvRangeCalc() {
 
     float zMax = pPlayer_->GetSpeedParam().maxForwardSpeed;
-    float zMin = pPlayer_->GetSpeedParam().minForwardSpeed;
+    float zMin = pPlayer_->GetSpeedParam().brakeForwardSpeed;
 
     float xMax = pPlayer_->GetRollRotateLimit();
     float xMin = -pPlayer_->GetRollRotateLimit();

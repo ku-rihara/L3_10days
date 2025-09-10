@@ -1,0 +1,20 @@
+{
+    "TutorialMissionMoveX": {
+        "gaugePos": [
+            371.5400085449219,
+            159.83999633789063
+        ],
+        "gaugeSize": [
+            1.0,
+            1.0
+        ],
+        "inputThreshold": 0.10000000149011612,
+        "maxWaitTime": 0.30000001192092896,
+        "requiredInputTime": 1.7999999523162842,
+        "showGauge": true,
+        "spritePos": [
+            649.3699951171875,
+            160.89999389648438
+        ]
+    }
+}

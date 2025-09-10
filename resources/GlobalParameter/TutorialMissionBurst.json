@@ -1,0 +1,20 @@
+{
+    "TutorialMissionBurst": {
+        "gaugePos": [
+            366.07000732421875,
+            118.87000274658203
+        ],
+        "gaugeSize": [
+            0.0,
+            0.0
+        ],
+        "inputThreshold": 0.10000000149011612,
+        "maxWaitTime": 0.30000001192092896,
+        "requiredInputTime": 1.0,
+        "showGauge": true,
+        "spritePos": [
+            640.0,
+            120.0
+        ]
+    }
+}

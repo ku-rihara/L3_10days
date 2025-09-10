@@ -157,6 +157,9 @@ public:
     bool IsMissileSlotAvailable(int32_t slotIndex) const { return missileSlotManager_.IsSlotAvailable(slotIndex); }
     const float& GetMissileCollTimeMax() const { return typeSpecificParams_.missileSystem.cooldownTime; }
 
+    const bool& GetIsNormalBulletInput() const { return normalBulletInput_; }
+    const bool& GetIsMissileInput() const { return missileInput_; }
+
     /// -----------------------------------------------------------------
     /// Setter
     /// -----------------------------------------------------------------
