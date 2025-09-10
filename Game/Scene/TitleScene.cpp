@@ -86,7 +86,7 @@ void TitleScene::Update() {
 	ViewProjectionUpdate();
 
 	/// Scene Change
-	if (!op->GetIsOpen()) {
+	if (!op->GetIsOpen() && !fade_->IsFade()) {
 		if (input_->TrrigerKey(DIK_SPACE) ||
 			input_->TrrigerKey(DIK_RETURN) ||
 			input_->IsTriggerPad(0, Gamepad::A)) {
