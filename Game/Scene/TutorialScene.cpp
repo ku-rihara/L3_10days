@@ -8,6 +8,7 @@
 #include "3d/Object3DRegistry.h"
 #include "Pipeline/Object3DPiprline.h"
 #include "utility/ParticleEditor/ParticleManager.h"
+#include"Actor/ExpEmitter/ExpEmitter.h"
 
 // math
 #include "Frame/Frame.h"
@@ -38,6 +39,7 @@ void TutorialScene::Init() {
     GameOption::GetInstance()->Init();
 
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+    ExpEmitter::GetInstance()->Init();
 
     // 生成
     skyDome_                      = std::make_unique<SkyDome>();

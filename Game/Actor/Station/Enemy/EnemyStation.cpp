@@ -8,6 +8,7 @@
 #include "Frame/Frame.h"
 #include "imgui.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
+#include <numbers>
 
 EnemyStation::EnemyStation() { BaseStation::SetFaction(FactionType::Enemy); }
 
@@ -38,30 +39,38 @@ void EnemyStation::Init() {
 }
 
 void EnemyStation::SpriteUpdate(const ViewProjection& viewPro) {
-
-    // ターゲットの座標取得
-    Vector3 positionView = {};
-    // 敵のロックオン座標を取得
+    // 敵のワールド座標
     Vector3 positionWorld = GetWorldPosition();
 
-    positionView = TransformMatrix(positionWorld, viewPro.matView_);
-    // 距離条件チェック
-    if (0.0f <= positionView.z && positionView.z <= 1280.0f) {
-        float actTangent = std::atan2(std::sqrt(positionView.x * positionView.x + positionView.y * positionView.y), positionView.z);
+    // ビュー空間に変換
+    Vector3 positionView = TransformMatrix(positionWorld, viewPro.matView_);
 
-        // コーンに収まっているか
-        isDraw_ = (std::fabsf(actTangent) <= std::fabsf(180.0f * 3.14f));
+    // デフォルト非表示
+    isDraw_ = false;
+
+    // ===== 後ろにいる場合は描画しない =====
+    if (positionView.z <= 0.0f) {
+        return;
     }
 
+    // ===== スクリーン座標に変換 =====
     Vector3 positionScreen = ScreenTransform(positionWorld, viewPro);
-    Vector2 positionScreenV2(positionScreen.x, positionScreen.y);
 
-    bossReticle_->SetScale(Vector2(0.2f,0.2f));
-    bossReticle_->SetPosition(positionScreenV2);
+    // 画面範囲チェック（例: 解像度 1280x720）
+    if (positionScreen.x < 0.0f || positionScreen.x > 1280.0f || positionScreen.y < 0.0f || positionScreen.y > 720.0f) {
+        return;
+    }
+
+    // ===== 表示可能 =====
+    isDraw_ = true;
+
+    bossReticle_->SetScale(Vector2(0.2f, 0.2f));
+    bossReticle_->SetPosition(Vector2(positionScreen.x, positionScreen.y));
 
     spriteRotation_ += Frame::DeltaTime();
     bossReticle_->transform_.rotate.z = spriteRotation_;
 }
+
 
 /// ===================================================
 /// 更新

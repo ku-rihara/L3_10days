@@ -50,7 +50,7 @@ static Vector3 RotateTowards(const Vector3& dir, const Vector3& desired, float m
 void NpcHomingBullet::Init() {
     // 名前の初期化
     groupName_ = "NpcHomingBullet";
-    modelName_ = "cube.obj";
+    modelName_ = "Bullet.obj";
 
     // パラメータとモデルの初期化
     NpcBullet::Init();

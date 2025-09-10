@@ -1,10 +1,11 @@
 #include "PlayerNormalBullet.h"
-#include "Frame/Frame.h"
+#include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include "Actor/NPC/EnemyNPC.h"
 #include "Actor/Player/Player.h"
 #include "BasePlayerBullet.h"
-#include"Actor/NPC/EnemyNPC.h"
-#include "Actor/NPC/BoundaryBreaker/BoundaryBreaker.h"
+#include "Frame/Frame.h"
 #include "Physics/SweepAabb.h"
+#include <Actor/EnemyInfo/EnemyInfoUI.h>
 
 void PlayerNormalBullet::Init() {
     // モデル作成
@@ -16,10 +17,10 @@ void PlayerNormalBullet::Init() {
     baseTransform_.quaternion_ = Quaternion::Identity();
 
     obj3d_->transform_.rotateOder_ = RotateOder::Quaternion;
-    obj3d_->transform_.parent_ = &baseTransform_;
+    obj3d_->transform_.parent_     = &baseTransform_;
 
     // 初期値設定
-    isActive_        = false; 
+    isActive_        = false;
     currentLifeTime_ = 0.0f;
     velocity_        = Vector3::ZeroVector();
 }
@@ -54,7 +55,7 @@ void PlayerNormalBullet::UpdateNormalBullet(float deltaTime) {
 }
 
 void PlayerNormalBullet::Fire(const Player& player, const LockOn::LockOnVariant* target) {
-   
+
     // ターゲットを取得
     if (target) {
         target_ = target;
@@ -64,7 +65,7 @@ void PlayerNormalBullet::Fire(const Player& player, const LockOn::LockOnVariant*
     baseTransform_.translation_ = player.GetWorldPosition();
 
     // プレイヤーの回転
-    baseTransform_.quaternion_ = player.GetBaseQuaternion();
+    baseTransform_.quaternion_     = player.GetBaseQuaternion();
     obj3d_->transform_.quaternion_ = player.GetObjQuaternion();
 
     // 速度を設定
@@ -82,10 +83,10 @@ Vector3 PlayerNormalBullet::GetPosition() const {
     return baseTransform_.GetWorldPos();
 }
 
-
 void PlayerNormalBullet::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
 
-     if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
+    if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
+        EnemyInfoUI::GetInstance()->SetHit();
         Deactivate();
     }
 }
@@ -103,7 +104,7 @@ void PlayerNormalBullet::HitBoundary() {
             // 穴内なら無効
             if (!boundary->IsInHoleXZ(hit->point, 5)) {
                 // 破壊通知（AddCrack 内部呼び出し）
-             /*   boundary->OnBulletImpact(*hit, param_.damage);*/
+                /*   boundary->OnBulletImpact(*hit, param_.damage);*/
                 Deactivate();
             }
         }

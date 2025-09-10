@@ -3,6 +3,8 @@
 #include "utility/ParameterEditor/GlobalParameter.h"
 #include "Actor/Station/Base/BaseStation.h"
 #include "Actor/NPC/Bullet/FireController/NpcFierController.h"
+#include "Actor/Player/Bullet/BasePlayerBullet.h"
+#include "Actor/ExpEmitter/ExpEmitter.h"
 
 #include "Frame/Frame.h"
 #include <cmath>
@@ -39,6 +41,9 @@ void BoundaryBreaker::Init(){
 							  ? pRivalStation_->GetWorldPosition()
 							  : GetWorldPosition();
 	}
+
+	AABBCollider::Init();
+	SetCollisionScale(baseTransform_.scale_);
 }
 
 // ==============================
@@ -51,6 +56,22 @@ void BoundaryBreaker::Update(){
 	Shoot();
 
 	BaseObject::Update();
+	cTransform_.translation_ = GetWorldPosition();
+	cTransform_.UpdateMatrix();
+}
+
+void BoundaryBreaker::OnCollisionEnter(BaseCollider* other) {
+
+	/// 
+	if (BasePlayerBullet* bullet = dynamic_cast<BasePlayerBullet*>(other)) {
+		hp_ -= bullet->GetParameter().damage;
+		if(hp_ <= 0.0f) {
+			hp_ = 0.0f;
+			//Deactivate();
+			/// エフェクトの生成
+			ExpEmitter::GetInstance()->Emit(GetWorldPosition());
+		}
+	}
 }
 
 // ==============================
