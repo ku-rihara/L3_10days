@@ -309,7 +309,7 @@ void Player::RotateUpdate() {
 
     // ---- 通常のピッチ・ヨー回転処理 ----
     Vector3 targetAngularVelocity = angleInput_;
-    const float damping           = 0.95f;
+    const float damping           = 0.8f;
 
     // 入力がない場合は減衰
     if (angleInput_.Length() < 0.001f) {

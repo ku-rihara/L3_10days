@@ -5,7 +5,7 @@
         "autoRecoverSpeed": 400.0,
         "autoRotateSpeed": 200.0,
         "bankRate": 0.8999999761581421,
-        "brakeForwardSpeed": 70.0,
+        "brakeForwardSpeed": 68.61000061035156,
         "collisionSize": [
             1.3700000047683716,
             2.4000000953674316,
@@ -21,7 +21,7 @@
         "minReboundVelocity": 0.10000000149011612,
         "pitchBackTime": 5.0,
         "pitchReturnThreshold": 5.0,
-        "pitchSpeed": 100.0,
+        "pitchSpeed": 60.72999954223633,
         "reboundDecay": 0.949999988079071,
         "reboundPower": 4.949999809265137,
         "reverseDecisionValue": -0.5,
