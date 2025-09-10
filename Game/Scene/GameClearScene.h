@@ -5,6 +5,7 @@
 
 /// base
 #include "BaseScene.h"
+#include "Fade/Fade.h"
 
 class GameClearScene : public BaseScene {
 private:
@@ -12,6 +13,7 @@ private:
 	/// private objects
 	/// ========================================================
 
+	std::unique_ptr<Fade> fade_;                   ///< フェード
 	std::unique_ptr<class GameClearSprite> gameClearSprite_; ///< ゲームクリアスプライト
 	int bgmId_;
 

@@ -51,12 +51,13 @@ void WinApp::MakeWindow(const wchar_t* title, int32_t clientWidth, int32_t clien
 
 	//クライアント領域を元に実際のサイズにwrcを変更してもらう
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-
+	UINT style = WS_OVERLAPPEDWINDOW;
+	style &= ~WS_THICKFRAME;
 	//ウィンドウの生成
 	hwnd_ = CreateWindow(
 		wc_.lpszClassName,       //利用するクラス名
 		title,					//タイトルバーの文字
-		WS_OVERLAPPEDWINDOW,	//良く見るウィンドウスタイル
+		style,	//良く見るウィンドウスタイル
 		CW_USEDEFAULT,			//表示X座標（Windowsに任せる）
 		CW_USEDEFAULT,			//表示Y座標（WindowsOSに任せる）
 		wrc.right - wrc.left,	//ウィンドウ横幅

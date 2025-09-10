@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Primitive\PrimitiveSphere.cpp" />
+    <ClCompile Include="Game\Actor\EnemyInfo\EnemyInfoUI.cpp" />
     <ClCompile Include="Game\Scene\GameOverEffectScene.cpp" />
     <ClCompile Include="Game\Scene\GameClearEffectScene.cpp" />
     <ClCompile Include="Game\GameClearActor\GameClearEffect.cpp" />
@@ -255,6 +256,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
+    <ClInclude Include="Game\Actor\EnemyInfo\EnemyInfoUI.h" />
     <ClInclude Include="Game\Scene\GameOverEffectScene.h" />
     <ClInclude Include="Game\Scene\GameClearEffectScene.h" />
     <ClInclude Include="Game\GameClearActor\GameClearEffect.h" />
