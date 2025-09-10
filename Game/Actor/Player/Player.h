@@ -215,6 +215,7 @@ public:
     const float& GetMaxHP() const { return maxHp_; }
 	float GetRollInput() const { return rollInput_; }
 	bool GetInversePitch() const { return inversePitch_; }
+    BasePlayerSpeedBehavior* GetSpeedBehavior() { return speedBehavior_.get(); }
 
     void SetGameCamera(GameCamera* camera);
     void SetLockOn(LockOn* lockOn);

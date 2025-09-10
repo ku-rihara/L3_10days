@@ -1,7 +1,7 @@
 #include "BrakeMission.h"
 #include "Actor/player/Player.h"
 #include "Frame/Frame.h"
-#include"Actor/Player/Player.h"
+#include"Actor/Player/Behavior/PlayerBrake.h"
 #include <algorithm>
 #include <cmath>
 #include <imgui.h>
@@ -43,7 +43,7 @@ void BrakeMission::OnMissionUpdate() {
         if (pPlayer_) {
             // 入力チェック
         
-            bool inputConditionMet =pPlayer_->GetBulletShooter()->GetIsNormalBulletInput() ;
+             bool inputConditionMet = dynamic_cast<PlayerBrake*>(pPlayer_->GetSpeedBehavior());
 
              if (inputConditionMet) {
                 // 入力条件を満たしている場合
