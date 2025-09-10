@@ -602,3 +602,14 @@ void NPC::SaveData() {
     globalParam_->SaveFile(groupName_, path);
 }
 
+void NPC::BindAttackRouteAtEntry_(const Vector3& center){
+    if (!routes_) return;
+    RouteType rt = (faction_ == FactionType::Ally) ? RouteType::AllyAttack : RouteType::EnemyAttack;
+
+    auto* rc = const_cast< RouteCollection* >(routes_);
+    if (auto* route = rc->GetRoute(rt)){
+        route->SetBaseOffset(center);
+        navigator_.BindOrbitRoute(route);
+        navigator_.SelectInitialOrbitRoute();
+    }
+}
