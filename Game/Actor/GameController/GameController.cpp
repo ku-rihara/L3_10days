@@ -34,8 +34,8 @@ GameController::GameController() {
 
 	outOfFieldWarningTimeFracNumDraw_->SetIsDrawAll(true);
 
-	outOfFieldWarningTimeIntNumDraw_->SetColor(Vector4(0.56f, 0.12f, 0.09f, 1.0f));
-	outOfFieldWarningTimeFracNumDraw_->SetColor(Vector4(0.56f, 0.12f, 0.09f, 1.0f));
+	outOfFieldWarningTimeIntNumDraw_->SetColor(Vector4(0.95f, 0.01f, 0.01f, 1.f));
+	outOfFieldWarningTimeFracNumDraw_->SetColor(Vector4(0.95f, 0.01f, 0.01f, 1.f));
 
 	/// カンマ
 	uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/UI/Comma.png");
