@@ -2,6 +2,7 @@
 #include "Actor/player/Player.h"
 #include "Frame/Frame.h"
 #include"Actor/Player/Player.h"
+#include"Actor/Player/Behavior/PlayerAccelerator.h"
 #include <algorithm>
 #include <cmath>
 #include <imgui.h>
@@ -35,7 +36,7 @@ void BurstMission::OnMissionUpdate() {
         if (ProcessStep(maxWaitTime_)) {
             currentStep_ = MovementStep::WAIT_INPUT;
             showGauge_   = true; // 入力待ち段階でゲージを表示
-            SetProgress(0.2f); // 説明段階完了で20%
+            SetProgress(0.0f); 
         }
         break;
 
@@ -43,7 +44,7 @@ void BurstMission::OnMissionUpdate() {
         if (pPlayer_) {
             // 入力チェック
         
-            bool inputConditionMet =pPlayer_->GetBulletShooter()->GetIsNormalBulletInput() ;
+            bool inputConditionMet = dynamic_cast<PlayerAccelerator*>(pPlayer_->GetSpeedBehavior());
 
            if (inputConditionMet) {
                 // 入力条件を満たしている場合
