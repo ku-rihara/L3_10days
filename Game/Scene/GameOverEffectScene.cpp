@@ -32,7 +32,7 @@ void GameOverEffectScene::Init() {
 	viewProjection_.rotation_ = { 0.153f, 2.374f, 0.000f };
 
 	/// instance create
-	UObj station = std::make_unique<SceneObject>("EnemyBase.obj");
+	UObj station = std::make_unique<SceneObject>("PlayerAllParts.obj");
 	station->SetScale(Vector3(1, 1, 1) * 10.0f);
 	sceneObj_.emplace_back(std::move(station));
 
