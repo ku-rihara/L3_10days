@@ -449,7 +449,7 @@ const BaseObject* NPC::PickFrustumTarget() const {
 /// ===================================================
 /// Collision
 /// ===================================================
-void NPC::OnCollisionEnter(BaseCollider* other) {
+void NPC::OnCollisionStay(BaseCollider* other) {
 
 	/// 敵のNPCにプレイヤー弾が当たったらダメージ
 	if (faction_ == FactionType::Enemy) {

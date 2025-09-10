@@ -68,7 +68,7 @@ public:
 	/// collision methods
 	/// ===================================================
 	void BindAttackRouteAtEntry_(const Vector3& center);
-	virtual void OnCollisionEnter(BaseCollider* other) override;
+	virtual void OnCollisionStay(BaseCollider* other) override;
 
 public:
 	// ★ロールはNPC側でも保持（Navigatorに反映しつつ保存）

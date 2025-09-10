@@ -67,7 +67,7 @@ void CollisionManager::UpdateWorldTransform() {
 }
 
 void CollisionManager::Draw(const ViewProjection& viewProjection) {
-#ifdef _DEBUG
+//#ifdef _DEBUG
 
 	// 非表示なら抜ける
 	if (!isColliderVisible_) {
@@ -77,7 +77,7 @@ void CollisionManager::Draw(const ViewProjection& viewProjection) {
 	for (BaseCollider* baseCollider : baseColliders_) {
 		baseCollider->DrawDebugCube(viewProjection);
 	}
-#endif // _DEBUG
+//#endif // _DEBUG
 	viewProjection;
 }
 
