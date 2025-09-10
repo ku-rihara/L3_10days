@@ -116,7 +116,7 @@ protected:
     // 時間管理
     float currentTime_ = 0.0f;
     float totalTime_   = 0.0f;
-    
+    bool isBreakBoundary_;
 
     // ステータス
     MissionStatus status_  = MissionStatus::NOT_STARTED;
@@ -134,6 +134,7 @@ public:
     const Vector2& GetCurrentScale() const { return tempScale_; }
     bool IsScaleAnimationFinished() const;
 
-    // 新しく追加するゲッター
     ScaleAnimationState GetScaleAnimationState() const { return scaleAnimState_; }
+
+    void SetIsBreakBoundary(const bool& is) { isBreakBoundary_ = is; }
 };

@@ -275,6 +275,8 @@
     <ClCompile Include="Game\Scene\GameClearEffectScene.cpp" />
     <ClCompile Include="Game\Scene\GameOverEffectScene.cpp" />
     <ClCompile Include="Game\Object\SceneObject.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\BreakBoundaryMission.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\DiveHoleMission.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -549,6 +551,8 @@
     <ClInclude Include="Game\Scene\GameClearEffectScene.h" />
     <ClInclude Include="Game\Scene\GameOverEffectScene.h" />
     <ClInclude Include="Game\Object\SceneObject.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\BreakBoundaryMission.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\DiveHoleMission.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

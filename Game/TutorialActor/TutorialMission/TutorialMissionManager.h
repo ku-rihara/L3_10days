@@ -61,7 +61,7 @@ private:
     void StartMissionTransition();
 
 private:
-    std::array<std::unique_ptr<BaseTutorialMission>, 6> missions_;
+    std::array<std::unique_ptr<BaseTutorialMission>,8> missions_;
     int currentMissionIndex_;
     TutorialStatus status_;
     Player* pPlayer_ = nullptr;

@@ -63,6 +63,7 @@ void TutorialScene::Init() {
     // 初期化
     fade_->Init();
     player_->Init();
+    player_->SetWorldPositionY(100.0f);
     gameCamera_->Init();
     lockOn_->Init();
     skyDome_->Init();
@@ -103,24 +104,7 @@ void TutorialScene::Init() {
 
 void TutorialScene::InitializeTutorialMissions() {
     // プレイヤーをチュートリアルマネージャーに設定
-    tutorialManager_->SetPlayer(player_.get());
-
-    // ミッション完了コールバックを設定
-    tutorialManager_->SetMissionCompleteCallback([this](int missionIndex) {
-        // ミッション完了時の処理
-        switch (missionIndex) {
-        case 0: // 移動ミッション完了
-            // 移動ミッション完了時の特別な処理があればここに記述
-            break;
-        case 1: // 次のミッション完了
-            // 他のミッション完了時の処理
-            break;
-        default:
-            break;
-        }
-    });
-
-  
+    tutorialManager_->SetPlayer(player_.get());  
 }
 
 void TutorialScene::Update() {
@@ -156,14 +140,13 @@ void TutorialScene::Update() {
 void TutorialScene::HandleSceneTransition() {
     // チュートリアルが完了した場合、スペースキーでゲームシーンへ
     if (tutorialManager_->IsCompleted()) {
-        if (input_->TrrigerKey(DIK_SPACE) || input_->TrrigerKey(DIK_RETURN) || input_->IsTriggerPad(0, Gamepad::A)) {
-            /// 効果音の再生
+           /// 効果音の再生
             /*	int soundId = audio_->LoadWave("./resources/Sound/SE/DecideSE.wav");
                 audio_->PlayWave(soundId, 0.2f);
                 audio_->StopBGM(bgmId_);*/
 
             fade_->FadeOut(1.0f);
-        }
+        
     } else {
         // チュートリアル進行中：自動的にチュートリアルを開始
         if (!tutorialManager_->IsInProgress() && !tutorialManager_->IsTransitioning() && tutorialManager_->GetStatus() == TutorialMissionManager::TutorialStatus::NOT_STARTED) {

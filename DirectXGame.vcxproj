@@ -208,7 +208,9 @@
     <ClCompile Include="Game\TitleActor\TitleSprite\TitleSprite.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\BaseTutorialMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\BrakeMission.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\BreakBoundaryMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\BurstMission.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\DiveHoleMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\ShotBulletMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMissionY.cpp" />
@@ -473,7 +475,9 @@
     <ClInclude Include="Game\TitleActor\TitleSprite\TitleSprite.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\BaseTutorialMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\BrakeMission.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\BreakBoundaryMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\BurstMission.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\DiveHoleMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\ShotBulletMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMissionY.h" />

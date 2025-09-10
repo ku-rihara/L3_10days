@@ -260,6 +260,7 @@ void PlayerMissile::HitBoundary() {
                 if (boundary->OnBulletImpact(*hit, param_.damage * 2.0f)) {
 					/// SEの再生
 					Audio* audio = Audio::GetInstance();
+                    particleShooter_->SetIsBreakBoundary(true);
 					int se = audio->LoadWave("./resources/Sound/SE/BoundaryCollision.wav");
 					audio->PlayWave(se, 0.1f);
                 }

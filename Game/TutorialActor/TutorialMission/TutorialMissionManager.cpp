@@ -4,6 +4,8 @@
 //
 #include "TutorialActor/TutorialMission/BrakeMission.h"
 #include "TutorialActor/TutorialMission/BurstMission.h"
+#include "TutorialActor/TutorialMission/DiveHoleMission.h"
+#include "TutorialActor/TutorialMission/BreakBoundaryMission.h"
 #include "TutorialActor/TutorialMission/MoveMission.h"
 #include "TutorialActor/TutorialMission/MoveMissionY.h"
 #include "TutorialActor/TutorialMission/ShotBulletMission.h"
@@ -49,6 +51,14 @@ void TutorialMissionManager::Init() {
     // ShotMissileMission
     missions_[5] = std::make_unique<ShotMissileMission>();
     missions_[5]->Init("TutorialMissionShotMissile", "ShotMissile");
+
+    // BreakBoundaryMission
+    missions_[6] = std::make_unique<BreakBoundaryMission>();
+    missions_[6]->Init("TutorialMissionBreakBoundary", "BreakBoundary");
+
+    // BreakBoundaryMission
+    missions_[7] = std::make_unique<DiveHoleMission>();
+    missions_[7]->Init("TutorialMissionDiveHole", "DiveHole");
 
     // 全ミッションを初期化
     for (auto& mission : missions_) {
