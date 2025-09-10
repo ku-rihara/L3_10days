@@ -11,6 +11,8 @@
 #include "Frame/Frame.h"
 #include "input/Input.h"
 #include "MathFunction.h"
+#include"Actor/NPC/Bullet/NpcStraightBullet.h"
+#include"Actor/NPC/Bullet/NpcHomingBullet.h"
 
 // behavior
 #include "Behavior/PlayerAcceleUnattended.h"
@@ -538,7 +540,7 @@ void Player::TakeDamageForBoundary() {
 }
 
 void Player::OnCollisionStay([[maybe_unused]] BaseCollider* other) {
-    if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other)) {
+    if (dynamic_cast<BoundaryBreaker*>(other) || dynamic_cast<EnemyNPC*>(other) || dynamic_cast<NpcHomingBullet*>(other) || dynamic_cast<NpcStraightBullet*>(other)) {
         if (collisionParamInfo_.isColliding) {
             return;
         }
