@@ -64,7 +64,6 @@ void BoundaryBreaker::Update() {
     fireController_->Tick();
     switch (state_) {
         case State::Move:
-            // ★ Move() は既存の実装をそのまま使用（ここでは呼ぶだけ）
             Move();
             moveTimer_ -= dt;
             if (moveTimer_ <= 0.0f) {

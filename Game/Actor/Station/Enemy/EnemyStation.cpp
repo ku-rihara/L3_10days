@@ -5,7 +5,7 @@
 #include "Frame/Frame.h"
 #include "Actor/Player/Player.h"
 #include "utility/ParameterEditor/GlobalParameter.h"
-
+#include "Actor/NPC/Bullet/FireController/NpcFierController.h"
 #include "imgui.h"
 
 EnemyStation::EnemyStation(){ BaseStation::SetFaction(FactionType::Enemy); }
@@ -26,6 +26,11 @@ void EnemyStation::Init(){
 	globalParam_ = GlobalParameter::GetInstance();
 	faction_ = FactionType::Enemy;
 	BaseStation::Init();
+
+	fireController_ = std::make_unique<NpcFireController>();
+	fireController_->Init();
+
+	shootCooldown = shootInterval;
 }
 
 /// ===================================================
@@ -36,6 +41,11 @@ void EnemyStation::Update(){
 	//スポーン
 	currentTime_ += dt;
 	if (currentTime_ >= spawnInterbal_){ SpawnNPC(GetWorldPosition()); }
+
+	//弾の発射
+	if (fireController_) fireController_->Tick();
+
+	TryFire();
 
 	for (auto& enemy : spawned_){ enemy->Update(); }
 
@@ -68,4 +78,31 @@ void EnemyStation::CollectTargets(std::vector<const BaseObject*>& out) const{
 
 	// 自分が Enemy で、プレイヤーが指定されていれば攻撃候補に追加
 	if (GetFactionType() == FactionType::Enemy && pPlayer_){ out.push_back(static_cast<const BaseObject*>(pPlayer_)); }
+}
+
+void EnemyStation::TryFire() {
+	if (!fireController_) return;
+	if (!pPlayer_) return;
+
+	const float dt = Frame::DeltaTime();
+	shootCooldown -= dt;
+
+	const Vector3 myPos     = this->GetWorldPosition();
+	const Vector3 targetPos = pPlayer_->GetWorldPosition();
+	const Vector3 toTgt     = targetPos - myPos;
+
+	// 射程判定（LengthSq が無い場合は直接書く）
+	const float dist2  = toTgt.x*toTgt.x + toTgt.y*toTgt.y + toTgt.z*toTgt.z;
+	const float range2 = fireRange_ * fireRange_;
+	if (dist2 > range2) return;
+
+	if (shootCooldown > 0.0f) return;
+
+	Vector3 dir = toTgt;
+	float len = dir.Length();
+	if (len > 1e-5f) dir = dir / len;
+	else             dir = {0,0,1};
+
+	fireController_->SpawnHoming(myPos, dir, pPlayer_);
+	shootCooldown = shootInterval;
 }
