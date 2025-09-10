@@ -120,11 +120,11 @@ void BaseStation::Update(){
 	CleanupSpawnedList();
 }
 
-void BaseStation::DrawDebug(const ViewProjection& ){
-	// for (auto& h : spawned_){
-	// 	if (!h || !h->GetIsAlive()) continue;
-	// 	h->DebugDraw(vp);
-	// }
+void BaseStation::DrawDebug(const ViewProjection& vp){
+	for (auto& h : spawned_){
+		if (!h || !h->GetIsAlive()) continue;
+		h->DebugDraw(vp);
+	}
 }
 
 void BaseStation::ShowGui(){
@@ -147,19 +147,22 @@ void BaseStation::ShowGui(){
 		}
 
 		// Station AI
-		if (ImGui::CollapsingHeader("Station AI")){
-			auto& c = ai_.Config();
-			ImGui::DragFloat("minAttack",&c.minAttack,0.01f,0.0f,1.0f);
-			ImGui::DragFloat("maxAttack",&c.maxAttack,0.01f,0.0f,1.0f);
-			ImGui::DragInt("minDefenders",&c.minDefenders,1,0,999);
-			ImGui::DragFloat("temperature",&c.temperature,0.01f,0.05f,3.0f);
-			ImGui::DragFloat("refAttackRange",&c.refAttackRange,1.0f,10.0f,5000.0f);
-			ImGui::DragFloat("dpsNormSelf",&c.dpsNormSelf,0.01f,0.05f,1.0f);
-			ImGui::DragFloat("dpsNormRival",&c.dpsNormRival,0.01f,0.05f,1.0f);
-			ImGui::DragFloat("smoothingSelf",&c.smoothingSelf,0.1f,0.5f,10.0f);
-			ImGui::DragFloat("smoothingRival",&c.smoothingRival,0.1f,0.5f,10.0f);
-			ImGui::DragFloat("replanInterval",&c.replanInterval,0.05f,0.1f,3.0f);
-			ImGui::DragFloat("ratioDeadband",&c.ratioDeadband,0.005f,0.0f,0.5f);
+		if (ImGui::TreeNode("Station AI")){
+			// auto& c = ai_.Config();
+			// ImGui::DragFloat("minAttack",&c.minAttack,0.01f,0.0f,1.0f);
+			// ImGui::DragFloat("maxAttack",&c.maxAttack,0.01f,0.0f,1.0f);
+			// ImGui::DragInt("minDefenders",&c.minDefenders,1,0,999);
+			// ImGui::DragFloat("temperature",&c.temperature,0.01f,0.05f,3.0f);
+			// ImGui::DragFloat("refAttackRange",&c.refAttackRange,1.0f,10.0f,5000.0f);
+			// ImGui::DragFloat("dpsNormSelf",&c.dpsNormSelf,0.01f,0.05f,1.0f);
+			// ImGui::DragFloat("dpsNormRival",&c.dpsNormRival,0.01f,0.05f,1.0f);
+			// ImGui::DragFloat("smoothingSelf",&c.smoothingSelf,0.1f,0.5f,10.0f);
+			// ImGui::DragFloat("smoothingRival",&c.smoothingRival,0.1f,0.5f,10.0f);
+			// ImGui::DragFloat("replanInterval",&c.replanInterval,0.05f,0.1f,3.0f);
+			// ImGui::DragFloat("ratioDeadband",&c.ratioDeadband,0.005f,0.0f,0.5f);
+
+			ai_.ShowGui();
+			ImGui::TreePop();
 		}
 
 		// Route
@@ -185,7 +188,7 @@ void BaseStation::StartupSpawn(){
 
 	// ==== Yレンジ ====
 	constexpr float kBoundaryY = 0.0f;
-	constexpr float kMargin = 40.0f;
+	constexpr float kMargin = 500.0f;
 
 	float minY, maxY;
 	if (c.y >= kBoundaryY){
