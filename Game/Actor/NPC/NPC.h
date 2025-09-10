@@ -101,8 +101,8 @@ protected:
 	const std::string fileDirectory_ = "GameActor/NPC";
 
 	// パラメータ
-	float maxHP_ = 10.0f;				//< 最大hp
-	float hp_;							//< 現在のhp
+	float maxHP_ = 100.0f;				//< 最大hp
+	float hp_ = 100.0f;					//< 現在のhp
 	float speed_ = 18.0f;				//< 基本移動速度（Navigator に渡す）
 	float shootInterval_ = 1.2f;		//< 発射間隔
 	float shootCooldown_ = 0.0f;		//< 残りクールダウン

@@ -286,8 +286,16 @@ void NPC::Move() {
     // ---- ナビ tick ----
     const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, sensedTgt, holes);
 
-    // ★Orbit へ入った瞬間にスプラインを中心へ合わせてバインド＋最近点へスナップ
-    if (prevState != NpcNavigator::State::Orbit && navigator_.GetState() == NpcNavigator::State::Orbit) {
+    // ★ ToAttack へ入った瞬間：攻撃用ルートを再バインド（中心＝敵拠点）＋線にスナップ
+    if (prevState != NpcNavigator::State::ToAttack &&
+        navigator_.GetState() == NpcNavigator::State::ToAttack) {
+        const Vector3 center = side.enemyBase;
+        BindAttackRouteAtEntry_(center);
+        navigator_.ResetFollowerAt(GetWorldPosition()); // その場でスプラインへ
+    }
+
+    if (prevState != NpcNavigator::State::Orbit &&
+        navigator_.GetState() == NpcNavigator::State::Orbit) {
         const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
         BindOrbitRouteAtEntry_(center);
         navigator_.ResetFollowerAt(GetWorldPosition());

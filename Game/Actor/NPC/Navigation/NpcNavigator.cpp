@@ -42,6 +42,15 @@ static inline bool SegmentPlaneHit(const Vector3& A, const Vector3& B,
     return true;
 }
 
+// === ToAttack中の“面からの目標クリアランス”と法線バイアス強度 ===
+static constexpr float kAttackClearance   = 400.0f; // [m]
+static constexpr float kAttackNormalBias  = 0.6f;   // 0..1
+
+// === ToAttack中のリーシュ（敵ステーション中心から離れすぎない） ===
+static constexpr float kAttackLeashRadius = 1500.0f; // [m]
+static constexpr float kAttackLeashBias   = 0.75f;   // desired への引力の強さ（0..1）
+static constexpr float kAttackLeashStart  = 0.90f;   // 半径の何割で引力をかけ始めるか
+
 void NpcNavigator::Reset(const Vector3& orbitCenter) noexcept{
     state_ = State::ToTarget;
     holeIndex_ = -1;
@@ -233,7 +242,41 @@ Vector3 NpcNavigator::Tick(float dt,
             if (!follower_.HasUsableRoute()) return {0,0,0};
 
             const auto out = follower_.Tick(npcPos, Normalize3(heading_), speed_, dt);
-            const Vector3 desired = out.desiredDir;
+            Vector3 desired = out.desiredDir;
+
+            // ToAttack中は中心（敵ステーション）にリーシュ
+            if (state_ == State::ToAttack) {
+                // ステーションが動く場合に備え、毎フレーム同期
+                attackCenter_ = side_.enemyBase;
+
+                // --- [ToAttack クリアランス補正] ---
+                Vector3 P, N;
+                if (GetBoundaryPlane(P, N)){
+                    const float enemySide = Dot3(N, side_.enemyBase - P);
+                    const float sideSign  = Signf(enemySide != 0.0f ? enemySide : 1.0f);
+
+                    const float s       = Dot3(N, npcPos - P);                 // 現在の符号付き距離
+                    const float targetS = sideSign * kAttackClearance;         // 目標距離
+                    const float err     = targetS - s;
+                    const float normErr = std::clamp(err / (kAttackClearance + 1e-6f), -1.0f, 1.0f);
+
+                    const Vector3 normalBias = N * (normErr * kAttackNormalBias);
+                    desired = Normalize3(desired + normalBias, desired);
+                }
+                // --- [/ToAttack クリアランス補正] ---
+
+                // --- [リーシュ：desired への中心引力] ---
+                const Vector3 toCenter = attackCenter_ - npcPos;
+                const float dist = toCenter.Length();
+                if (dist > (kAttackLeashRadius * kAttackLeashStart)) {
+                    const float excess = dist - (kAttackLeashRadius * kAttackLeashStart);
+                    const float span   = kAttackLeashRadius * (1.0f - kAttackLeashStart) + 1e-6f;
+                    const float w      = std::clamp(excess / span, 0.0f, 1.0f); // 0..1
+                    const Vector3 pull = Normalize3(toCenter) * (w * kAttackLeashBias);
+                    desired = Normalize3(desired + pull, desired);
+                }
+                // --- [/リーシュ] ---
+            }
 
             SteerTowards(desired, dt, false);
 
@@ -282,6 +325,20 @@ Vector3 NpcNavigator::Tick(float dt,
                     }
                 }
             }
+
+            // --- [リーシュ：外側拡大の抑止（ハード）] ---
+            if (state_ == State::ToAttack) {
+                const Vector3 r = Normalize3(npcPos - attackCenter_, Vector3::ToRight()); // 外向き単位ベクトル
+                const float distNow = (npcPos - attackCenter_).Length();
+                if (distNow > kAttackLeashRadius) {
+                    const float outward = Dot3(delta, r);
+                    if (outward > 0.0f) {
+                        // 外向き成分を削除（接線/内向きのみ通す）
+                        delta -= r * outward;
+                    }
+                }
+            }
+            // --- [/リーシュ：外側拡大の抑止] ---
 
             // グレース消費
             if (attackGraceTimer_ > 0.0f){

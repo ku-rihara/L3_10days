@@ -21,7 +21,7 @@ void BoundaryBreaker::Init(){
 
 	obj3d_.reset(Object3d::CreateModel("BoundaryBreaker.obj"));
 	obj3d_->transform_.parent_ = &baseTransform_;
-	baseTransform_.scale_ = Vector3(5.0f,5.0f,5.0f);
+	baseTransform_.scale_ = Vector3(7.0f,7.0f,7.0f);
 
 	fireController_ = std::make_unique<NpcFireController>();
 	fireController_->Init();
