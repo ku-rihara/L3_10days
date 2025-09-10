@@ -4,7 +4,7 @@
 // ========================================
 // 移動チュートリアル
 // ========================================
-class MoveMissionRoll : public BaseTutorialMission {
+class BrakeMission : public BaseTutorialMission {
 public:
     enum class MovementStep {
         EXPLAIN,
@@ -13,8 +13,8 @@ public:
     };
 
 public:
-    MoveMissionRoll();
-    ~MoveMissionRoll() = default;
+    BrakeMission();
+    ~BrakeMission() = default;
 
     void OnMissionStart() override;
     void OnMissionUpdate() override;

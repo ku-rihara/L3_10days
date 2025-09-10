@@ -1,6 +1,7 @@
-#include "MoveMission.h"
+#include "ShotBulletMission.h"
 #include "Actor/player/Player.h"
 #include "Frame/Frame.h"
+#include"Actor/Player/Player.h"
 #include <algorithm>
 #include <cmath>
 #include <imgui.h>
@@ -8,14 +9,14 @@
 // ========================================
 // MovementTutorialMission 実装
 // ========================================
-MoveMission::MoveMission() {
+ShotBulletMission::ShotBulletMission() {
     // デフォルト値を設定
     maxWaitTime_       = 3.0f;
     inputThreshold_    = 0.1f;
     requiredInputTime_ = 2.0f;
 }
 
-void MoveMission::OnMissionStart() {
+void ShotBulletMission::OnMissionStart() {
     currentStep_      = MovementStep::EXPLAIN;
     waitTime_         = 0.0f;
     hasPlayerMoved_   = false;
@@ -26,8 +27,7 @@ void MoveMission::OnMissionStart() {
     showGauge_ = false;
 }
 
-void MoveMission::OnMissionUpdate() {
-   
+void ShotBulletMission::OnMissionUpdate() {
     float deltaTime = Frame::DeltaTime();
 
     switch (currentStep_) {
@@ -41,9 +41,9 @@ void MoveMission::OnMissionUpdate() {
 
     case MovementStep::WAIT_INPUT:
         if (pPlayer_) {
-            // 入力チェック（angleInput.xの絶対値で判定）
-            float inputValue       = pPlayer_->GetAngleInput().Length();
-            bool inputConditionMet = inputValue >= inputThreshold_;
+            // 入力チェック
+        
+            bool inputConditionMet =pPlayer_->GetBulletShooter()->GetIsNormalBulletInput() ;
 
             if (inputConditionMet) {
                 // 入力条件を満たしている場合
@@ -94,23 +94,23 @@ void MoveMission::OnMissionUpdate() {
     }
 }
 
-void MoveMission::OnMissionComplete() {
+void ShotBulletMission::OnMissionComplete() {
     // ミッション完了時の処理
     showGauge_ = false;
 }
 
-void MoveMission::BindParams() {
+void ShotBulletMission::BindParams() {
     BaseTutorialMission::BindParams();
     globalParameter_->Bind(groupName_, "maxWaitTime", &maxWaitTime_);
     globalParameter_->Bind(groupName_, "inputThreshold", &inputThreshold_);
     globalParameter_->Bind(groupName_, "requiredInputTime", &requiredInputTime_);
 }
 
-void MoveMission::AdjustParam() {
+void ShotBulletMission::AdjustParam() {
     BaseTutorialMission::AdjustParam();
 }
 
-void MoveMission::AdjustUniqueParam() {
+void ShotBulletMission::AdjustUniqueParam() {
 #ifdef _DEBUG
     // 基本パラメータ
     ImGui::DragFloat("Max Wait Time", &maxWaitTime_, 0.1f, 1.0f, 10.0f);

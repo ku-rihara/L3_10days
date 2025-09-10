@@ -1,6 +1,7 @@
-#include "MoveMissionRoll.h"
+#include "BurstMission.h"
 #include "Actor/player/Player.h"
 #include "Frame/Frame.h"
+#include"Actor/Player/Player.h"
 #include <algorithm>
 #include <cmath>
 #include <imgui.h>
@@ -8,14 +9,14 @@
 // ========================================
 // MovementTutorialMission 実装
 // ========================================
-MoveMissionRoll::MoveMissionRoll() {
+BurstMission::BurstMission() {
     // デフォルト値を設定
     maxWaitTime_       = 3.0f;
     inputThreshold_    = 0.1f;
     requiredInputTime_ = 2.0f;
 }
 
-void MoveMissionRoll::OnMissionStart() {
+void BurstMission::OnMissionStart() {
     currentStep_      = MovementStep::EXPLAIN;
     waitTime_         = 0.0f;
     hasPlayerMoved_   = false;
@@ -26,7 +27,7 @@ void MoveMissionRoll::OnMissionStart() {
     showGauge_ = false;
 }
 
-void MoveMissionRoll::OnMissionUpdate() {
+void BurstMission::OnMissionUpdate() {
     float deltaTime = Frame::DeltaTime();
 
     switch (currentStep_) {
@@ -41,8 +42,8 @@ void MoveMissionRoll::OnMissionUpdate() {
     case MovementStep::WAIT_INPUT:
         if (pPlayer_) {
             // 入力チェック
-            float inputValue       = std::abs(pPlayer_->GetRollInput());
-            bool inputConditionMet = inputValue >= inputThreshold_;
+        
+            bool inputConditionMet =pPlayer_->GetBulletShooter()->GetIsNormalBulletInput() ;
 
             if (inputConditionMet) {
                 // 入力条件を満たしている場合
@@ -93,23 +94,23 @@ void MoveMissionRoll::OnMissionUpdate() {
     }
 }
 
-void MoveMissionRoll::OnMissionComplete() {
+void BurstMission::OnMissionComplete() {
     // ミッション完了時の処理
     showGauge_ = false;
 }
 
-void MoveMissionRoll::BindParams() {
+void BurstMission::BindParams() {
     BaseTutorialMission::BindParams();
     globalParameter_->Bind(groupName_, "maxWaitTime", &maxWaitTime_);
     globalParameter_->Bind(groupName_, "inputThreshold", &inputThreshold_);
     globalParameter_->Bind(groupName_, "requiredInputTime", &requiredInputTime_);
 }
 
-void MoveMissionRoll::AdjustParam() {
+void BurstMission::AdjustParam() {
     BaseTutorialMission::AdjustParam();
 }
 
-void MoveMissionRoll::AdjustUniqueParam() {
+void BurstMission::AdjustUniqueParam() {
 #ifdef _DEBUG
     // 基本パラメータ
     ImGui::DragFloat("Max Wait Time", &maxWaitTime_, 0.1f, 1.0f, 10.0f);

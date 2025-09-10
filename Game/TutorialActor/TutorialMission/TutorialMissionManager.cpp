@@ -1,7 +1,13 @@
 #include "TutorialMissionManager.h"
 #include "Frame/Frame.h"
+
+//
+#include "TutorialActor/TutorialMission/BrakeMission.h"
+#include "TutorialActor/TutorialMission/BurstMission.h"
 #include "TutorialActor/TutorialMission/MoveMission.h"
-#include"TutorialActor/TutorialMission/MoveMissionY.h"
+#include "TutorialActor/TutorialMission/MoveMissionY.h"
+#include "TutorialActor/TutorialMission/ShotBulletMission.h"
+#include "TutorialActor/TutorialMission/ShotMissileMission.h"
 #include <imgui.h>
 
 TutorialMissionManager::TutorialMissionManager() {
@@ -18,14 +24,31 @@ void TutorialMissionManager::Init() {
     transitionState_     = TransitionState::NONE;
     transitionTimer_     = 0.0f;
 
-    // ミッション初期化（複数のミッションを追加）
-    missions_[0] = std::make_unique<MoveMission>();// Pitch
+    // ミッション初期化
+    //
+    // Pitch,Roll
+    missions_[0] = std::make_unique<MoveMission>();
     missions_[0]->Init("TutorialMissionMoveX", "MoveXMission");
-    missions_[1] = std::make_unique<MoveMissionY>();// Yaw
+
+    // Yaw
+    missions_[1] = std::make_unique<MoveMissionY>();
     missions_[1]->Init("TutorialMissionMoveY", "MoveYMission");
-    missions_[2] = std::make_unique<MoveMissionY>(); // Yaw
-    missions_[2]->Init("TutorialMissionMoveY", "MoveYMission");
-   
+
+    // Burst
+    missions_[2] = std::make_unique<BurstMission>();
+    missions_[2]->Init("TutorialMissionBurst", "BurstMission");
+
+    // Brake
+    missions_[3] = std::make_unique<BrakeMission>();
+    missions_[3]->Init("TutorialMissionBrake", "BrakeMission");
+
+    // BulletShot
+    missions_[4] = std::make_unique<ShotBulletMission>();
+    missions_[4]->Init("TutorialMissionBulletShot", "BulletShotMission");
+
+    // ShotMissileMission
+    missions_[5] = std::make_unique<ShotMissileMission>();
+    missions_[5]->Init("TutorialMissionShotMissile", "ShotMissile");
 
     // 全ミッションを初期化
     for (auto& mission : missions_) {
@@ -67,7 +90,7 @@ void TutorialMissionManager::UpdateTransition() {
 
     switch (transitionState_) {
     case TransitionState::WAITING_FOR_CLOSE: {
-      
+
         BaseTutorialMission* currentMission = GetCurrentMission();
         if (currentMission) {
             bool isCompleted    = currentMission->IsCompleted();
@@ -282,7 +305,7 @@ void TutorialMissionManager::MoveToNextMission() {
         // 次のミッションを開始（ここでアピアアニメーションが自動的に開始される）
         BaseTutorialMission* nextMission = GetCurrentMission();
         if (nextMission) {
-            nextMission->StartMission(); 
+            nextMission->StartMission();
         }
     }
 }

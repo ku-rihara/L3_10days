@@ -264,7 +264,10 @@
     <ClCompile Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMission.cpp" />
     <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMissionY.cpp" />
-    <ClCompile Include="Game\TutorialActor\TutorialMission\MoveMissionRoll.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\ShotBulletMission.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\ShotMissileMission.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\BurstMission.cpp" />
+    <ClCompile Include="Game\TutorialActor\TutorialMission\BrakeMission.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Actor\NPC\Bullet\Pool\NpcBulletPool.h" />
@@ -528,7 +531,10 @@
     <ClInclude Include="Game\TutorialActor\TutorialMission\TutorialMissionManager.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMission.h" />
     <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMissionY.h" />
-    <ClInclude Include="Game\TutorialActor\TutorialMission\MoveMissionRoll.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\ShotBulletMission.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\ShotMissileMission.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\BurstMission.h" />
+    <ClInclude Include="Game\TutorialActor\TutorialMission\BrakeMission.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
