@@ -249,6 +249,7 @@
     <ClCompile Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.cpp" />
     <ClCompile Include="Game\Pipeline\EffectPipelines\PlayerOutOfFieldWarningEffectPipeline.cpp" />
     <ClCompile Include="Game\Pipeline\SkyDomePipeline.cpp" />
+    <ClCompile Include="Game\Object\SceneObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Primitive\PrimitiveSphere.h" />
@@ -513,6 +514,7 @@
     <ClInclude Include="Game\Actor\Effects\PlayerLocus\PlayerLocusEffect.h" />
     <ClInclude Include="Game\Pipeline\EffectPipelines\PlayerOutOfFieldWarningEffectPipeline.h" />
     <ClInclude Include="Game\Pipeline\SkyDomePipeline.h" />
+    <ClInclude Include="Game\Object\SceneObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
