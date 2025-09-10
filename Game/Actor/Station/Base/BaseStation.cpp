@@ -81,6 +81,8 @@ void BaseStation::Init(){
 	// 初期スポーン
 	StartupSpawn();
 
+	hp_ = maxLife_;
+
 	// 再計画タイマ（起動直後に走らせる）
 	planTimer_ = 0.0f;
 
