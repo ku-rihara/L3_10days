@@ -289,6 +289,16 @@ void GameScene::GameUpdate() {
     for (auto* npc : enemyNPCs) {
         targets.emplace_back(static_cast<EnemyNPC*>(npc));
     }
+
+    //Player NPCS
+    auto playerStations = static_cast<PlayerStation*>(stations_[FactionType::Ally].get());
+    auto playerNPCs     = playerStations->GetLiveNpcs();
+    for (auto* npc : playerNPCs) {
+        if (PlayerNPC* pNcp = dynamic_cast<PlayerNPC*>(npc)) {
+            pNcp->SpriteUpdate(viewProjection_);
+        }
+    }
+
     // boundaryBreakers
     for (auto& bb : boundaryBreakers_) {
         if (bb /*&&生きてたら*/) {
@@ -298,9 +308,14 @@ void GameScene::GameUpdate() {
     // baseStatuon
     for (auto& station : stations_) {
         if (station.second->GetHp() > 0 /*&&生きてたら*/) {
+            // enemy
             auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
             enemyStation->SpriteUpdate(viewProjection_);
             targets.emplace_back(enemyStation);
+
+            // arry
+            auto arryStations = dynamic_cast<PlayerStation*>(stations_[FactionType::Ally].get());
+            arryStations->SpriteUpdate(viewProjection_);
         }
     }
 
@@ -405,10 +420,23 @@ void GameScene::GameSpriteDraw() {
     lockOn_->Draw();
     player_->UIDraw();
 
+     // Player NPCS
+    auto playerStations = static_cast<PlayerStation*>(stations_[FactionType::Ally].get());
+    auto playerNPCs     = playerStations->GetLiveNpcs();
+    for (auto* npc : playerNPCs) {
+        if (PlayerNPC* pNcp = dynamic_cast<PlayerNPC*>(npc)) {
+            pNcp->DrawSprite();
+        }
+    }
+
     for (auto& station : stations_) {
         if (station.second->GetHp() > 0 /*&&生きてたら*/) {
             auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
             enemyStation->DrawSprite();
+
+             // arry
+            auto arryStations = dynamic_cast<PlayerStation*>(stations_[FactionType::Ally].get());
+            arryStations->DrawSprite();
         }
     }
 

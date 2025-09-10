@@ -325,7 +325,11 @@ void Player::RotateUpdate() {
     Vector3 localForward = GetForwardVector();
 
     // ピッチ回転（X軸）
-    Quaternion pitchRotation = Quaternion::MakeRotateAxisAngle(localRight, angularVelocity_.x * deltaTime);
+    if (inversePitch_) {
+        angularVelocity_.x *= -1.0f;
+    }
+        Quaternion pitchRotation = Quaternion::MakeRotateAxisAngle(localRight, angularVelocity_.x * deltaTime);
+    
 
     // ヨー回転（Y軸）
     Quaternion yawRotation = Quaternion::MakeRotateAxisAngle(Vector3::ToUp(), angularVelocity_.y * deltaTime);
