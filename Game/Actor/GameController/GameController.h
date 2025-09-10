@@ -52,6 +52,7 @@ private:
 	std::unique_ptr<NumDraw> outOfFieldWarningTimeIntNumDraw_;   // 整数部分
 	std::unique_ptr<NumDraw> outOfFieldWarningTimeFracNumDraw_;  // 小数部分
 	std::unique_ptr<Sprite> commaSprite_; // 小数点
+	std::unique_ptr<Sprite> oOFWText_; // "OUT OF FIELD WARNING"のテキスト
 
 	/// ゲームタイマー
 	std::unique_ptr<class GameTimer> gameTimer_;
