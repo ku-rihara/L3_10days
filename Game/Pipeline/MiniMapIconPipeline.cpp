@@ -222,7 +222,7 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 		FRIEND_ICON,		 //< 味方のアイコン
 		ENEMY_ICON,			 //< 敵のアイコン
 		PLAYER_MISSILE_ICON, //< プレイヤーのミサイルアイコン
-		ENEMY_MISSILE_ICON,	 //< 敵のミサイルアイコン
+		PLAYER_STATION_ICON, //< プレイヤーの基地アイコン
 		ENEMY_STATION_ICON,  //< 敵の基地アイコン
 		ICON_TYPE_MAX
 	};
@@ -231,12 +231,15 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 		&_miniMap->GetFriendIconBufferRef(),
 		&_miniMap->GetEnemyIconBufferRef(),
 		&_miniMap->GetPlayerMissileBufferRef(),
+		&_miniMap->GetPlayerStationBufferRef(),
+		&_miniMap->GetEnemyStationBufferRef(),
 	};
 
 	UINT instanceCounts[ICON_TYPE_MAX] = {
 		_miniMap->GetFriendIconCount(),
 		_miniMap->GetEnemyIconCount(),
 		_miniMap->GetPlayerMissileCount(),
+		1, 1
 	};
 
 	/// 各ICONのテクスチャを取得
@@ -244,7 +247,9 @@ void MiniMapIconPipeline::Draw(ID3D12GraphicsCommandList* _cmdList, MiniMap* _mi
 	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandles[ICON_TYPE_MAX] = {
 		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/Icon.png")),
 		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/RadarIconEnemy.png")),
-		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/uvChecker.png")),
+		textureManager->GetTextureHandle(textureManager->LoadTexture("Resources/Texture/PlayerUI/MissileUI.png")),
+		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/PlayerBaseIcon.png")),
+		textureManager->GetTextureHandle(textureManager->LoadTexture("./resources/Texture/MiniMap/EnemyBaseIcon.png")),
 	};
 
 	UINT indexCount = static_cast<UINT>(indexBuffer_.GetIndices().size());

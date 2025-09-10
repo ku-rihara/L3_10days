@@ -24,7 +24,7 @@ void PlayerStation::Init() {
 	obj3d_->transform_.parent_ = &baseTransform_;
 
 	globalParam_ = GlobalParameter::GetInstance();
-
+	faction_ = FactionType::Ally;
 	BaseStation::Init();
 }
 
@@ -63,7 +63,9 @@ void PlayerStation::SpawnNPC(const Vector3& spawnPos) {
 
 	npc->SetWorldPosition(spawnPos);
 	npc->SetTarget(GetRivalStation());
-
+	if (const auto* rc = GetRouteCollection()) {
+		npc->AttachRoutes(rc);
+	}
 	spawned_.push_back(std::move(npc));
 	currentTime_ = 0.0f;
 }

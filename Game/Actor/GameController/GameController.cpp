@@ -7,6 +7,8 @@
 /// game
 #include "Actor/Player/Player.h"
 #include "Actor/Station/Base/BaseStation.h"
+#include "GameTimer.h"
+#include "GameScore.h"
 
 GameController::GameController() {
 	/// NumDraw
@@ -32,8 +34,8 @@ GameController::GameController() {
 
 	outOfFieldWarningTimeFracNumDraw_->SetIsDrawAll(true);
 
-	outOfFieldWarningTimeIntNumDraw_->SetColor(Vector4(0.56f, 0.12f, 0.09f, 1.0f));
-	outOfFieldWarningTimeFracNumDraw_->SetColor(Vector4(0.56f, 0.12f, 0.09f, 1.0f));
+	outOfFieldWarningTimeIntNumDraw_->SetColor(Vector4(0.95f, 0.01f, 0.01f, 1.f));
+	outOfFieldWarningTimeFracNumDraw_->SetColor(Vector4(0.95f, 0.01f, 0.01f, 1.f));
 
 	/// カンマ
 	uint32_t textureHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/UI/Comma.png");
@@ -43,7 +45,13 @@ GameController::GameController() {
 	Vector2 size    = Vector2{ 32.0f, 32.0f };
 	commaSprite_->SetScale(size / texSize);
 
+	gameTimer_ = std::make_unique<GameTimer>();
+	gameTimer_->Init();
+
+	/// スコアリセット
+	GameScore::GetInstance()->ScoreReset();
 }
+
 GameController::~GameController() = default;
 
 void GameController::Update() {
@@ -53,6 +61,11 @@ void GameController::Update() {
 
 	if (isPlayerOutOfField_) {
 		outOfFieldTime_ += Frame::DeltaTime() * 0.5f;
+	}
+
+	if (isGameClear_) {
+		/// クリアした時間を記録
+		GameScore::GetInstance()->SetClearTime(gameTimer_->GetTime());
 	}
 
 
@@ -66,6 +79,8 @@ void GameController::Update() {
 
 	outOfFieldWarningTimeIntNumDraw_->Update();
 	outOfFieldWarningTimeFracNumDraw_->Update();
+
+	gameTimer_->Update(isGameClear_);
 }
 
 void GameController::DrawOutOfFieldWarningTime() {
@@ -78,6 +93,10 @@ void GameController::DrawOutOfFieldWarningTime() {
 	outOfFieldWarningTimeIntNumDraw_->Draw();
 	outOfFieldWarningTimeFracNumDraw_->Draw();
 	commaSprite_->Draw();
+}
+
+void GameController::DrawGameTimer() {
+	gameTimer_->Draw();
 }
 
 bool GameController::CheckIsGameOver() {

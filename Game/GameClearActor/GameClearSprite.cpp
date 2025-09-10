@@ -228,8 +228,8 @@ void GameClearSprite::SetTotalTime(float _time) {
 }
 
 int32_t GameClearSprite::SetTimeBonus(float _time) {
-	/// 30000 - (_time * 500)
-	int bonus = static_cast<int>(30000.0f - (_time * 500.0f));
+	/// 30000 - (_time * 100)
+	int bonus = static_cast<int>(30000.0f - (_time * 100.0f));
 	if (bonus < 0) bonus = 0;
 	numDraws_[TIME_BONUS_NUM]->SetNumber(bonus);
 

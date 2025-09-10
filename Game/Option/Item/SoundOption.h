@@ -40,7 +40,7 @@ public:
 	~SoundOption() override = default;
 	
 	void Init() override;
-	void Update(size_t _currentIndex) override;
+	void Update(size_t _currentIndex, bool _isDirtyThisFrame) override;
 	void Draw() override;
 
 	void SetVolume(ItemName _name, float _volume);
@@ -53,8 +53,9 @@ private:
 
 	std::vector<SoundItem> soundItems_;
 	size_t selectedIndex_ = 0;
+	bool isSelected_;
 
-	//std::unique_ptr<Sprite> selectedFrame_ = nullptr;
+	std::unique_ptr<Sprite> selectedFrame_ = nullptr;
 
 };
 

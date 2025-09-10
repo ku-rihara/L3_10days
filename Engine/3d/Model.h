@@ -109,4 +109,7 @@ public:
     const uint32_t GetTextureIndex() const { return textureIndex_; }
     const ModelData& GetModelData() { return modelData_; }
     bool GetIsFileGltf() const { return isFileGltf_; }
+
+	D3D12_VERTEX_BUFFER_VIEW GetVBV() const { return vertexBufferView_; }
+	D3D12_INDEX_BUFFER_VIEW GetIBV() const { return indexBufferView_; }
 };

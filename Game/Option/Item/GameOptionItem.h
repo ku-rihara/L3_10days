@@ -23,7 +23,7 @@ public:
 	void BaseDraw();
 
 	virtual void Init() = 0;
-	virtual void Update(size_t _currentIndex) = 0;
+	virtual void Update(size_t _currentIndex, bool _isDirtyThisFrame) = 0;
 	virtual void Draw() = 0;
 
 	const Vector2& GetStartPos() const;

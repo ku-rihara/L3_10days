@@ -159,8 +159,8 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color = gMaterial.color * textureColor;
     }
 
-        // 環境マッピングの適用
-    output.color.rgb += environmentColor.rgb * gMaterial.environmentCoefficient;
+    //    // 環境マッピングの適用
+    //output.color.rgb += environmentColor.rgb * gMaterial.environmentCoefficient;
     
     // Dissolveエッジ効果の適用
     if (gMaterial.enableDissolve != 0)
