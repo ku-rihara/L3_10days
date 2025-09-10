@@ -7,9 +7,14 @@
 #include "Pipeline/Object3DPiprline.h"
 #include "3d/Object3DRegistry.h"
 #include "utility/ParticleEditor/ParticleManager.h"
+#include "Frame/Frame.h"
+#include "random.h"
+#include "Scene/Manager/SceneManager.h"
 
 /// game
 #include "Object/SceneObject.h"
+#include "Actor/ExpEmitter/ExpEmitter.h"
+#include "Option/GameOption.h"
 
 GameClearEffectScene::GameClearEffectScene() = default;
 GameClearEffectScene::~GameClearEffectScene() = default;
@@ -17,11 +22,12 @@ GameClearEffectScene::~GameClearEffectScene() = default;
 
 void GameClearEffectScene::Init() {
 	BaseScene::Init();
+	GameOption::GetInstance()->Init();
 
 	using UObj = std::unique_ptr<SceneObject>;
 
 	/// camera setting
-	viewProjection_.translation_ = { -85.700f, 43.000f, 103.200f };
+	basePos_ = { -85.700f, 43.000f, 103.200f };
 	viewProjection_.rotation_ = { 0.153f, 2.374f, 0.000f };
 
 	/// instance create
@@ -40,7 +46,13 @@ void GameClearEffectScene::Init() {
 	sceneObj_.emplace_back(std::move(bg));
 
 
+	/// particle
+	ExpEmitter::GetInstance()->Init();
 	ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
+	Frame::ResetDeltaTime();
+
+	changedTime_ = 8.0f;
+	interval_ = 0.2f;
 }
 
 void GameClearEffectScene::Update() {
@@ -50,6 +62,36 @@ void GameClearEffectScene::Update() {
 	for (auto& obj : sceneObj_) {
 		obj->Update();
 	}
+
+	time_ += Frame::DeltaTime();
+	if (time_ >= interval_) {
+		time_ = 0.0f;
+		ExpEmitter::GetInstance()->Emit(
+			{
+				Random::Range(-10.0f, 10.0f) * 10.0f,
+				Random::Range(-10.0f, 10.0f) * 10.0f,
+				Random::Range(-10.0f, 10.0f) * 10.0f,
+			}
+			);
+	}
+
+
+	/// camera shake
+	Vector3 pos = {
+		Random::Range(-4.0f, 4.0f),
+		Random::Range(-4.0f, 4.0f),
+		Random::Range(-4.0f, 4.0f),
+	};
+	pos += basePos_;
+	viewProjection_.translation_ = pos;
+
+
+	changedTime_ -= Frame::DeltaTime();
+	if (changedTime_ <= 0.0f) {
+		/// 0を下回ったらシーンチェンジ
+		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+	}
+
 
 	/// シーン共通の更新
 	Object3DRegistry::GetInstance()->UpdateAll();
