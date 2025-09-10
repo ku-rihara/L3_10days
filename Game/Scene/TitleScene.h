@@ -24,6 +24,7 @@ private:
 	std::vector<Object> object3ds_;
 
 	std::unique_ptr<TitleSprite> titleSprite_ = nullptr;
+	std::unique_ptr<Sprite> pressStartSprite_ = nullptr;
 
 	std::unique_ptr<Fade> fade_ = nullptr;
 
