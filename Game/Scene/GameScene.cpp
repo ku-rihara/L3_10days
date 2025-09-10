@@ -45,7 +45,7 @@
 GameScene::GameScene() = default;
 GameScene::~GameScene() = default;
 
-void GameScene::Init(){
+void GameScene::Init() {
 	BaseScene::Init();
 
 	// option load
@@ -56,7 +56,6 @@ void GameScene::Init(){
 
 	// 爆発エミッター
 	ExpEmitter::GetInstance()->Init();
-	Boundary::GetInstance()->ResetHoles();
 
 	// 生成
 	//====================================生成===================================================
@@ -92,11 +91,11 @@ void GameScene::Init(){
 	routesCollection_->Init();
 
 	//ルートを渡す
-	for (auto& station : stations_){ station.second->SetRouteCollection(routesCollection_.get()); }
+	for (auto& station : stations_) { station.second->SetRouteCollection(routesCollection_.get()); }
 
 	Installer::InstallStations(stations_[FactionType::Ally].get(),
-							   stations_[FactionType::Enemy].get(),
-							   director_.get());
+		stations_[FactionType::Enemy].get(),
+		director_.get());
 	//ステーションごとのルート
 	stations_[FactionType::Ally]->SetRoute(routesCollection_->GetRoute(RouteType::AllyDifence));
 	stations_[FactionType::Enemy]->SetRoute(routesCollection_->GetRoute(RouteType::EnemyDirence));
@@ -108,17 +107,18 @@ void GameScene::Init(){
 
 	const Vector3 enemyStaitonPos = stations_[FactionType::Enemy]->GetWorldPosition();
 	Installer::InstallBoundaryBreakers(boundaryBreakers_,
-									   stations_[FactionType::Ally].get(),
-									   stations_[FactionType::Enemy].get(),
-									   2);
+		stations_[FactionType::Ally].get(),
+		stations_[FactionType::Enemy].get(),
+		2);
 
 	gameCamera_->Init();
 
 	boundary_ = Boundary::GetInstance();
 	boundary_->Init();
+	boundary_->ResetHoles();
 
 	/// UI -----
-	miniMap_->Init(stations_[FactionType::Ally].get(),stations_[FactionType::Enemy].get());
+	miniMap_->Init(stations_[FactionType::Ally].get(), stations_[FactionType::Enemy].get());
 	miniMap_->RegisterPlayer(player_.get());
 	uis_->Init();
 
@@ -153,27 +153,26 @@ void GameScene::Init(){
 
 	/// BGMの再生
 	bgmId_ = audio_->LoadWave("./resources/Sound/BGM/InGameBGM.wav");
-	audio_->PlayBGM(bgmId_,0.05f);
+	audio_->PlayBGM(bgmId_, 0.05f);
 }
 
-void GameScene::Update(){
+void GameScene::Update() {
 	/// ポーズの更新
 	PauseUpdate();
-	if (!pause_->IsPause()){
+	if (!pause_->IsPause()) {
 		/// ゲームの更新
 		GameUpdate();
 	}
 
 	/// ゲームの状態チェック
 	/// TODO: 各演出が終了してから遷移する
-	if (gameController_->GetIsGameClear()){
+	if (gameController_->GetIsGameClear()) {
 		audio_->StopBGM(bgmId_);
-		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+		SceneManager::GetInstance()->ChangeScene("GAMECLEAREFFECT");
 		return;
-	}
-	else if (gameController_->GetIsGameOver()){
+	} else if (gameController_->GetIsGameOver()) {
 		audio_->StopBGM(bgmId_);
-		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
+		SceneManager::GetInstance()->ChangeScene("GAMEOVEREFFECT");
 		return;
 	}
 
@@ -188,47 +187,47 @@ void GameScene::Update(){
 
 #ifdef _DEBUG /// Scene Change (Debug)
 	// Scene Change
-	if (input_->TrrigerKey(DIK_RETURN)){
+	if (input_->TrrigerKey(DIK_RETURN)) {
 		audio_->StopBGM(bgmId_);
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 		return;
 	}
 
 	/// debug command
-	if (input_->TrrigerKey(DIK_0)){ player_->SetHP(0.0f); }
+	if (input_->TrrigerKey(DIK_0)) { player_->SetHP(0.0f); }
 #endif /// Scene Change (Debug)
 }
 
 /// ===================================================
 /// モデル描画
 /// ===================================================
-void GameScene::ModelDraw(){
+void GameScene::ModelDraw() {
 	GameModelDraw();
 
-	if (pause_->IsPause()){ PauseModelDraw(); }
+	if (pause_->IsPause()) { PauseModelDraw(); }
 }
 
 /// ===================================================
 /// SkyBox描画
 /// ===================================================
-void GameScene::SkyBoxDraw(){}
+void GameScene::SkyBoxDraw() {}
 
 /// ======================================================
 /// スプライト描画
 /// ======================================================
-void GameScene::SpriteDraw(){
+void GameScene::SpriteDraw() {
 	GameSpriteDraw();
-	if (pause_->IsPause()){ PauseSpriteDraw(); }
+	if (pause_->IsPause()) { PauseSpriteDraw(); }
 }
 
 /// ======================================================
 /// 影描画
 /// ======================================================
-void GameScene::DrawShadow(){
+void GameScene::DrawShadow() {
 	// Object3DRegistry::GetInstance()->DrawAllShadow(viewProjection_);
 }
 
-void GameScene::Debug(){
+void GameScene::Debug() {
 #ifdef _DEBUG
 
 	ImGui::Begin("Object");
@@ -239,7 +238,7 @@ void GameScene::Debug(){
 
 
 	player_->AdjustParam();
-	for (auto& kv : stations_){ kv.second->ShowGui(); }
+	for (auto& kv : stations_) { kv.second->ShowGui(); }
 	gameCamera_->AdjustParam();
 	lockOn_->AdjustParam();
 	ShadowMap::GetInstance()->DebugImGui();
@@ -249,9 +248,9 @@ void GameScene::Debug(){
 }
 
 // ビュープロジェクション更新
-void GameScene::ViewProjectionUpdate(){ BaseScene::ViewProjectionUpdate(); }
+void GameScene::ViewProjectionUpdate() { BaseScene::ViewProjectionUpdate(); }
 
-void GameScene::ViewProssess(){
+void GameScene::ViewProssess() {
 	viewProjection_.matView_ = gameCamera_->GetViewProjection().matView_;
 	viewProjection_.matProjection_ = gameCamera_->GetViewProjection().matProjection_;
 	viewProjection_.cameraMatrix_ = gameCamera_->GetViewProjection().cameraMatrix_;
@@ -259,7 +258,7 @@ void GameScene::ViewProssess(){
 	viewProjection_.TransferMatrix();
 }
 
-void GameScene::GameUpdate(){
+void GameScene::GameUpdate() {
 	Debug();
 
 	// class Update
@@ -280,19 +279,19 @@ void GameScene::GameUpdate(){
 	std::vector<LockOn::LockOnVariant> targets;
 	auto enemyStations = static_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
 	auto enemyNPCs = enemyStations->GetLiveNpcs();
-	for (auto* npc : enemyNPCs){ targets.emplace_back(static_cast<EnemyNPC*>(npc)); }
+	for (auto* npc : enemyNPCs) { targets.emplace_back(static_cast<EnemyNPC*>(npc)); }
 	// boundaryBreakers
-	for (auto& bb : boundaryBreakers_){ if (bb /*&&生きてたら*/){ targets.emplace_back(bb.get()); } }
+	for (auto& bb : boundaryBreakers_) { if (bb /*&&生きてたら*/) { targets.emplace_back(bb.get()); } }
 	// baseStatuon
-	for (auto& station : stations_){
-		if (station.second->GetHp() > 0/*&&生きてたら*/){
+	for (auto& station : stations_) {
+		if (station.second->GetHp() > 0/*&&生きてたら*/) {
 			auto enemyStation = dynamic_cast<EnemyStation*>(stations_[FactionType::Enemy].get());
 			targets.emplace_back(enemyStation);
 		}
 	}
 
 	// lockOn更新
-	lockOn_->Update(targets,player_.get(),viewProjection_,FactionType::Enemy);
+	lockOn_->Update(targets, player_.get(), viewProjection_, FactionType::Enemy);
 
 	/// ui update
 	miniMap_->Update();
@@ -314,16 +313,18 @@ void GameScene::GameUpdate(){
 	ParticleManager::GetInstance()->Update();
 }
 
-void GameScene::PauseUpdate(){
+void GameScene::PauseUpdate() {
 	pause_->Update();
 	GameOption* option = GameOption::GetInstance();
 	option->Update();
 	if ((option->GetIsDirtyThisFrame()
-			|| option->GetPrevIsDirtyThisFrame())
-		&& !option->GetIsOpen()){ player_->ClosedPaused(); }
+		|| option->GetPrevIsDirtyThisFrame())
+		&& !option->GetIsOpen()) {
+		player_->ClosedPaused();
+	}
 }
 
-void GameScene::GameModelDraw(){
+void GameScene::GameModelDraw() {
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 
 	Line3DPipeline* line3dPipeline = Line3DPipeline::GetInstance();
@@ -341,7 +342,7 @@ void GameScene::GameModelDraw(){
 	/// 境界の描画
 	BoundaryPipeline* boundaryPipeline = BoundaryPipeline::GetInstance();
 	boundaryPipeline->PreDraw(commandList);
-	boundaryPipeline->Draw(commandList,viewProjection_);
+	boundaryPipeline->Draw(commandList, viewProjection_);
 
 
 	/// オブジェクトの描画
@@ -353,33 +354,33 @@ void GameScene::GameModelDraw(){
 	/// 境界の破片の描画
 	BoundaryShardPipeline* boundaryShardPipeline = BoundaryShardPipeline::GetInstance();
 	boundaryShardPipeline->PreDraw(commandList);
-	boundaryShardPipeline->Draw(commandList,viewProjection_);
+	boundaryShardPipeline->Draw(commandList, viewProjection_);
 
 	/// 境界の穴の境界を描画
 	BoundaryEdgePipeline* boundaryEdgePipeline = BoundaryEdgePipeline::GetInstance();
 	boundaryEdgePipeline->PreDraw(commandList);
-	boundaryEdgePipeline->Draw(commandList,viewProjection_);
+	boundaryEdgePipeline->Draw(commandList, viewProjection_);
 
 	MiniMapPipeline* miniMapPipeline = MiniMapPipeline::GetInstance();
 	miniMapPipeline->PreDraw(commandList);
-	miniMapPipeline->Draw(commandList,miniMap_.get());
+	miniMapPipeline->Draw(commandList, miniMap_.get());
 
 	//旋回ルートの描画
 	routesCollection_->DebugDraw(viewProjection_);
 }
 
-void GameScene::GameSpriteDraw(){
+void GameScene::GameSpriteDraw() {
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 
 	/// random noise + vignette
 	GameScreenEffectPipeline* outsideWarning = GameScreenEffectPipeline::GetInstance();
 	outsideWarning->PreDraw(commandList);
-	outsideWarning->Draw(commandList,outsideWarning_.get());
+	outsideWarning->Draw(commandList, outsideWarning_.get());
 
 	PlayerOutOfFieldWarningEffectPipeline* playerOutOfFieldWarning =
-			PlayerOutOfFieldWarningEffectPipeline::GetInstance();
+		PlayerOutOfFieldWarningEffectPipeline::GetInstance();
 	playerOutOfFieldWarning->PreDraw(commandList);
-	playerOutOfFieldWarning->Draw(commandList,gameController_.get());
+	playerOutOfFieldWarning->Draw(commandList, gameController_.get());
 
 	Sprite::PreDraw(commandList);
 	gameController_->DrawOutOfFieldWarningTime();
@@ -394,15 +395,15 @@ void GameScene::GameSpriteDraw(){
 	/// UI用に
 	MiniMapIconPipeline* miniMapIconPipeline = MiniMapIconPipeline::GetInstance();
 	miniMapIconPipeline->PreDraw(commandList);
-	miniMapIconPipeline->Draw(commandList,miniMap_.get());
+	miniMapIconPipeline->Draw(commandList, miniMap_.get());
 
 	Sprite::PreDraw(commandList);
 	miniMap_->DrawMiniMapPlayerIcon();
 }
 
-void GameScene::PauseModelDraw(){}
+void GameScene::PauseModelDraw() {}
 
-void GameScene::PauseSpriteDraw(){
+void GameScene::PauseSpriteDraw() {
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
 
 	Sprite::PreDraw(commandList);
