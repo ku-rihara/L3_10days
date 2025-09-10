@@ -33,6 +33,11 @@ void TitleScene::Init() {
 		obj->Init();
 	}
 
+	int32_t texHandle = TextureManager::GetInstance()->LoadTexture("./resources/Texture/Title/StartUI.png");
+	pressStartSprite_.reset(
+		Sprite::Create(texHandle, { 640.0f, 600.0f }, { 1, 1, 1, 1 }));
+	pressStartSprite_->anchorPoint_ = { 0.5f, 0.5f };
+
 
 	titleSprite_ = std::make_unique<TitleSprite>();
 	titleSprite_->Init();
@@ -131,6 +136,7 @@ void TitleScene::SkyBoxDraw() {}
 /// ===================================================
 void TitleScene::SpriteDraw() {
 	titleSprite_->Draw();
+	pressStartSprite_->Draw();
 
 	GameOption* op = GameOption::GetInstance();
 	op->Draw();
