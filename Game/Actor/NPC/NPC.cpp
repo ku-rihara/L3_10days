@@ -288,7 +288,7 @@ void NPC::Move() {
     Vector3 from = baseTransform_.translation_;
     Vector3 to   = from + desiredDelta;
 
-    if (moveConstraint_) { to = moveConstraint_->FilterMove(from, to); }
+   //if (moveConstraint_) { to = moveConstraint_->FilterMove(from, to); }
 
     // === 進行方向へ機体を向ける（従来どおり）===
     const Vector3 v = to - from;
