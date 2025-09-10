@@ -6,326 +6,370 @@
 
 // ====== ローカルユーティリティ ======
 static inline float Rad(float deg){ return deg * 3.1415926535f / 180.0f; }
+static inline float Signf(float x){ return (x >= 0.0f) ? 1.0f : -1.0f; }
 
 static inline Vector3 Normalize3(const Vector3& v, const Vector3& fb = Vector3(0,0,-1)){
-	return Vector3::NormalizeOr(v,fb);
+    return Vector3::NormalizeOr(v,fb);
 }
-
 static inline float Len3(const Vector3& v){ return v.Length(); }
 static inline float Dot3(const Vector3& a, const Vector3& b){ return Vector3::Dot(a,b); }
 
 static inline bool GetBoundaryPlane(Vector3& P, Vector3& N){
-	const auto* bd = Boundary::GetInstance();
-	if (!bd) return false;
-	bd->GetDividePlane(P,N);
-	N = Normalize3(N,Vector3::ToUp());
-	return true;
+    const auto* bd = Boundary::GetInstance();
+    if (!bd) return false;
+    bd->GetDividePlane(P,N);
+    N = Normalize3(N,Vector3::ToUp());
+    return true;
 }
-
 static inline bool ShouldCrossBoundary(const Vector3& npcPos, const Vector3& tgtPos){
-	Vector3 P, N;
-	if (!GetBoundaryPlane(P,N)) return false;
-	const float sNpc = Dot3(N,npcPos - P);
-	const float sTgt = Dot3(N,tgtPos - P);
-	return (sNpc * sTgt) < 0.0f;
+    Vector3 P, N;
+    if (!GetBoundaryPlane(P,N)) return false;
+    const float sNpc = Dot3(N,npcPos - P);
+    const float sTgt = Dot3(N,tgtPos - P);
+    return (sNpc * sTgt) < 0.0f;
 }
-
 static inline bool SegmentPlaneHit(const Vector3& A, const Vector3& B,
-								   const Vector3& P, const Vector3& N,
-								   float& tHit, Vector3& Q){
-	const float da = Dot3(N,A - P);
-	const float db = Dot3(N,B - P);
-	if (da * db > 0.0f) return false;
-	const float denom = (da - db);
-	if (std::fabs(denom) < 1e-8f) return false;
-	tHit = da / (da - db);
-	if (tHit < 0.0f || tHit > 1.0f) return false;
-	Q = A + (B - A) * tHit;
-	return true;
+                                   const Vector3& P, const Vector3& N,
+                                   float& tHit, Vector3& Q){
+    const float da = Dot3(N,A - P);
+    const float db = Dot3(N,B - P);
+    if (da * db > 0.0f) return false;          // 同じ側
+    const float denom = (da - db);
+    if (std::fabs(denom) < 1e-8f) return false;// ほぼ平行
+    tHit = da / (da - db);
+    if (tHit < 0.0f || tHit > 1.0f) return false;
+    Q = A + (B - A) * tHit;
+    return true;
 }
 
 void NpcNavigator::Reset(const Vector3& orbitCenter) noexcept{
-	state_ = State::ToTarget;
-	holeIndex_ = -1;
-	holePos_ = {};
-	holeRadius_ = 0.0f;
+    state_ = State::ToTarget;
+    holeIndex_ = -1;
+    holePos_ = {};
+    holeRadius_ = 0.0f;
 
-	heading_ = Vector3(0,0,-1);
-	speed_ = std::clamp(cfg_.speed,cfg_.minSpeed,cfg_.maxSpeed);
-	bankDeg_ = 0.0f;
+    heading_ = Vector3(0,0,-1);
+    speed_   = std::clamp(cfg_.speed,cfg_.minSpeed,cfg_.maxSpeed);
+    bankDeg_ = 0.0f;
 
-	orbitCenter_ = orbitCenter;
-	orbitAngle_ = 0.0f;
+    orbitCenter_ = orbitCenter;
+    orbitAngle_  = 0.0f;
 
-	follower_.SelectInitialRouteWeighted();
-	follower_.SetMaxTurnRateDeg(cfg_.maxTurnRateDeg);
-	follower_.ResetAt(orbitCenter_);
+    attackCenter_     = {};
+    attackGraceTimer_ = 0.0f;
+
+    follower_.SelectInitialRouteWeighted();
+    follower_.SetMaxTurnRateDeg(cfg_.maxTurnRateDeg);
+    follower_.ResetAt(orbitCenter_);
 }
 
-// NPC 側の speed を毎フレーム反映（GUI変更も即反映させる）
+// NPC 側の speed を毎フレーム反映
 void NpcNavigator::SetSpeed(float v) noexcept{
-	cfg_.speed = v;
-	speed_ = std::clamp(cfg_.speed,cfg_.minSpeed,cfg_.maxSpeed);
+    cfg_.speed = v;
+    speed_ = std::clamp(cfg_.speed,cfg_.minSpeed,cfg_.maxSpeed);
 }
 
 Vector3 NpcNavigator::DesiredDirToHole(const Vector3& npcPos) const{
-	return Normalize3(holePos_ - npcPos,Vector3(0,0,-1));
+    return Normalize3(holePos_ - npcPos,Vector3(0,0,-1));
 }
-
 Vector3 NpcNavigator::DesiredDirToTarget(const Vector3& npcPos, const Vector3& tgtPos) const{
-	return Normalize3(tgtPos - npcPos,Vector3(0,0,-1));
+    return Normalize3(tgtPos - npcPos,Vector3(0,0,-1));
 }
-
 Vector3 NpcNavigator::DesiredDirLoiter(const Vector3& npcPos, float /*t*/) const{
-	// 円形ロイター（スプライン未設定時のフォールバック）
-	Vector3 r = npcPos - orbitCenter_;
-	r.y = 0.0f;
-	float rl = r.Length();
-	Vector3 radial = (rl > 1e-4f) ? (r * (1.0f / rl)) : Vector3(1,0,0);
+    // 円形ロイター（フォールバック）
+    Vector3 r = npcPos - orbitCenter_;
+    r.y = 0.0f;
+    float rl = r.Length();
+    Vector3 radial = (rl > 1e-4f) ? (r * (1.0f / rl)) : Vector3(1,0,0);
 
-	Vector3 tangent = (cfg_.orbitClockwise >= 0)
-						  ? Vector3(-radial.z,0,radial.x)
-						  : Vector3(radial.z,0,-radial.x);
+    Vector3 tangent = (cfg_.orbitClockwise >= 0)
+                        ? Vector3(-radial.z,0,radial.x)
+                        : Vector3(radial.z,0,-radial.x);
 
-	float err = cfg_.orbitRadius - rl;
-	Vector3 radialCorr = radial * (cfg_.orbitRadialGain * err);
-	Vector3 des = tangent * cfg_.orbitTangentBias + radialCorr;
-	return Normalize3(des,tangent);
+    float err = cfg_.orbitRadius - rl;
+    Vector3 radialCorr = radial * (cfg_.orbitRadialGain * err);
+    Vector3 des = tangent * cfg_.orbitTangentBias + radialCorr;
+    return Normalize3(des,tangent);
 }
 
 int NpcNavigator::SelectBestHole(const std::vector<Hole>& holes,
-								 const Vector3& npcPos,
-								 const Vector3& tgtPos) const{
-	if (holes.empty()) return -1;
+                                 const Vector3& npcPos,
+                                 const Vector3& tgtPos) const{
+    if (holes.empty()) return -1;
 
-	// 境界面と NPC→目標 の交点 Q を求める（なければ中点でフォールバック）
-	Vector3 Q = (npcPos + tgtPos) * 0.5f;
-	Vector3 P, N;
-	if (GetBoundaryPlane(P,N)){
-		float tHit;
-		Vector3 qTmp;
-		if (SegmentPlaneHit(npcPos,tgtPos,P,N,tHit,qTmp)){ Q = qTmp; }
-	}
+    // NPC→目標の境界交点 Q（無ければ中点）
+    Vector3 Q = (npcPos + tgtPos) * 0.5f;
+    Vector3 P, N;
+    if (GetBoundaryPlane(P,N)){
+        float tHit; Vector3 qTmp;
+        if (SegmentPlaneHit(npcPos,tgtPos,P,N,tHit,qTmp)){ Q = qTmp; }
+    }
 
-	int best = -1;
-	float bestSc = (std::numeric_limits<float>::max)();
+    int best = -1;
+    float bestSc = (std::numeric_limits<float>::max)();
+    const float holeBias = tac_.holeBiasAttack;
 
-	// 役割バイアス（必要なら tac_ から出し分けてOK。ここでは攻撃寄りを使用）
-	const float holeBias = tac_.holeBiasAttack;
+    for (int i = 0; i < (int)holes.size(); ++i){
+        const auto& h = holes[i];
+        if (h.radius < cfg_.minHoleRadius) continue;
 
-	for (int i = 0; i < (int)holes.size(); ++i){
-		const auto& h = holes[i];
-		if (h.radius < cfg_.minHoleRadius) continue;
+        const float d2     = Vector3::Dot(h.position - Q,h.position - Q);
+        const float reward = (h.radius * holeBias);
+        const float score  = d2 / (reward * reward + 1e-3f);
 
-		// スコア：交点 Q からの距離を半径で割引（大きい穴ほど有利）
-		const float d2 = Vector3::Dot(h.position - Q,h.position - Q);
-		const float reward = (h.radius * holeBias);
-		const float score = d2 / (reward * reward + 1e-3f);
-
-		if (score < bestSc){
-			bestSc = score;
-			best = i;
-		}
-	}
-	return best;
+        if (score < bestSc){ bestSc = score; best = i; }
+    }
+    return best;
 }
 
 Vector3 NpcNavigator::RotateToward(const Vector3& cur, const Vector3& des, float maxAngleRad){
-	Vector3 a = Normalize3(cur,Vector3::ToForward());
-	Vector3 b = Normalize3(des,Vector3::ToForward());
-	float dot = std::clamp(Vector3::Dot(a,b),-1.0f,1.0f);
-	float theta = std::acos(dot);
-	if (theta <= maxAngleRad) return b;
-	float t = maxAngleRad / (theta + 1e-8f);
-	Vector3 lerp = a * (1.0f - t) + b * t;
-	return Normalize3(lerp,b);
+    Vector3 a = Normalize3(cur,Vector3::ToForward());
+    Vector3 b = Normalize3(des,Vector3::ToForward());
+    float dot = std::clamp(Vector3::Dot(a,b),-1.0f,1.0f);
+    float theta = std::acos(dot);
+    if (theta <= maxAngleRad) return b;
+    float t = maxAngleRad / (theta + 1e-8f);
+    Vector3 lerp = a * (1.0f - t) + b * t;
+    return Normalize3(lerp,b);
 }
-
 void NpcNavigator::SteerTowards(const Vector3& desiredDir, float dt, bool /*isBoosting*/){
-	const float maxTurn = Rad(cfg_.maxTurnRateDeg) * dt;
-	heading_ = RotateToward(heading_,desiredDir,maxTurn);
+    const float maxTurn = Rad(cfg_.maxTurnRateDeg) * dt;
+    heading_ = RotateToward(heading_,desiredDir,maxTurn);
 }
 
 void NpcNavigator::StartOrbit(const Vector3& center) noexcept{
-	state_ = State::Orbit;
-	orbitCenter_ = center;
-	// スプラインに即スナップ（「線に乗る」）
-	follower_.ResetAt(center);
+    state_ = State::Orbit;
+    orbitCenter_ = center;
+    follower_.ResetAt(center);
+}
+void NpcNavigator::StartAttack(const Vector3& center) noexcept{
+    state_ = State::ToAttack;
+    attackCenter_ = center;
 }
 
 // ---------------------------
-// 役割に応じた戦術ゴール計算
+// 戦術ゴール
 // ---------------------------
 NpcNavigator::TacticalGoal
-	NpcNavigator::BuildTacticalGoal_(const Vector3& npcPos,
-									 const Vector3& sensedTgt,
-									 const std::vector<Hole>& /*holes*/) const{
-	TacticalGoal g{};
-	Vector3 P, N;
-	const bool hasPlane = GetBoundaryPlane(P,N);
+NpcNavigator::BuildTacticalGoal_(const Vector3& npcPos,
+                                 const Vector3& sensedTgt,
+                                 const std::vector<Hole>& /*holes*/) const{
+    TacticalGoal g{};
+    Vector3 P, N;
+    const bool hasPlane = GetBoundaryPlane(P,N);
 
-	auto lennz = [](const Vector3& v){ return v.Length() > 1e-3f; };
+    auto lennz = [](const Vector3& v){ return v.Length() > 1e-3f; };
 
-	switch (role_){
-	case Role::AttackBase:
-		{
-			const Vector3 primary = side_.enemyBase;
-			const float useAltDist = 60.0f;
-			const bool hasAlt = lennz(sensedTgt - npcPos) && (sensedTgt - npcPos).Length() <= useAltDist;
-			g.target = hasAlt ? sensedTgt : primary;
-			g.needCross = hasPlane ? ShouldCrossBoundary(npcPos,g.target) : false;
-			g.holeBias = tac_.holeBiasAttack;
-			break;
-		}
-	case Role::DefendBase:
-		{
-			const Vector3 anchor = side_.allyBase;
-			bool intercept = false;
-			if (lennz(sensedTgt - npcPos) && hasPlane){
-				const float dPlane = std::fabs(Dot3(N,sensedTgt - P));
-				const float nearPlane = 30.0f;
-				const bool tgtSameSide = (Dot3(N,anchor - P) * Dot3(N,sensedTgt - P)) >= 0.0f;
-				intercept = (tgtSameSide || dPlane < nearPlane) &&
-						((sensedTgt - anchor).Length() <= tac_.interceptRange);
-			}
-			g.target = intercept ? sensedTgt : anchor;
-			g.needCross = false;
-			g.holeBias = tac_.holeBiasDefend;
-			break;
-		}
-	case Role::Patrol:
-	default:
-		{
-			const Vector3 anchor = side_.allyBase;
-			g.target = lennz(sensedTgt - npcPos) ? sensedTgt : anchor;
-			g.needCross = hasPlane ? ShouldCrossBoundary(npcPos,g.target) : false;
-			g.holeBias = 0.8f;
-			break;
-		}
-	}
-	return g;
+    switch (role_){
+    case Role::AttackBase:{
+        const Vector3 primary = side_.enemyBase;
+        const float useAltDist = 60.0f;
+        const bool hasAlt = lennz(sensedTgt - npcPos) && (sensedTgt - npcPos).Length() <= useAltDist;
+        g.target    = hasAlt ? sensedTgt : primary;
+        g.needCross = hasPlane ? ShouldCrossBoundary(npcPos,g.target) : false;
+        g.holeBias  = tac_.holeBiasAttack;
+        break;
+    }
+    case Role::DefendBase:{
+        const Vector3 anchor = side_.allyBase;
+        bool intercept = false;
+        if (lennz(sensedTgt - npcPos) && hasPlane){
+            const float dPlane     = std::fabs(Dot3(N,sensedTgt - P));
+            const float nearPlane  = 30.0f;
+            const bool tgtSameSide = (Dot3(N,anchor - P) * Dot3(N,sensedTgt - P)) >= 0.0f;
+            intercept = (tgtSameSide || dPlane < nearPlane) &&
+                        ((sensedTgt - anchor).Length() <= tac_.interceptRange);
+        }
+        g.target    = intercept ? sensedTgt : anchor;
+        g.needCross = false;
+        g.holeBias  = tac_.holeBiasDefend;
+        break;
+    }
+    case Role::Patrol:
+    default:{
+        const Vector3 anchor = side_.allyBase;
+        g.target    = lennz(sensedTgt - npcPos) ? sensedTgt : anchor;
+        g.needCross = hasPlane ? ShouldCrossBoundary(npcPos,g.target) : false;
+        g.holeBias  = 0.8f;
+        break;
+    }}
+    return g;
 }
 
 bool NpcNavigator::TryEnterToHole_(const std::vector<Hole>& holes,
-								   const Vector3& npcPos,
-								   const Vector3& tgtPos){
-	const int pick = SelectBestHole(holes,npcPos,tgtPos);
-	if (pick < 0) return false;
+                                   const Vector3& npcPos,
+                                   const Vector3& tgtPos){
+    const int pick = SelectBestHole(holes,npcPos,tgtPos);
+    if (pick < 0) return false;
 
-	holeIndex_ = pick;
-	holePos_ = holes[pick].position;
-	holeRadius_ = holes[pick].radius;
-	state_ = State::ToHole;
+    holeIndex_  = pick;
+    holePos_    = holes[pick].position;
+    holeRadius_ = holes[pick].radius;
+    state_      = State::ToHole;
 
-	// 少しの間は ToHole を維持（ターゲット揺れ/穴チラつき対策）
-	toHoleHoldTimer_ = 0.35f; // 必要に応じて調整
-
-	return true;
+    // 少しの間は ToHole を維持（穴チラつき対策）
+    toHoleHoldTimer_ = 0.35f;
+    return true;
 }
 
 // ---------------------------
 // Tick
 // ---------------------------
 Vector3 NpcNavigator::Tick(float dt,
-						   const Vector3& npcPos,
-						   const Vector3& tgtPos,
-						   const std::vector<Hole>& holes){
-	const TacticalGoal goal = BuildTacticalGoal_(npcPos,tgtPos,holes);
+                           const Vector3& npcPos,
+                           const Vector3& tgtPos,
+                           const std::vector<Hole>& holes){
+    const TacticalGoal goal = BuildTacticalGoal_(npcPos, tgtPos, holes);
 
-	// --------------------------------
-	// ToHole 以外：越境が必要なら ToHole に入る
-	// --------------------------------
-	if (state_ != State::ToHole){
-		if (goal.needCross){
-			if (TryEnterToHole_(holes,npcPos,goal.target)){
-				// 遷移だけ済ませ、このフレームは移動しない
-				return {0, 0, 0};
-			}
-			// 穴が無ければ従来どおりスプライン追従を継続
-		}
+    if (state_ != State::ToHole){
+        if (goal.needCross){
+            if (TryEnterToHole_(holes, npcPos, goal.target)){
+                return {0,0,0}; // 遷移のみ
+            }
+        }
 
-		// === 既存の Orbit/スプライン追従 ===
-		if (state_ != State::Orbit){
-			const Vector3 orbitCenter =
-					(role_ == Role::DefendBase || role_ == Role::Patrol) ? side_.allyBase : side_.allyBase;
-			if (role_ == Role::DefendBase) cfg_.orbitRadius = tac_.defendOrbitRadius;
-			else if (role_ == Role::Patrol) cfg_.orbitRadius = tac_.patrolOrbitRadius;
-			else /*AttackBase*/ cfg_.orbitRadius = tac_.patrolOrbitRadius;
+        // === Orbit / ToAttack 共通：スプライン追従 ===
+        if (state_ == State::Orbit || state_ == State::ToAttack){
+            if (!follower_.HasUsableRoute()) return {0,0,0};
 
-			StartOrbit(orbitCenter);
-		}
-		else{ orbitAngle_ += cfg_.orbitAngularSpd * dt; }
+            const auto out = follower_.Tick(npcPos, Normalize3(heading_), speed_, dt);
+            const Vector3 desired = out.desiredDir;
 
-		if (!follower_.HasUsableRoute()){ return {0, 0, 0}; }
+            SteerTowards(desired, dt, false);
 
-		const auto out = follower_.Tick(npcPos,Normalize3(heading_),speed_,dt);
-		const Vector3 desired = out.desiredDir;
+            // 実移動距離 = speed * dt
+            speed_ = std::clamp(cfg_.speed, cfg_.minSpeed, cfg_.maxSpeed);
+            const float intendedLen = speed_ * dt;
 
-		// 回頭は常に操舵を通す
-		SteerTowards(desired,dt,false);
+            // 操舵後の heading_ を使用
+            Vector3 moveDir = Normalize3(heading_, Vector3::ToForward());
+            Vector3 delta   = moveDir * intendedLen;
 
-		// 実移動距離 = speed * dt を厳守
-		speed_ = std::clamp(cfg_.speed,cfg_.minSpeed,cfg_.maxSpeed);
-		Vector3 delta = heading_ * (speed_ * dt);
+            // クリップ条件：ToAttack はグレース中は無効
+            const bool doClip = (state_ == State::Orbit) ||
+                                (state_ == State::ToAttack && attackGraceTimer_ <= 0.0f);
 
-		// 境界クリップ（ToHole 以外は越境禁止）
-		Vector3 P, N;
-		if (GetBoundaryPlane(P,N)){
-			float tHit;
-			Vector3 Q;
-			const Vector3 nextPos = npcPos + delta;
-			if (SegmentPlaneHit(npcPos,nextPos,P,N,tHit,Q)){
-				const float backEps = 0.01f;
-				const float tStop = (std::max)(0.0f,tHit - backEps);
-				delta = (nextPos - npcPos) * tStop;
+            if (doClip){
+                Vector3 P, N;
+                if (GetBoundaryPlane(P, N)){
+                    float tHit; Vector3 Q;
+                    const Vector3 nextPos = npcPos + delta;
+                    if (SegmentPlaneHit(npcPos, nextPos, P, N, tHit, Q)){
+                        const float tClamped  = std::clamp(tHit, 0.0f, 1.0f);
+                        const float lenToWall = tClamped * intendedLen;
+                        const float lenRemain = (std::max)(0.0f, intendedLen - lenToWall);
 
-				// 接線に沿うようにヘディングをクリップ
-				Vector3 tangent = Normalize3(heading_ - N * Dot3(heading_,N),heading_);
-				heading_ = tangent;
-			}
-		}
+                        const float pushBack  = 0.05f;
+                        const float lenToUse  = (std::max)(0.0f, lenToWall - pushBack);
 
-		follower_.Advance(delta.Length());
-		return delta;
-	}
+                        auto safeTangent = [&](const Vector3& prefer)->Vector3{
+                            Vector3 t = prefer - N * Dot3(prefer, N);
+                            float L = t.Length();
+                            if (L > 1e-4f) return t * (1.0f / L);
+                            const Vector3 up = (std::fabs(Dot3(N, Vector3::ToUp())) > 0.95f)
+                                                ? Vector3::ToRight() : Vector3::ToUp();
+                            t = Vector3::Cross(up, N);
+                            L = t.Length();
+                            return (L > 1e-4f) ? (t * (1.0f / L)) : Vector3::ToRight();
+                        };
 
-	// --------------------------------
-	// ToHole 中：穴に向かって進む
-	// --------------------------------
-	toHoleHoldTimer_ = (std::max)(0.0f,toHoleHoldTimer_ - dt);
+                        const Vector3 tangent     = safeTangent(moveDir);
+                        const Vector3 deltaToWall = moveDir * lenToUse;
+                        const Vector3 deltaSlide  = tangent * lenRemain;
 
-	// 毎フレーム、目標方向の交点Qに近い穴を再選択（開閉に追随）
-	const int pick = SelectBestHole(holes,npcPos,goal.target);
-	if (pick < 0){
-		// 穴が消えた & ホールドも切れたら Orbit 復帰
-		if (toHoleHoldTimer_ <= 0.0f){
-			state_ = State::Orbit;
-			follower_.ResetAt(npcPos); // その場で線へ復帰
-		}
-		return {0, 0, 0};
-	}
-	if (pick != holeIndex_){
-		holeIndex_ = pick;
-		holePos_ = holes[pick].position;
-		holeRadius_ = holes[pick].radius;
-	}
+                        delta    = deltaToWall + deltaSlide; // スライド
+                        heading_ = tangent;                  // 次フレも接線へ
+                    }
+                }
+            }
 
-	// 穴方向へ操舵して進む
-	Vector3 des = Normalize3(holePos_ - npcPos,Vector3(0,0,-1));
-	SteerTowards(des,dt,false);
+            // グレース消費
+            if (attackGraceTimer_ > 0.0f){
+                attackGraceTimer_ = (std::max)(0.0f, attackGraceTimer_ - dt);
+            }
 
-	speed_ = std::clamp(cfg_.speed,cfg_.minSpeed,cfg_.maxSpeed);
-	Vector3 delta = heading_ * (speed_ * dt);
+            follower_.Advance(delta.Length());
+            return delta;
+        }
 
-	// 通過判定 → Orbit 復帰（通過位置で線に乗り直す）
-	const float d = Len3(holePos_ - npcPos);
-	const float passDist = (std::max)(1.0f,holeRadius_ * cfg_.passFrac);
-	if (d <= passDist){
-		state_ = State::Orbit;
-		holeIndex_ = -1;
-		holePos_ = {};
-		holeRadius_ = 0.0f;
-		follower_.ResetAt(npcPos + delta); // 通過位置で復帰
-	}
-	return delta;
+        // === 初期/ToTarget等は Orbit を開始 ===
+        if (state_ != State::Orbit && state_ != State::ToAttack){
+            const Vector3 orbitCenter =
+                (role_ == Role::DefendBase || role_ == Role::Patrol) ? side_.allyBase : side_.allyBase;
+            if (role_ == Role::DefendBase)      cfg_.orbitRadius = tac_.defendOrbitRadius;
+            else if (role_ == Role::Patrol)     cfg_.orbitRadius = tac_.patrolOrbitRadius;
+            else /*AttackBase*/                  cfg_.orbitRadius = tac_.patrolOrbitRadius;
+            StartOrbit(orbitCenter);
+        }
+        orbitAngle_ += cfg_.orbitAngularSpd * dt;
+        return {0,0,0};
+    }
+
+    // --------------------------------
+    // ToHole 中：穴に向かって進む
+    // --------------------------------
+    toHoleHoldTimer_ = (std::max)(0.0f, toHoleHoldTimer_ - dt);
+
+    // 開閉に追随：毎フレーム選び直す
+    const int pick = SelectBestHole(holes, npcPos, goal.target);
+    if (pick < 0){
+        if (toHoleHoldTimer_ <= 0.0f){
+            state_ = State::Orbit;
+            follower_.ResetAt(npcPos);
+        }
+        return {0,0,0};
+    }
+    if (pick != holeIndex_){
+        holeIndex_  = pick;
+        holePos_    = holes[pick].position;
+        holeRadius_ = holes[pick].radius;
+    }
+
+    // 穴方向へ操舵
+    const Vector3 des = Normalize3(holePos_ - npcPos, Vector3(0,0,-1));
+    SteerTowards(des, dt, false);
+
+    speed_ = std::clamp(cfg_.speed, cfg_.minSpeed, cfg_.maxSpeed);
+    Vector3 delta = heading_ * (speed_ * dt);
+
+    // 通過判定 → ToAttack（攻撃用スプラインへ）
+    const float d        = Len3(holePos_ - npcPos);
+    const float passDist = (std::max)(1.0f, holeRadius_ * cfg_.passFrac);
+    if (d <= passDist){
+        // クリア
+        holeIndex_  = -1;
+        holePos_    = {};
+        holeRadius_ = 0.0f;
+
+        // --- 押し出し：敵拠点側へ小さくキック ---
+        Vector3 crossPos = npcPos + delta; // 今フレームの着地点
+        Vector3 P,N;
+        if (GetBoundaryPlane(P,N)){
+            const float enemySide = Dot3(N, side_.enemyBase - P);
+            const float sideSign  = Signf(enemySide != 0.0f ? enemySide : 1.0f);
+
+            // 面近傍なら押し出す
+            const float s = Dot3(N, crossPos - P);
+            const float epsBand = 0.25f;
+            if (std::fabs(s) < epsBand || Signf(s) != sideSign){
+                crossPos += N * (cfg_.exitKickDist * sideSign);
+            }
+
+            // ヘディングにも法線バイアス
+            Vector3 tang  = Normalize3(heading_ - N * Dot3(heading_,N), heading_);
+            Vector3 biased = Normalize3(tang + N * (cfg_.exitNormalBoost * sideSign), tang);
+            heading_ = biased;
+        }
+
+        // 攻撃用ルートへ
+        StartAttack(side_.enemyBase);
+        follower_.ResetAt(crossPos);
+
+        // グレースでクリップ無効
+        attackGraceTimer_ = 0.35f;
+
+        // 押し出しを反映した移動量で返す
+        return (crossPos - npcPos);
+    }
+    return delta;
 }

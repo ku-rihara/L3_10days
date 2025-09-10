@@ -259,7 +259,7 @@ void NPC::Move() {
     const float dt       = Frame::DeltaTime();
     const Vector3 npcPos = GetWorldPosition();
 
-    // ---- ステーション側コンテキストを反映（ロール依存の目標用）----
+    // ---- ステーション側コンテキスト ----
     NpcNavigator::StationSide side{};
     side.allyBase  = hasDefendAnchor_ ? defendAnchor_ : npcPos; // 防衛アンカー or 現在地
     side.enemyBase = target_ ? target_->GetWorldPosition() : npcPos;
@@ -277,27 +277,23 @@ void NPC::Move() {
     const Boundary* boundary       = Boundary::GetInstance();
     const std::vector<Hole>& holes = boundary->GetHoles();
 
-    // ---- スピード毎フレーム反映 ----
+    // ---- 速度反映 ----
     navigator_.SetSpeed(speed_);
 
     // ---- 状態遷移の検知 ----
     const auto prevState = navigator_.GetState();
 
-    // ---- 役割駆動ナビゲーション ----
+    // ---- ナビ tick ----
     const Vector3 desiredDelta = navigator_.Tick(dt, npcPos, sensedTgt, holes);
 
     // ★Orbit へ入った瞬間にスプラインを中心へ合わせてバインド＋最近点へスナップ
     if (prevState != NpcNavigator::State::Orbit && navigator_.GetState() == NpcNavigator::State::Orbit) {
         const Vector3 center = hasDefendAnchor_ ? defendAnchor_ : npcPos;
         BindOrbitRouteAtEntry_(center);
-        navigator_.ResetFollowerAt(GetWorldPosition()); // その場で線に乗る
+        navigator_.ResetFollowerAt(GetWorldPosition());
     }
 
-    // ============================================================
-    // 目的地へ移動：
-    //  1) ToHole 以外で境界に当たったら「壁直前まで進む + 残りを接線でスライド」
-    //  2) スライドしない通常フレームだけ制約(FilterMove)を適用
-    // ============================================================
+    // ---- 目的地へ移動（----
     Vector3 from = baseTransform_.translation_;
     Vector3 to   = from + desiredDelta;
 

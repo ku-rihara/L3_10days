@@ -172,3 +172,104 @@ Vector3 RectXZWithGatesConstraint::FilterMove(const Vector3& from, const Vector3
     }
     return halted;
 }
+
+Vector3 RectXZWithGatesConstraint::FilterMoveReflect(const Vector3& from, const Vector3& to) const {
+    blocked_ = false;
+
+    // === プレーン定義（y=0） ===
+    constexpr float planeY = 0.0f;
+    const Vector3  n = {0,1,0}; // 法線
+
+    // from/to のプレーンに対する符号付き距離
+    const float d0 = from.y - planeY;
+    const float d1 = to.y   - planeY;
+
+    // ほぼ平行 or 同じ側 → 面を貫通していない
+    const float epsParallel = 1e-8f;
+    if (std::fabs(d0 - d1) <= epsParallel || (d0 * d1) > 0.0f) {
+        return to;
+    }
+
+    // 面との交差パラメータ
+    const float denom = (to.y - from.y);
+    if (std::fabs(denom) <= epsParallel) {
+        // 数値的に怪しい場合はそのまま通す
+        return to;
+    }
+    float tCross = (planeY - from.y) / denom;
+    tCross = std::clamp(tCross, 0.0f, 1.0f);
+
+    // 交点
+    const Vector3 crossP = {
+        from.x + (to.x - from.x) * tCross,
+        planeY,
+        from.z + (to.z - from.z) * tCross
+    };
+
+    // 有効矩形内でのみ「境界」とみなす（外なら自由に通過してOK）
+    const bool insideRect =
+        (crossP.x >= rect_.minX && crossP.x <= rect_.maxX &&
+         crossP.z >= rect_.minZ && crossP.z <= rect_.maxZ);
+    if (!insideRect) {
+        return to;
+    }
+
+    // 穴を通っていれば通過OK
+    const auto& holes = holeSrc_->GetHoles();
+    for (const auto& h : holes) {
+        if (h.radius <= 0.0f) continue;
+        const float dx = crossP.x - h.position.x;
+        const float dz = crossP.z - h.position.z;
+        const float dist = std::sqrt(dx*dx + dz*dz);
+        if (dist <= h.radius) {
+            return to; // ゲート通過
+        }
+    }
+
+    // ==== プレーンに衝突：反射で押し戻す ====
+    blocked_ = true;
+
+    const Vector3 move = to - from;
+    const float   totalLen = move.Length();
+
+    // 交点まで進んだ残りの割合
+    const float tRem = (std::max)(0.0f, 1.0f - tCross);
+    Vector3     vRem = move * tRem; // 残りの“移動”ベクトル（速度の代用）
+
+    // 接触点を元の側へ微小オフセット（食い込み防止）
+    const float sideSign = (d0 >= 0.0f) ? +1.0f : -1.0f;
+    const Vector3 contact = crossP + n * (sideSign * (eps_ + 1e-5f));
+
+    // 残り移動の分解
+    Vector3 vN  = n * (vRem.y);     // 法線成分（n=(0,1,0) なので vRem.y）
+    Vector3 vT  = {vRem.x, 0.0f, vRem.z}; // 接線成分
+
+    // 反射：法線成分を反転 * 反発係数、接線は摩擦で減衰
+    const float restitution     = restitution_;      // 例: 0.2f（跳ね返り弱め）
+    const float tangentFriction = tangentFriction_;  // 例: 0.9f（滑りつつ減衰）
+
+    vN.y = -vN.y * restitution;
+    vT.x *= tangentFriction;
+    vT.z *= tangentFriction;
+
+    // 反射後の残り移動
+    Vector3 bounced = vT + Vector3{0.0f, vN.y, 0.0f};
+
+    // さらにわずかに境界から離す“押し戻し”でスタック回避
+    Vector3 pushAway = n * (sideSign * (0.5f * eps_ + 1e-4f));
+
+    Vector3 out = contact + bounced + pushAway;
+
+    // 念のため、反射後にまた面を跨ぎそうなら法線方向だけを残す
+    // （数値誤差対策：同フレームでの二度目の交差を防ぐ）
+    if ((out.y - planeY) * d0 <= 0.0f) {
+        out.y = planeY + sideSign * (eps_ + 1e-4f);
+    }
+
+    // 総移動が極端に小さいと方向ロスでヒネリが出るので、最小量だけ離す
+    if (totalLen < eps_) {
+        out += n * (sideSign * (eps_ + 1e-4f));
+    }
+
+    return out;
+}

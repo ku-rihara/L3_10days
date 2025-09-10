@@ -19,7 +19,7 @@ class BaseStation;
 class Line3D;
 class Boundary;
 class NpcFireController;
-class RouteCollection;         // ★追加
+class RouteCollection;  
 struct Hole;
 
 class NPC : public BaseObject, public AABBCollider {
@@ -67,6 +67,7 @@ public:
 	/// ===================================================
 	/// collision methods
 	/// ===================================================
+	void BindAttackRouteAtEntry_(const Vector3& center);
 	virtual void OnCollisionEnter(BaseCollider* other) override;
 
 public:
