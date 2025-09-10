@@ -37,6 +37,7 @@ TutorialScene::~TutorialScene() {}
 void TutorialScene::Init() {
     BaseScene::Init();
     GameOption::GetInstance()->Init();
+    Boundary::GetInstance()->ResetHoles();
 
     ParticleManager::GetInstance()->SetViewProjection(&viewProjection_);
     ExpEmitter::GetInstance()->Init();
