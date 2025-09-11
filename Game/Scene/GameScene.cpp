@@ -57,7 +57,6 @@ void GameScene::Init() {
 
     // 爆発エミッター
     ExpEmitter::GetInstance()->Init();
-    Boundary::GetInstance()->ResetHoles();
     EnemyInfoUI::GetInstance()->Init();
 
     // 生成
@@ -118,6 +117,7 @@ void GameScene::Init() {
 
     boundary_ = Boundary::GetInstance();
     boundary_->Init();
+    boundary_->ResetHoles();
 
     /// UI -----
     miniMap_->Init(stations_[FactionType::Ally].get(), stations_[FactionType::Enemy].get());
